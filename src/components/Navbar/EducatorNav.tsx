@@ -1,11 +1,11 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, educator, Book, Home, Video, Settings, LogIn, LogOut, educatorPlus, UserPlus, User } from 'lucide-react';
+import { Menu, X, Book, Home, Video , Settings, LogIn, LogOut, UserPlus, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useEducator } from '@/context/useEducator';
+import { useEducator } from '@/context/educatorContext';
 
-export default function Educator() {
+export default function EducatorNav() {
   const { educator, loading } = useEducator();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -49,7 +49,6 @@ export default function Educator() {
             />
           ) : (
             <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <educator className="h-4 w-4 text-blue-600" />
             </div>
           )}
           <span className="ml-2 text-gray-700">{educator.name?.split(' ')[0]}</span>

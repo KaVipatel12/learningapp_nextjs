@@ -1,157 +1,150 @@
-import { Schema, Document, Types, models, model } from 'mongoose';
+import { model, models } from 'mongoose';
+import { Schema, Document, Types } from 'mongoose';
 
-// Updated Video interface
+// Video interface
 interface IVideo {
-  title: string;  
-  videoUrl: string;  
-  videoPublicId: string;  
-  previewLink?: string;
-  duration: number;  
-  createdAt?: Date; 
-  updatedAt?: Date;  
-}
-
-// Updated Chapter interface extending Document
-export interface IChapter extends Document {
   title: string;
-  description: string;
-  duration: number;  
-  videos: IVideo[];
-  comment: Types.ObjectId[];
-  courseId: Types.ObjectId;
-  order: number;  
-  isPublished: boolean; 
-  createdAt: Date;
-  updatedAt: Date;
+  videoUrl: string;
+  videoPublicId: string;
+  duration: number;
 }
 
-// Updated Chapter Schema
-const chapterSchema = new Schema<IChapter>({
+// Video schema
+const VideoSchema = new Schema<IVideo>({
   title: { 
     type: String, 
-    required: true,
-    trim: true,
-    maxlength: [100, 'Title cannot exceed 100 characters']
+    required: [true, 'Video title is required'] 
   },
-  description: { 
+  videoUrl: { 
     type: String, 
-    required: true,
-    trim: true
+    required: [true, 'Video URL is required'] 
+  },
+  videoPublicId: { 
+    type: String, 
+    required: [true, 'Video public ID is required'] 
   },
   duration: { 
     type: Number, 
-    required: true,
-    min: [0, 'Duration cannot be negative']
-  },
-  videos: [
-    {
-      title: { 
-        type: String, 
-        required: true,
-        trim: true
-      },
-      videoUrl: { 
-        type: String, 
-        required: true
-      },
-      videoPublicId: {
-        type: String,
-        required: true
-      },
-      previewLink: { 
-        type: String,
-        trim: true
-      },
-      duration: { 
-        type: Number, 
-        required: true,
-        min: [0, 'Duration cannot be negative']
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      },
-      updatedAt: {
-        type: Date,
-        default: Date.now
-      }
-    }
-  ],
-  comment: [
-    { 
-      type: Schema.Types.ObjectId, 
-      ref: 'Comment' 
-    }
-  ],
-  courseId: { 
-    type: Schema.Types.ObjectId, 
-    ref: 'Course', 
-    required: true 
-  },
-  order: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  isPublished: {
-    type: Boolean,
-    default: false
+    default: 0 
   }
-}, { 
-  timestamps: true  // This will automatically add createdAt and updatedAt fields
 });
 
-interface ICourse extends Document {
+// Chapter interface
+export interface IChapter extends Document {
   title: string;
   description: string;
-  category: string;
-  price: number;
-  chapters: Types.ObjectId[];
   duration: number;
-  level: string;
-  language: string;
-  prerequisites: string;
-  learningOutcomes: string;
-  certification: boolean;
-  startDate: string;
-  endDate: string;
-  discount: number; 
-  totalSections: number;
-  totalLectures: number;
-  totalQuizzes: number;
-  welcomeMessage: string;
-  completionMessage: string;
-  courseImage?: string;
-  educator: Types.ObjectId;
-  educatorName: string;
-  date: Date;
+  videos: IVideo[];
+  courseId: Types.ObjectId;
 }
 
+// Chapter schema
+const chapterSchema = new Schema<IChapter>({
+  title: { 
+    type: String, 
+    required: [true, 'Chapter title is required'] 
+  },
+  description: { 
+    type: String, 
+    required: [true, 'Chapter description is required'] 
+  },
+  duration: { 
+    type: Number, 
+    default: 0 
+  },
+  videos: { 
+    type: [VideoSchema],
+    required: [true, 'Videos are required'],
+    validate: {
+      validator: function(videos: IVideo[]) {
+        return videos.length > 0;
+      },
+      message: 'At least one video is required per chapter'
+    }
+  },
+  courseId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Course',
+    required: [true, 'Course ID is required'] 
+  }
+}, {
+  timestamps: true
+});
+
+// Course interface
+export interface ICourse extends Document {
+  title: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  imagePublicId?: string;
+  category: string;
+  level: string;
+  duration: number;
+  totalSections: number;
+  totalLectures: number;
+  chapters: Types.ObjectId[];
+  createdBy: Types.ObjectId;
+  isPublished: boolean;
+}
+
+// Course schema
 const courseSchema = new Schema<ICourse>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  category: { type: String, required: true },
-  price: { type: Number, required: true },
-  duration: { type: Number, required: true },
-  level: { type: String, required: true },
-  language: { type: String, required: true },
-  prerequisites: { type: String },
-  learningOutcomes: { type: String },
-  certification: { type: Boolean, default: false },
-  startDate: { type: String },
-  endDate: { type: String },
-  discount: { type: Number, default: 0 },
-  totalSections: { type: Number, default: 0 },
-  totalLectures: { type: Number, default: 0 },
-  totalQuizzes: { type: Number, default: 0 },
-  welcomeMessage: { type: String },
-  chapters: [{ type: Schema.Types.ObjectId, ref: 'Chapter'}],
-  completionMessage: { type: String },
-  courseImage: { type: String },
-  educator: { type: Schema.Types.ObjectId, ref: 'Educator', required: true },
-  educatorName: { type: String, required: true },
-  date: { type: Date, default: Date.now }
-}, { timestamps: true });
+  title: { 
+    type: String, 
+    required: [true, 'Course title is required'] 
+  },
+  description: { 
+    type: String, 
+    required: [true, 'Course description is required'] 
+  },
+  price: { 
+    type: Number, 
+    required: [true, 'Course price is required'],
+    min: [0, 'Price cannot be negative'] 
+  },
+  imageUrl: { 
+    type: String
+  },
+  imagePublicId: { 
+    type: String
+  },
+  category: { 
+    type: String, 
+    required: [true, 'Category is required'] 
+  },
+  level: { 
+    type: String, 
+    required: [true, 'Level is required'] 
+  },
+  duration: { 
+    type: Number, 
+    default: 0 
+  },
+  totalSections: { 
+    type: Number, 
+    default: 0 
+  },
+  totalLectures: { 
+    type: Number, 
+    default: 0 
+  },
+  chapters: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'Chapter' 
+  }],
+  createdBy: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Educator',
+    required: [true, 'Creator ID is required'] 
+  },
+  isPublished: { 
+    type: Boolean, 
+    default: false 
+  }
+}, {
+  timestamps: true
+});
 
 const Chapter = models.Chapter || model<IChapter>('Chapter', chapterSchema);
 const Course = models.Course || model<ICourse>('Course', courseSchema);

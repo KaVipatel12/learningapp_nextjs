@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { FiUpload, FiPlus, FiLoader, FiX } from 'react-icons/fi';
 import Image from 'next/image';
 import { useNotification } from '@/components/NotificationContext';
+import EducatorNav from '@/components/Navbar/EducatorNav';
 
 export default function AddCourse() {
   const [formData, setFormData] = useState({
@@ -127,6 +128,8 @@ export default function AddCourse() {
   const category = ["Programming", "Data Science", "Language", "Communication", "AI" , "Machine Learning"];
   
   return (
+    <>
+    <EducatorNav />
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -515,5 +518,6 @@ export default function AddCourse() {
         </div>
       </div>
     </div>
+</>
   );
 }

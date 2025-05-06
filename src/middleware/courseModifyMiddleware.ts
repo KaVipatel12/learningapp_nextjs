@@ -13,19 +13,19 @@ export interface CustomJwtPayload extends JwtPayload {
 
 // Define context type for course modification
 export interface CourseModifyContext {
-    Educator?: InstanceType<typeof Educator>;
+  Educator?: InstanceType<typeof Educator>;
   isCourseModify: boolean;
 }
 
 /**
  * Middleware to verify if Educator can modify a specific course
  * @param req The Next.js request object
- * @param params Course ID parameters
+ * @param courseId The course ID to check permissions for
  * @returns Either an error response or the context with Educator data
  */
 export async function courseModifyMiddleware(
   req: NextRequest,
-  params: { courseId: string }
+  courseId: string
 ): Promise<CourseModifyContext | NextResponse> {
   try {
     await connect();
@@ -48,29 +48,32 @@ export async function courseModifyMiddleware(
       ) as CustomJwtPayload;
 
       if (!decoded.email) {
+        console.log("Invalid token")
         return NextResponse.json(
           { msg: "Invalid token payload" },
           { status: 403 }
         );
       }
 
-      const providerData = await Educator.findOne({ email: decoded.email });
+      const EducatorData = await Educator.findOne({ email: decoded.email });
 
-      if (!providerData) {
-        return NextResponse.json({ msg: "Provider not found" }, { status: 404 });
+      if (!EducatorData) {
+        return NextResponse.json({ msg: "Educator not found" }, { status: 404 });
       }
 
       // Check provider role and course ownership
-      if (providerData.role !== "provider") {
+      if (EducatorData.role !== "educator") {
+        console.log("Unauthorized access")
         return NextResponse.json(
           { msg: "Unauthorized Access" },
           { status: 403 }
         );
       }
 
-      const EducatorVerify = providerData.courses.some((data : Types.ObjectId) => data.equals(params.courseId));
+      const EducatorVerify = EducatorData.courses.some((data: Types.ObjectId) => data.equals(courseId));
       
       if (!EducatorVerify) {
+        console.log("Unauthorized access course not found ")
         return NextResponse.json(
           { msg: "Unauthorized Access - Course not found" },
           { status: 403 }
@@ -79,7 +82,7 @@ export async function courseModifyMiddleware(
 
       // Return the context for route handler
       return {
-        Educator: providerData,
+        Educator: EducatorData,
         isCourseModify: true
       };
 
