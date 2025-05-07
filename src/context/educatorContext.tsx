@@ -10,12 +10,8 @@ interface  EducatorData {
   role: string;
   bio: string;
   phone: string;
-  joinDate: string;
-  stats: {
-    coursesCompleted: number;
-    hoursLearned: number;
-    certificates: number;
-  };
+  joinDate: string; 
+  courses :  object[]; 
 }
 
 interface EducatorContextType {

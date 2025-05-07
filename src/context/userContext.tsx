@@ -3,6 +3,13 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
+interface purchasecourse{
+  courseId: string;
+  title: string;
+  category: string;
+  purchaseDate?: Date;
+}
+
 interface UserData {
   name: string;
   email: string;
@@ -12,6 +19,7 @@ interface UserData {
   bio: string;
   phone: string;
   joinDate: string;
+  purchaseCourse : purchasecourse[]; 
   stats: {
     coursesCompleted: number;
     hoursLearned: number;
