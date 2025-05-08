@@ -86,6 +86,7 @@ export interface ICourse extends Document {
   chapters: Types.ObjectId[];
   createdBy: Types.ObjectId;
   isPublished: boolean;
+  totalEnrollment : number; 
 }
 
 // Course schema
@@ -141,6 +142,10 @@ const courseSchema = new Schema<ICourse>({
   isPublished: { 
     type: Boolean, 
     default: false 
+  }, 
+  totalEnrollment : {
+    type : Number, 
+    default : 0
   }
 }, {
   timestamps: true

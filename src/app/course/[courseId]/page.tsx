@@ -11,6 +11,7 @@ import { PageLoading } from '@/components/PageLoading';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
+import Link from 'next/link';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -254,7 +255,7 @@ const CourseDetailPage = () => {
                   style={{ marginBottom: '24px' }}
                   onClick={handleViewChapters}
                 >
-                  {isCoursePurchased || isOwner ? "Go to Chapters" : "View All Chapters"}
+                <Link href={`${params.courseId}/chapters`}> {isCoursePurchased || isOwner ? "Go to Chapters" : "View All Chapters"} </Link> 
                 </Button>
               </div>
 
