@@ -16,7 +16,7 @@ interface  EducatorData {
 
 interface EducatorContextType {
   educator:  EducatorData | null;
-  loading: boolean;
+  educatorLoading: boolean;
   error: string | null;
   fetchEducatorData: () => Promise<void>;
 }
@@ -25,7 +25,7 @@ const EducatorContext = createContext<EducatorContextType | undefined>(undefined
 
 export function EducatorProvider({ children }: { children: ReactNode }) {
   const [educator, setEducator] = useState< EducatorData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [educatorLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEducatorData = async () => {
@@ -56,7 +56,7 @@ export function EducatorProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <EducatorContext.Provider value={{ educator, loading, error, fetchEducatorData }}>
+    <EducatorContext.Provider value={{ educator, educatorLoading, error, fetchEducatorData }}>
       {children}
     </EducatorContext.Provider>
   );

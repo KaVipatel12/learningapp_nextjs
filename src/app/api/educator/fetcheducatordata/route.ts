@@ -6,11 +6,9 @@ import Educator from "@/models/educatorModel";
 export async function GET(req: NextRequest) {
   try {
     await connect();
-    
+
     // Call the middleware to authenticate the educator
     const authResult = await authEducatorMiddleware(req);
-    
-    // If the result is a NextResponse, it means there was an error or unauthorized access, NextResponse object wo response hota hai jo hum Next.js mein error ya unauthorized response bhejte hain. Agar authResult NextResponse hai, iska matlab hai kuch error ya unauthorized access hai.
 
     if (authResult instanceof NextResponse) {
       return authResult;

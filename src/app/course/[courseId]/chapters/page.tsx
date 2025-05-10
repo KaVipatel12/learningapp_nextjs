@@ -1,12 +1,13 @@
 "use client"
 
-import { Lock, Trash2 } from "lucide-react";
+import { Lock, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useNotification } from "@/components/NotificationContext";
 import { PageLoading } from "@/components/PageLoading";
 import { useUser } from "@/context/userContext"; 
 import { useEducator } from "@/context/educatorContext"; 
+import { chapterActions } from "@/utils/ChapterFunctionality";
 
 interface IVideo {
   title: string;
@@ -77,28 +78,18 @@ const ChaptersPage = () => {
   };
 
   const handleDeleteSelected = async () => {
-    // try {
-    //   const response = await fetch(`/api/course/${courseId}/chapters`, {
-    //     method: 'DELETE',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ chapterIds: selectedChapters }),
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error('Failed to delete chapters');
-    //   }
-
-    //   showNotification("Chapters deleted successfully", "success");
-    //   setSelectedChapters([]);
-    //   setIsSelectMode(false);
-    //   fetchChapters(); // Refresh the list
-    // } catch (error) {
-    //   showNotification(error.message, "error");
-    // }
-
-    showNotification("Deleting chapters", "success")
+        console.log("toogle delete"); 
+        const result = await chapterActions.delete(
+          courseId , selectedChapters
+        );
+        
+        if (result.success) {
+          showNotification('Course deleted successfully!', "success");
+          setSelectedChapters([]); 
+          setIsSelectMode(false)
+        } else {
+          showNotification('Error' , "error");
+        }
   };
 
   const handleChapterClick = (chapter: IChapter) => {
@@ -112,7 +103,7 @@ const ChaptersPage = () => {
       return;
     }
     
-    router.push(`/chapters/${chapter._id}`);
+    router.push(`/course/${courseId}/chapters/${chapter._id}`);
   };
 
   if (loading) {
@@ -132,41 +123,57 @@ const ChaptersPage = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Course Chapters</h1>
-        {isOwner && (
-          <div className="flex gap-2">
-            {isSelectMode ? (
-              <>
-                <button 
-                  onClick={handleDeleteSelected}
-                  className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                >
-                  <Trash2 size={16} />
-                  Delete ({selectedChapters.length})
-                </button>
-                <button 
-                  onClick={() => {
-                    setSelectedChapters([]);
-                    setIsSelectMode(false);
-                  }}
-                  className="px-3 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <button 
-                onClick={() => setIsSelectMode(true)}
-                className="px-3 py-1 bg-purple-100 text-purple-600 rounded hover:bg-purple-200"
-              >
-                Select Chapters
-              </button>
-            )}
+ <div className="flex justify-between items-center mb-8">
+  <h1 className="text-3xl font-bold text-gray-800">Course Chapters</h1>
+  
+  <div className="flex items-center gap-4">
+    <button 
+      onClick={() => router.push(`/educator/${courseId}/addchapter`)}
+      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-1"
+    >
+      <Plus size={16} />
+      Add Chapter
+    </button>
+    
+    {isOwner && (
+      <>
+        {isSelectMode ? (
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleDeleteSelected}
+              disabled={selectedChapters.length === 0}
+              className={`px-4 py-2 rounded-md transition-colors flex items-center gap-1 ${
+                selectedChapters.length > 0 
+                  ? 'bg-red-600 text-white hover:bg-red-700' 
+                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <Trash2 size={16} />
+              Delete {selectedChapters.length > 0 ? `(${selectedChapters.length})` : ''}
+            </button>
+            
+            <button 
+              onClick={() => {
+                setSelectedChapters([]);
+                setIsSelectMode(false);
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
+        ) : (
+          <button 
+            onClick={() => setIsSelectMode(true)}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
+          >
+            Select Chapters
+          </button>
         )}
-      </div>
-      
+      </>
+    )}
+  </div>
+</div>
       <div className="grid gap-6">
         {chapters.map((chapter) => {
           const totalDuration = chapter.videos.reduce((total, video) => total + video.duration, 0);

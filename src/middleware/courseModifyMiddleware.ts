@@ -30,6 +30,7 @@ export async function courseModifyMiddleware(
   try {
     await connect();
     
+    console.log("Middleware courseId " + courseId)
     const token = req.cookies.get('token')?.value;
     
     if (!token) {
@@ -58,6 +59,7 @@ export async function courseModifyMiddleware(
       const EducatorData = await Educator.findOne({ email: decoded.email });
 
       if (!EducatorData) {
+        console.log("educator not found")
         return NextResponse.json({ msg: "Educator not found" }, { status: 404 });
       }
 

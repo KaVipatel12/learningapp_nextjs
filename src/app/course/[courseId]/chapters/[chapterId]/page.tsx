@@ -5,9 +5,13 @@ import { useParams } from 'next/navigation';
 import { MoreVertical, Trash2, Edit } from 'lucide-react';
 import ReviewsSection from '@/components/course/ReviewSection';
 import ChatBox from '@/components/course/ChatBox';
-import { useNotification } from "@/components/NotificationContext";
 import CourseDescription from '@/components/course/CourseDescription';
 import { PageLoading } from '@/components/PageLoading';
+import {Dialog , Button , DialogFooter , DialogTitle , DialogHeader , DialogContent, DropdownMenuItem, DropdownMenuContent , DropdownMenuTrigger , DropdownMenu} from "@/components/course/ChapterPageFuncs"
+import { useRouter } from 'next/navigation';
+import { chapterActions } from '@/utils/ChapterFunctionality';
+import Link from 'next/link';
+import { useNotification } from '@/components/NotificationContext';
 
 interface IVideo {
   title: string;
@@ -28,161 +32,17 @@ interface IChapter {
   updatedAt: string;
   __v: number;
 }
-interface DropdownMenuItemProps {
-  className?: string;
-  children: React.ReactNode;
-  key: string;
-  onClick?: () => void;
-}
-const Button = ({ 
-  variant = 'default', 
-  size = 'default', 
-  className = '', 
-  children, 
-  onClick,
-  ...props 
-}: {
-  variant?: 'default' | 'destructive' | 'outline' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
-  children: React.ReactNode;
-  key: string;
-  onClick?: () => void;
-}) => {
-  const baseStyles = 'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background';
-  
-  const variantStyles = {
-    default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-    outline: 'border border-input hover:bg-accent hover:text-accent-foreground',
-    ghost: 'hover:bg-accent hover:text-accent-foreground',
-    link: 'underline-offset-4 hover:underline text-primary',
-  };
-
-  const sizeStyles = {
-    default: 'h-10 py-2 px-4',
-    sm: 'h-9 px-3 rounded-md',
-    lg: 'h-11 px-8 rounded-md',
-    icon: 'h-10 w-10',
-  };
-
-  return (
-    <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-// Dropdown Components
-const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
-  return <div className="relative">{children}</div>;
-};
-
-const DropdownMenuTrigger = ({ asChild, children }: { asChild?: boolean, children: React.ReactNode }) => {
-  return asChild ? children : <button>{children}</button>;
-};
-
-const DropdownMenuContent = ({ 
-  align = 'center', 
-  children 
-}: { 
-  align?: 'start' | 'center' | 'end', 
-  children: React.ReactNode 
-}) => {
-  const alignment = {
-    start: 'left-0',
-    center: 'left-1/2 -translate-x-1/2',
-    end: 'right-0',
-  };
-
-  return (
-    <div className={`absolute ${alignment[align]} mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50`}>
-      <div className="py-1">
-        {children}
-      </div>
-    </div>
-  );
-};
-
-const DropdownMenuItem = ({ 
-  className = '', 
-  children, 
-  onClick,
-  ...props 
-}: DropdownMenuItemProps) => {
-  return (
-    <div 
-      className={`${className} px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer flex items-center`}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-
-// Dialog Components
-const Dialog = ({ 
-  open, 
-  onOpenChange, 
-  children 
-}: { 
-  open: boolean, 
-  onOpenChange: (open: boolean) => void, 
-  children: React.ReactNode 
-}) => {
-  if (!open) return null;
-  
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
-      {children}
-    </div>
-  );
-};
-
-const DialogContent = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="relative z-50 bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
-      {children}
-    </div>
-  );
-};
-
-const DialogHeader = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="border-b px-6 py-4">
-      {children}
-    </div>
-  );
-};
-
-const DialogTitle = ({ children }: { children: React.ReactNode }) => {
-  return <h3 className="text-lg font-semibold">{children}</h3>;
-};
-
-const DialogFooter = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="border-t px-6 py-4 flex justify-end gap-2">
-      {children}
-    </div>
-  );
-};
 
 const ChapterPage = () => {
+  const router = useRouter(); 
   const params = useParams();
-  const { showNotification } = useNotification();
   const courseId = params.courseId as string; 
   const chapterId = params.chapterId as string; 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const isOwner = true; // Hardcoded for now
   const [chapter, setChapter] = useState<IChapter | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [ isOwner , setIsOwner] = useState(false)
+  const {showNotification} = useNotification(); 
   const fetchChapter = useCallback(async () => {
     try {
       const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}`); 
@@ -192,15 +52,21 @@ const ChapterPage = () => {
       }
 
       const data = await response.json(); 
+      if(!data.courseAccess){
+        router.back()
+      }
       setChapter(data.msg);
+
+      setIsOwner(data.courseModify)
     } catch (error) {
-      showNotification("There was an error fetching the chapter", "error");
+       router.back()
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [chapterId, courseId]);
+  }, [chapterId, courseId, router]);
 
+  
   useEffect(() => {
     fetchChapter(); 
   }, [fetchChapter]);
@@ -223,11 +89,20 @@ const ChapterPage = () => {
     }
   ];
 
-  const handleDeleteChapter = () => {
-    console.log("Deleting chapter:", chapterId);
-    // API call would go here
-    setShowDeleteModal(false);
-  };
+  const handleDelete = async () => {
+    console.log("toogle delete"); 
+    const result = await chapterActions.delete(
+      courseId , [chapterId]
+    );
+    
+    if (result.success) {
+      showNotification('Course deleted successfully!' , "success");
+      router.push(`/course/${courseId}/chapters`)
+    } else {
+      showNotification('Error: ' + result.msg , "error");
+    }
+  }
+
 
   if (loading) {
     return <PageLoading />;
@@ -236,7 +111,6 @@ const ChapterPage = () => {
   if (!chapter) {
     return <div className="max-w-7xl mx-auto px-4 py-8">Chapter not found</div>;
   }
-
   // Get the first (and only) video
   const video = chapter.videos[0];
 
@@ -259,7 +133,7 @@ const ChapterPage = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem key='edit' className="flex items-center gap-2">
                 <Edit className="h-4 w-4" />
-                Edit chapter
+                <Link href={`/educator/${courseId}/editchapter/${chapterId}`}> Edit chapter </Link> 
               </DropdownMenuItem>
               <DropdownMenuItem key='delete'
                 className="flex items-center gap-2 text-red-600"
@@ -324,7 +198,7 @@ const ChapterPage = () => {
             <Button key='cancel' variant="outline" onClick={() => setShowDeleteModal(false)}>
               Cancel
             </Button>
-            <Button key='confirm' variant="destructive" onClick={handleDeleteChapter}>
+            <Button key='confirm' variant="destructive" onClick={handleDelete}>
               Delete
             </Button>
           </DialogFooter>

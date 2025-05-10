@@ -29,7 +29,7 @@ interface UserData {
 
 interface UserContextType {
   user: UserData | null;
-  loading: boolean;
+  userLoading: boolean;
   error: string | null;
   fetchUserData: () => Promise<void>;
 }
@@ -38,7 +38,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [userLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchUserData = async () => {
@@ -69,7 +69,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, error, fetchUserData }}>
+    <UserContext.Provider value={{ user, userLoading, error, fetchUserData }}>
       {children}
     </UserContext.Provider>
   );
