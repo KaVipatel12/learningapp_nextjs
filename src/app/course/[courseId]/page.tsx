@@ -12,6 +12,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
 import Link from 'next/link';
+import DeleteCourseButton from './DeleteButton';
+
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -97,26 +99,6 @@ const CourseDetailPage = () => {
 
   const handleUpdateCourse = () => {
     router.push(`/educator/courses/edit/${courseId}`);
-  };
-
-  const handleDeleteCourse = async () => {
-    // Add confirmation dialog and delete logic
-    if (confirm('Are you sure you want to delete this course?')) {
-      try {
-        const response = await fetch(`/api/course/${courseId}`, {
-          method: 'DELETE',
-        });
-        
-        if (response.ok) {
-          router.push('/educator/courses');
-        } else {
-          alert('Failed to delete course');
-        }
-      } catch (error) {
-        console.error('Error deleting course:', error);
-        alert('An error occurred while deleting the course');
-      }
-    }
   };
 
   const handleViewChapters = () => {
@@ -234,16 +216,9 @@ const CourseDetailPage = () => {
                     >
                       Update Course
                     </Button>
-                    <Button 
-                      danger
-                      type="default" 
-                      size="large" 
-                      block 
-                      style={{ marginBottom: '16px' }}
-                      onClick={handleDeleteCourse}
-                    >
-                      Delete Course
-                    </Button>
+                    
+                    {/* Replace the old delete button with our new component */}
+                    <DeleteCourseButton courseId={courseId} />
                   </>
                 )}
                 

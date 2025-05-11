@@ -203,7 +203,7 @@ export default function AddChaptersPage() {
       }
 
       showNotification('Chapters added successfully!', "success");
-      router.push(`/courses/${courseId}/chapters`);
+      router.push(`/course/${courseId}/chapters`);
     } catch (error) {
       showNotification(error instanceof Error ? error.message : 'Something went wrong', "success");
     } finally {
