@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/db/dbConfig";
 import User from "@/models/userModel";
-import Educator from "@/models/educatorModel";
+import {Educator} from "@/models/models";  
 
 export async function POST(req: NextRequest) {
   try {

@@ -86,7 +86,7 @@ const CourseDetailPage = () => {
     // Check if educator owns this course
     if (educator && educator.courses) {
       const owned = educator?.courses?.some(id => 
-        id?.toString() === courseId
+        id._id?.toString() === courseId
       );
       setIsOwner(owned);
     }
@@ -98,7 +98,7 @@ const CourseDetailPage = () => {
   };
 
   const handleUpdateCourse = () => {
-    router.push(`/educator/courses/edit/${courseId}`);
+    router.push(`/educator/editcourse/${courseId}`);
   };
 
   const handleViewChapters = () => {

@@ -64,7 +64,7 @@ const ChaptersPage = () => {
     }
     
     if (educator && educator.courses) {
-      const owned = educator?.courses?.some(id => id?.toString() === courseId);
+      const owned = educator?.courses?.some(id => id?._id.toString() === courseId);
       setIsOwner(owned);
     }
   }, [user, educator, courseId]);
@@ -128,7 +128,7 @@ const ChaptersPage = () => {
   
   <div className="flex items-center gap-4">
     <button 
-      onClick={() => router.push(`/educator/${courseId}/addchapter`)}
+      onClick={() => router.push(`/educator/profile`)}
       className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-1"
     >
       <Plus size={16} />

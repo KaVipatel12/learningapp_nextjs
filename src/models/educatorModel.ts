@@ -1,3 +1,4 @@
+// models/Educator.js
 import mongoose, { Schema, Document, models, model } from "mongoose";
 
 export interface IEducator extends Document {
@@ -35,6 +36,6 @@ const educatorSchema = new Schema<IEducator>(
 );
 
 // Prevent model overwrite error in Next.js hot reload
-const Educator = models.Educator || model<IEducator>("Educator", educatorSchema);;
+const Educator = models.Educator || model<IEducator>("Educator", educatorSchema);
 
 export default Educator;

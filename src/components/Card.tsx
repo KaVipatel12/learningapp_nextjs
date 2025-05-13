@@ -97,7 +97,7 @@ export default function Card({
           </div>
 
           <Link
-            href={`/courses/${id}`}
+            href={`/course/${id}`}
             className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
           >
             View

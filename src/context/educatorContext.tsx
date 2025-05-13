@@ -2,16 +2,46 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-interface  EducatorData {
-  name: string;
+export interface EducatorData {
+  _id: string;
+  username: string;
+  mobile: string;
   email: string;
-  avatar: string;
-  coverImage: string;
+  password: string;
   role: string;
-  bio: string;
-  phone: string;
-  joinDate: string; 
-  courses :  object[]; 
+  date?: string;
+  courses: Array<{
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+    discount?: number;
+    courseImage?: string;
+    category: string;
+    level: string;
+    language?: string;
+    duration: number;
+    totalSections: number;
+    totalLectures: number;
+    totalQuizzes?: number;
+    educator: string;
+    educatorName?: string;
+    isPublished: boolean;
+    totalEnrollment: number;
+    certification?: boolean;
+    learningOutcomes?: string;
+    prerequisites?: string;
+    welcomeMessage?: string;
+    completionMessage?: string;
+    startDate?: string;
+    endDate?: string;
+    createdAt: string;
+    updatedAt: string;
+    date?: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
 }
 
 interface EducatorContextType {

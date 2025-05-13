@@ -84,9 +84,12 @@ export interface ICourse extends Document {
   totalSections: number;
   totalLectures: number;
   chapters: Types.ObjectId[];
-  createdBy: Types.ObjectId;
+  educator: Types.ObjectId;
+  educatorName : string; 
   isPublished: boolean;
   totalEnrollment : number; 
+  prerequisites: string , 
+  learningOutcomes: string
 }
 
 // Course schema
@@ -94,6 +97,12 @@ const courseSchema = new Schema<ICourse>({
   title: { 
     type: String, 
     required: [true, 'Course title is required'] 
+  },
+  prerequisites: {
+    type : String
+  }, 
+  learningOutcomes: {
+    type : String
   },
   description: { 
     type: String, 
@@ -134,10 +143,10 @@ const courseSchema = new Schema<ICourse>({
     type: Schema.Types.ObjectId, 
     ref: 'Chapter' 
   }],
-  createdBy: { 
+  educator: { 
     type: Schema.Types.ObjectId, 
     ref: 'Educator',
-    required: [true, 'Creator ID is required'] 
+    required: [true, 'Educator ID is required'] 
   },
   isPublished: { 
     type: Boolean, 

@@ -116,7 +116,7 @@ export default function AddCourse() {
       }
 
       const data = await response.json();
-      router.push(`/courses/${data.course._id}`);
+      router.push(`/educator/${data.course._id}/addchapter`);
       
     } catch {
       showNotification('Submission error:', "error");

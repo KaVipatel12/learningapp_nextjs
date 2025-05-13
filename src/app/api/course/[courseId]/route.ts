@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connect } from '@/db/dbConfig';
-import { Course } from '@/models/courseModel';
+import { Course } from '@/models/models';
 
 
 export async function GET(req : NextRequest, {params} : {params : {courseId: string}}){

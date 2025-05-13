@@ -1,7 +1,7 @@
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
 import { courseModifyMiddleware } from '@/middleware/courseModifyMiddleware';
-import { Chapter, Course } from '@/models/courseModel';
+import { Chapter, Course } from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 import { Types } from 'mongoose';
 

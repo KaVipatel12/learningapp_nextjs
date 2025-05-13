@@ -1,12 +1,12 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { Menu, X, Book, Home, Video , Settings, LogIn, LogOut, UserPlus, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useEducator } from '@/context/educatorContext';
 
 export default function EducatorNav() {
-  const { educator, loading } = useEducator();
+  const { educator, educatorLoading } = useEducator();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -26,7 +26,7 @@ export default function EducatorNav() {
 
   // Only render auth-related UI on client-side
   const renderAuthButtons = () => {
-    if (!isClient || loading) {
+    if (!isClient || educatorLoading) {
       return (
         <div className="flex items-center space-x-4">
           <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
@@ -38,10 +38,10 @@ export default function EducatorNav() {
     return educator ? (
       <div className="flex items-center space-x-6">
         <Link href="/dashboard" className="flex items-center">
-          {educator.avatar ? (
+          {/* {educator.avatar ? (
             <Image
-              src={educator.avatar}
-              alt={educator.name}
+              // src={educator.avatar}
+              alt={educator.educatorName}
               width={32}
               height={32}
               className="rounded-full"
@@ -50,8 +50,8 @@ export default function EducatorNav() {
           ) : (
             <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
             </div>
-          )}
-          <span className="ml-2 text-gray-700">{educator.name?.split(' ')[0]}</span>
+          )} */}
+          <span className="ml-2 text-gray-700">{educator.username?.split(' ')[0]}</span>
         </Link>
         <Link href="/api/auth/logout" className="text-gray-700 hover:text-red-600 transition flex items-center">
           <LogOut className="mr-1 h-4 w-4" /> Logout
@@ -124,7 +124,7 @@ export default function EducatorNav() {
               <Video className="mr-2 h-5 w-5" /> Courses
             </Link>
             
-            {isClient && !loading && (educator ? (
+            {isClient && !educatorLoading && (educator ? (
               <>
                 <Link 
                   href="/dashboard" 

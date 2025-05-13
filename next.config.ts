@@ -7,9 +7,13 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        // Optionally restrict to specific paths:
-        // pathname: '/dzm3wq5vw/**',
+
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+
+      }
     ],
   },
   // Your other Next.js config options here

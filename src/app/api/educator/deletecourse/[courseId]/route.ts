@@ -1,21 +1,9 @@
-// app/api/educator/deletecourse/[courseId]/route.ts
-
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
 import { courseModifyMiddleware } from '@/middleware/courseModifyMiddleware';
-import { Chapter, Course } from '@/models/courseModel';
+import { Chapter, Course } from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 import mongoose from 'mongoose';
-// import { Types } from 'mongoose';
-
-// interface VideoInput {
-//     id?: string;
-//     _id: Types.ObjectId | string;
-//     title: string;
-//     duration: number;
-//     videoUrl?: string;
-//     videoPublicId?: string;
-// }
 
 export async function DELETE(req: NextRequest, { params }: { params: { courseId: string } }) {
   await connect();

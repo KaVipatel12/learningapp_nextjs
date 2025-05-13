@@ -1,7 +1,7 @@
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
 import { courseModifyMiddleware } from '@/middleware/courseModifyMiddleware';
-import { Course } from '@/models/courseModel';
+import {Course} from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 
 interface CloudinaryUploadResult {
@@ -31,7 +31,7 @@ interface CourseInput {
 export async function PUT(req: NextRequest, { params }: { params: { courseId: string } }) {
   await connect();
   
-  const { courseId } = params;
+  const { courseId } = await params;
   
   const modifyResult = await courseModifyMiddleware(req, courseId);
   if (modifyResult instanceof NextResponse) {

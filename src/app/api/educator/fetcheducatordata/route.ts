@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/db/dbConfig";
 import { AuthContext, authEducatorMiddleware } from "@/middleware/authEducatorMiddleware";
-import Educator from "@/models/educatorModel";
+import {Educator} from "@/models/models";
 
 export async function GET(req: NextRequest) {
   try {
@@ -29,9 +29,10 @@ export async function GET(req: NextRequest) {
     try {
       const educatorId = educator._id;
       
-      const fetchDetails = await Educator.findById(
-        educatorId
-      ); 
+      const fetchDetails = await Educator.findById(educatorId).populate({
+        path: 'courses',
+        model: 'Course',
+      });
       
       if (!fetchDetails) {
         return NextResponse.json(

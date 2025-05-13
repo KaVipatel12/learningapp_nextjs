@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { connect } from "@/db/dbConfig";
-import Educator, { IEducator } from "@/models/educatorModel";
+import { Educator , IEducator } from "@/models/models";
 
 // Extend JwtPayload to include your custom fields
 export interface CustomJwtPayload extends JwtPayload {

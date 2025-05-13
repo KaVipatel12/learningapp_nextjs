@@ -66,12 +66,11 @@ export default function UpdateCourse() {
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-
   useEffect(() => {
     if (educatorLoading) return
 
     else if (educator && educator.courses) {
-      const owned = educator?.courses?.some(id => id?.toString() === courseId);
+      const owned = educator?.courses?.some(id => id._id?.toString() === courseId);
       if(!owned){
         router.back()
       }
@@ -200,7 +199,7 @@ export default function UpdateCourse() {
       
       // If image was updated successfully, reset the image changed flag
       setImageChanged(false);
-      
+      router.push(`/course/${courseId}`)
       // If the backend returns the new image URL, update the preview
       if (successData.courseImage) {
         setPreviewUrl(successData.courseImage);

@@ -1,7 +1,7 @@
 import { connect } from '@/db/dbConfig';
 import { AuthContext, authEducatorMiddleware } from '@/middleware/authEducatorMiddleware';
-import {Course} from '@/models/courseModel';
-import Educator from '@/models/educatorModel';
+import {Course} from '@/models/models';
+import {Educator} from '@/models/models';
 import { uploadFile } from '@/utils/cloudinary/cloudinary';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error creating course:', error);
+    console.log('Error creating course:', error);
     return NextResponse.json(
       { 
         msg: "Failed to create course",
