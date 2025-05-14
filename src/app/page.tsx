@@ -1,61 +1,126 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import UserNav from '@/components/Navbar/UserNav';
 import Card from '@/components/Card';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+interface Course {
+  id: string;
+  _id? : string;
+  imageUrl: string;
+  title: string;
+  instructor: string;
+  price: number;
+  progress?: number;
+  discountedPrice?: number;
+  rating?: number;
+  totalRatings?: number;
+  educatorName : string
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Feature {
+  title: string;
+  description: string;
+  image: string;
+}
 
 const HomePage = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<string>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
+  const categoriesContainerRef = useRef<HTMLDivElement>(null);
+  const coursesContainerRef = useRef<HTMLDivElement>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [category , setCategory] = useState<string>("")
+  const [courseLoading , setCourseLoading] = useState<boolean>(false)
   // Carousel images
-  const carouselImages = [
+  const carouselImages: string[] = [
     'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
     'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1422&q=80',
     'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80'
   ];
 
   // Categories
-  const categories = [
+  const categories: Category[] = [
     { id: 'all', name: 'All Courses' },
     { id: 'tech', name: 'Technology' },
     { id: 'business', name: 'Business' },
     { id: 'design', name: 'Design' },
+    { id: 'programming', name: 'Programming' },
+    { id: 'data science', name: 'Data Science' },
     { id: 'science', name: 'Science' },
   ];
 
+const fetchCourses = useCallback(async () => {
+  setCourseLoading(true);
+
+  const effectiveCategory: string = category === "all" ? "" : category;
+
+  try {
+    const endpoint =
+      effectiveCategory.length === 0
+        ? "/api/course/fetchcourse"
+        : `/api/course/fetchcourse?category=${encodeURIComponent(effectiveCategory)}`;
+
+    const response = await fetch(endpoint);
+
+    if (!response.ok) {
+      console.log("Error in fetching course")
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data.msg)) {
+      const formattedCourses = data.msg.map((course: Course) => ({
+        id: course._id,
+        imageUrl: '/default-course.jpg',
+        title: course.title,
+        instructor: course.educatorName || 'Unknown Instructor',
+        price: course.price,
+        rating: 4.5,
+        totalRatings: 0
+      }));
+
+      setCourses(formattedCourses);
+    } else {
+      console.warn("Unexpected response format:", data);
+      setCourses([]);
+    }
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    setCourses([]);
+  } finally {
+    setCourseLoading(false);
+  }
+}, [category]);
+
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+  
   // Dummy purchased courses (horizontal scroll)
-  const purchasedCourses = [
+  const purchasedCourses: Course[] = [
     {
       id: '1',
       imageUrl: 'https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
       title: 'Advanced JavaScript',
       instructor: 'Alex Johnson',
       price: 149,
-      progress: 65
+      progress: 65, 
+      educatorName : "kush"
     },
     // Add more purchased courses...
   ];
 
-  // All courses data
-  const allCourses = [
-    {
-      id: '1',
-      imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
-      title: 'React Masterclass',
-      instructor: 'Sarah Miller',
-      price: 199,
-      discountedPrice: 149,
-      rating: 4.8,
-      totalRatings: 1245
-    },
-    // Add more courses...
-  ];
-
   // Features sections
-  const features = [
+  const features: Feature[] = [
     {
       title: 'Learn Anything',
       description: 'Access 5000+ courses across all categories',
@@ -68,16 +133,34 @@ const HomePage = () => {
     }
   ];
 
-  // Scroll functions for horizontal container
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+  // Scroll functions for horizontal containers
+  const scrollLeft = (ref: React.RefObject<HTMLDivElement | null >) => {
+    if (ref.current) {
+      ref.current.scrollBy({ left: -300, behavior: 'smooth' });
     }
   };
 
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+  const scrollRight = (ref: React.RefObject<HTMLDivElement | null>) => {
+    if (ref.current) {
+      ref.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollCategoriesLeft = () => {
+    if (categoriesContainerRef.current) {
+      categoriesContainerRef.current.scrollBy({
+        left: -200,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollCategoriesRight = () => {
+    if (categoriesContainerRef.current) {
+      categoriesContainerRef.current.scrollBy({
+        left: 200,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -118,13 +201,13 @@ const HomePage = () => {
         <div className="relative">
           {/* Scroll buttons (hidden on mobile) */}
           <button 
-            onClick={scrollLeft}
+            onClick={() => scrollLeft(scrollContainerRef)}
             className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button 
-            onClick={scrollRight}
+            onClick={() => scrollRight(scrollContainerRef)}
             className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
           >
             <ChevronRight className="w-6 h-6" />
@@ -133,19 +216,18 @@ const HomePage = () => {
           {/* Horizontal scroll container */}
           <div 
             ref={scrollContainerRef}
-            className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide" // scrollbar-hide can be a CSS utility
+            className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
           >
             {purchasedCourses.map((course) => (
-              <div key={course.id} className="flex-shrink-0 w-80">
+              <div key={course.id} className="flex-shrink-0 w-50">
                 <Card
-                  id={course.id}
+                  id={course?.id}
                   imageUrl={course.imageUrl}
                   title={course.title}
                   instructor={course.instructor}
                   price={course.price}
-                  key={course.id}
-                  rating={4.5} // You might want to add ratings to your course model
-                  totalRatings={0} // Add this to your course model if needed
+                  rating={4.5}
+                  totalRatings={0}
                   discountedPrice={course.price}
                   isWishlisted={false}
                   onWishlistToggle={() => {}}
@@ -156,52 +238,101 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Search & Categories */}
+      {/* Courses Section */}
       <div className="max-w-7xl mx-auto px-4 py-12 bg-white">
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        {/* Categories with scroll buttons */}
+        <div className="relative mb-8">
+          {/* Scroll buttons */}
+          <button 
+            onClick={scrollCategoriesLeft}
+            className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={scrollCategoriesRight}
+            className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+          
+          {/* Horizontal scroll container for categories */}
+          <div 
+            ref={categoriesContainerRef}
+            className="flex overflow-x-auto pb-2 scrollbar-hide"
+          >
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                className={`px-6 py-2 mr-4 rounded-full whitespace-nowrap flex-shrink-0 ${
+                  activeTab === category.id 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+                onClick={() => { 
+                  setActiveTab(category.id) 
+                  setCategory(category.id)
+                 }}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="flex overflow-x-auto pb-2 mb-8 scrollbar-hide">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              className={`px-6 py-2 mr-4 rounded-full whitespace-nowrap flex-shrink-0 ${
-                activeTab === category.id 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-              onClick={() => setActiveTab(category.id)}
+        {/* All Courses (Horizontal Scroll) */}
+        <div className="relative">
+          <h2 className="text-2xl font-bold mb-6">All Courses</h2>
+          <div className="relative">
+            {/* Scroll buttons (hidden on mobile) */}
+            <button 
+              onClick={() => scrollLeft(coursesContainerRef)}
+              className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
             >
-              {category.name}
+              <ChevronLeft className="w-6 h-6" />
             </button>
-          ))}
-        </div>
-
-        {/* Courses Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {allCourses.map((course) => (
-            <Card
-              key={course.id}
-              id={course.id}
-              imageUrl={course.imageUrl}
-              title={course.title}
-              instructor={course.instructor}
-              price={course.price}
-              discountedPrice={course.discountedPrice}
-              rating={course.rating}
-              totalRatings={course.totalRatings}
-            />
-          ))}
+            <button 
+              onClick={() => scrollRight(coursesContainerRef)}
+              className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+            
+            {/* Horizontal scroll container */}
+            <div 
+              ref={coursesContainerRef}
+              className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
+            >
+              {
+              !courseLoading ? (
+               courses.length > 0 ? (
+                courses.map((course) => (
+                  <div key={course.id} className="flex-shrink-0 w-50 gap-1">
+                    <Card
+                      id={course.id}
+                      imageUrl={course.imageUrl}
+                      title={course.title}
+                      instructor={course.instructor}
+                      price={course.price}
+                      rating={course.rating || 0}
+                      totalRatings={course.totalRatings  || 0}
+                      discountedPrice={course.price}
+                      isWishlisted={false}
+                      onWishlistToggle={() => {}}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="flex-shrink-0 w-full text-center py-8">
+                  <p> No course found </p>
+                </div>
+              )) : (
+                 <div className="flex-shrink-0 w-full text-center py-8">
+                  <LoadingSpinner height='h-30'></LoadingSpinner>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

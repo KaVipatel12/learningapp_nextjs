@@ -31,7 +31,7 @@ export async function authUserMiddleware(
     
     if (!token) {
       return NextResponse.json(
-        { message: "Please login to proceed further" },
+        { msg: "Please login to proceed further" },
         { status: 401 }
       );
     }

@@ -80,10 +80,10 @@ export default function Card({
         {/* Price Section */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <div className="flex items-center space-x-1">
-            {discountedPrice ? (
+            {discountedPrice && (discountedPrice - price !== 0 ) ? (
               <>
                 <span className="text-sm font-bold text-gray-900">
-                  ${discountedPrice.toFixed(2)}
+                  ${discountedPrice?.toFixed(2)}
                 </span>
                 <span className="text-xs text-gray-500 line-through">
                   ${price.toFixed(2)}

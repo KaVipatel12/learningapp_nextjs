@@ -6,12 +6,12 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@/context/userContext';
 
 export default function UserNav() {
-  const { user, loading } = useUser();
+  const { user, userLoading } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  // Set client-side flag and scroll listener
+  // Set client-side flag and scroll listener. 
   useEffect(() => {
     setIsClient(true);
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -26,7 +26,7 @@ export default function UserNav() {
 
   // Only render auth-related UI on client-side
   const renderAuthButtons = () => {
-    if (!isClient || loading) {
+    if (!isClient || userLoading) {
       return (
         <div className="flex items-center space-x-4">
           <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
@@ -88,7 +88,7 @@ export default function UserNav() {
             <Link href="/" className="text-gray-700 hover:text-blue-600 transition flex items-center">
               <Home className="mr-1 h-4 w-4" /> Home
             </Link>
-            <Link href="/courses" className="text-gray-700 hover:text-blue-600 transition flex items-center">
+            <Link href="/course" className="text-gray-700 hover:text-blue-600 transition flex items-center">
               <Video className="mr-1 h-4 w-4" /> Courses
             </Link>
             
@@ -125,7 +125,7 @@ export default function UserNav() {
               <Video className="mr-2 h-5 w-5" /> Courses
             </Link>
             
-            {isClient && !loading && (user ? (
+            {isClient && !userLoading && (user ? (
               <>
                 <Link 
                   href="/dashboard" 

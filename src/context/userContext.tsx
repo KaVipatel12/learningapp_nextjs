@@ -19,6 +19,7 @@ interface UserData {
   bio: string;
   phone: string;
   joinDate: string;
+  category : string[]; 
   purchaseCourse : purchasecourse[]; 
   stats: {
     coursesCompleted: number;

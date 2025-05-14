@@ -1,12 +1,16 @@
-import React from 'react'
-import { FiLoader } from 'react-icons/fi'
+import React from 'react';
+import { FiLoader } from 'react-icons/fi';
 
-const LoadingSpinner = () => {
-  return (
-<div className="min-h-screen flex items-center justify-center">
-        <FiLoader className="animate-spin text-2xl" />
-      </div>
-  )
+interface LoadingSpinnerProps {
+  height?: string; 
 }
 
-export default LoadingSpinner
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ height = 'min-h-screen' }) => {
+  return (
+    <div className={`${height} flex items-center justify-center`}>
+      <FiLoader className="animate-spin text-2xl" />
+    </div>
+  );
+};
+
+export default LoadingSpinner;

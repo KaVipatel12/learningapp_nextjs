@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       
       const fetchDetails = await User.findById(
         userId,
-        "username mobile email purchaseCourse controll cart"
+        "username mobile email purchaseCourse controll cart category"
       ).populate({
         path: "cart",
         populate: {
