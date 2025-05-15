@@ -102,7 +102,8 @@ const ChaptersPage = () => {
       showNotification("This chapter is locked. Please purchase the course to access.", "error");
       return;
     }
-    
+
+    console.log("pushing")
     router.push(`/course/${courseId}/chapters/${chapter._id}`);
   };
 

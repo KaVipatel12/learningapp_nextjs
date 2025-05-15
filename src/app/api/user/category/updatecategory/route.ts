@@ -1,6 +1,6 @@
 // app/api/user/updatecategories/route.ts
 import { AuthContext, authUserMiddleware } from '@/middleware/authUserMiddleware';
-import User from '@/models/userModel';
+import { User }  from '@/models/models';
 import { Document } from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 

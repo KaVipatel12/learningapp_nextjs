@@ -4,6 +4,7 @@ import { FiTrash2, FiVideo, FiSave, FiAlertCircle } from 'react-icons/fi';
 import { useRouter, useParams } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
+import { useEducator } from '@/context/educatorContext';
 
 // Constants
 const MAX_FILE_SIZE_MB = 5;
@@ -43,6 +44,8 @@ export default function EditChapterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const {educator , educatorLoading} = useEducator(); 
+  const [pageLoading , setPageLoading] = useState(true); 
 
   // Fetch chapter data on mount
   useEffect(() => {
@@ -70,7 +73,7 @@ export default function EditChapterPage() {
         });
       } catch{
         alert("There is some error in server")
-        // router.push(`/educator/courses/${courseId}`);
+        router.push(`/educator/courses/${courseId}`);
       } finally {
         setIsLoading(false);
       }
@@ -83,6 +86,19 @@ export default function EditChapterPage() {
   useEffect(() => {
     fileInputRefs.current = chapter.videos.map(() => null);
   }, [chapter.videos]);
+
+  
+  useEffect(() => {
+    if (educatorLoading) return setPageLoading(true)
+  
+    const ownsCourse = educator?.courses?.some(course => course._id?.toString() === courseId);
+  
+    if (!ownsCourse) {
+      router.back();
+    }
+  
+    setPageLoading(false)
+  }, [educator, courseId, educatorLoading, router]);
 
   // Validate file size
   const validateFile = (file: File): boolean => {
@@ -236,7 +252,8 @@ export default function EditChapterPage() {
     }
   };
 
-  if (isLoading) {
+
+  if (isLoading || pageLoading) {
     return (
       <PageLoading />
     );

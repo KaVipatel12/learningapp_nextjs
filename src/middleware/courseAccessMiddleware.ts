@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Educator } from "@/models/models";
-import User from "@/models/userModel";
+import { User }  from "@/models/models";
 import { connect } from "@/db/dbConfig";
 import { Types } from "mongoose";
 

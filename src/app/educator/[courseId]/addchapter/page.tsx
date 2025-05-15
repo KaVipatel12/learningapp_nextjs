@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { FiPlus, FiTrash2, FiVideo, FiSave, FiAlertCircle } from 'react-icons/fi';
 import { useRouter, useParams } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
+import { useEducator } from '@/context/educatorContext';
+import { PageLoading } from '@/components/PageLoading';
 
 // Constants
 const MAX_FILE_SIZE_MB = 5;
@@ -27,7 +29,9 @@ export default function AddChaptersPage() {
   const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
-  
+  const {educator , educatorLoading} = useEducator(); 
+  const [pageLoading, setPageLoading] = useState(true)
+
   const [chapters, setChapters] = useState<ChapterInput[]>([
     { title: "", description: "", videos: [{ title: "", duration: 0, file: null }] }
   ]);
@@ -40,6 +44,19 @@ export default function AddChaptersPage() {
       chapter.videos.map(() => null)
     );
   }, [chapters]);
+
+useEffect(() => {
+  if (educatorLoading) return setPageLoading(true)
+
+  const ownsCourse = educator?.courses?.some(course => course._id?.toString() === courseId);
+
+  if (!ownsCourse) {
+    router.back();
+  }
+
+  setPageLoading(false)
+}, [educator, courseId, educatorLoading, router]);
+
 
   // Validate file size
   const validateFile = (file: File): boolean => {
@@ -211,6 +228,11 @@ export default function AddChaptersPage() {
     }
   };
 
+  if(pageLoading){
+    return (
+      <PageLoading></PageLoading>
+    )
+  }
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Chapters to Course</h2>

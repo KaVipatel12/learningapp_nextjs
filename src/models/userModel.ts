@@ -2,9 +2,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 // Define a type for the purchaseCourse subdocument
 interface IPurchaseCourse {
-  courseId: string;
-  title: string;
-  category: string;
+  courseId: mongoose.Types.ObjectId;
   purchaseDate?: Date;
 }
 
@@ -63,9 +61,7 @@ const userSchema: Schema<IUser> = new Schema({
   ],
   purchaseCourse: [
     {
-      courseId: { type: String, required: true },
-      title: { type: String, required: true },
-      category: { type: String, required: true },
+      courseId: { type: mongoose.Schema.Types.ObjectId , ref : "Course"},
       purchaseDate: {
         type: Date,
         default: Date.now,

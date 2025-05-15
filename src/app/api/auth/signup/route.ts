@@ -2,7 +2,7 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/db/dbConfig";
-import User from "@/models/userModel";
+import { User }  from "@/models/models";
 import {Educator} from "@/models/models";  
 
 export async function POST(req: NextRequest) {

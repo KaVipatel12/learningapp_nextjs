@@ -60,7 +60,7 @@ export async function courseModifyMiddleware(
 
       if (!EducatorData) {
         console.log("educator not found")
-        return NextResponse.json({ msg: "Educator not found" }, { status: 404 });
+        return NextResponse.json({ msg: "Educator not found, Invalid access" }, { status: 404 });
       }
 
       // Check provider role and course ownership

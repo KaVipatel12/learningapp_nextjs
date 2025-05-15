@@ -9,7 +9,7 @@ const NotificationComponent = () => {
   if (notifications.length === 0) return null;
 
   return (
-    <div className="fixed inset-x-0 top-4 z-50 flex flex-col items-center pointer-events-none">
+    <div className="fixed inset-x-0 top-4 z-5000 flex flex-col items-center pointer-events-none">
       {notifications.map((notification) => (
         <div
           key={notification.id}

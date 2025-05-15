@@ -4,16 +4,14 @@ import { useState, useEffect } from 'react';
 import { 
   Button, Card, Col, Row, Tabs, Tag, Typography, Divider, Rate 
 } from 'antd';
-import { TeamOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Image from 'next/image';
 import UserNav from '@/components/Navbar/UserNav';
 import { PageLoading } from '@/components/PageLoading';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
-import Link from 'next/link';
 import DeleteCourseButton from './DeleteButton';
-
+import { useNotification } from '@/components/NotificationContext';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -32,7 +30,6 @@ interface ICourse {
   isPublished: boolean;
   prerequisites: string;
   learningOutcomes: string;
-  // Add other fields as needed
 }
 
 const CourseDetailPage = () => {
@@ -42,6 +39,12 @@ const CourseDetailPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isCoursePurchased, setIsCoursePurchased] = useState(false); 
   const [isOwner, setIsOwner] = useState(false); 
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const { showNotification } = useNotification(); 
   
   const { user } = useUser();
   const { educator } = useEducator();
@@ -79,22 +82,54 @@ const CourseDetailPage = () => {
   // Check permissions to delete and update page
   useEffect(() => {
     if (user && user.purchaseCourse) {
-      const purchased = user.purchaseCourse.some(course => course.courseId?.toString() === courseId);
-      setIsCoursePurchased(!purchased);
+      const purchased = user.purchaseCourse.some(
+        (purchase) => purchase.courseId?.toString() === courseId
+      );
+      setIsCoursePurchased(purchased);
     }
     
     // Check if educator owns this course
     if (educator && educator.courses) {
-      const owned = educator?.courses?.some(id => 
-        id._id?.toString() === courseId
+      const owned = educator.courses.some(
+        (course) => course._id?.toString() === courseId
       );
       setIsOwner(owned);
     }
   }, [user, educator, courseId]);
 
-  const handleEnrollCourse = async () => {
-    // Add your enrollment logic here
-    console.log('Enrolling in course:', courseId);
+  const handleEnroll = async () => {
+    try {
+      setEnrollLoading(true);
+
+      const res = await fetch("/api/user/purchasecourse", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          courses: [courseId]
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setIsCoursePurchased(false);
+        console.log(data.msg)
+        setShowEnrollModal(false);
+        showNotification(data.msg, "error"); 
+        return;
+      }
+      setIsCoursePurchased(true);
+      setShowEnrollModal(false);
+      setShowSuccessModal(true);
+    } catch {
+      showNotification("There is some error please try again later", "error"); 
+      setShowEnrollModal(false);
+      setShowErrorModal(true);
+    } finally {
+      setEnrollLoading(false);
+    }
   };
 
   const handleUpdateCourse = () => {
@@ -105,7 +140,7 @@ const CourseDetailPage = () => {
     if (isCoursePurchased || isOwner) {
       router.push(`/course/${courseId}/chapters`);
     } else {
-      alert('Please enroll in this course to view chapters');
+      setShowWarningModal(true);
     }
   };
 
@@ -116,6 +151,100 @@ const CourseDetailPage = () => {
       advanced: 'red'
     };
     return <Tag color={levelMap[level.toLowerCase()] || 'blue'}>{level}</Tag>;
+  };
+
+  // Custom Modal Component
+  const CustomModal = ({ 
+    visible, 
+    onCancel, 
+    title, 
+    content, 
+    footer, 
+    type = 'default' 
+  }: {
+    visible: boolean;
+    onCancel: () => void;
+    title: string;
+    content: React.ReactNode;
+    footer?: React.ReactNode;
+    type?: 'default' | 'success' | 'error' | 'warning';
+  }) => {
+    if (!visible) return null;
+
+    const getColor = () => {
+      switch (type) {
+        case 'success': return '#52c41a';
+        case 'error': return '#f5222d';
+        case 'warning': return '#faad14';
+        default: return '#1890ff';
+      }
+    };
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          width: '420px',
+          maxWidth: '90%',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        }}>
+          <div style={{
+            padding: '16px 24px',
+            borderBottom: '1px solid #f0f0f0',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: getColor(),
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: '16px',
+              color: 'white',
+              fontWeight: 'bold',
+            }}>
+              {type === 'success' ? '✓' : 
+               type === 'error' ? '✕' : 
+               type === 'warning' ? '!' : 'i'}
+            </div>
+            <Title level={4} style={{ margin: 0 }}>{title}</Title>
+          </div>
+          
+          <div style={{ padding: '24px' }}>
+            {content}
+          </div>
+          
+          <div style={{
+            padding: '10px 16px',
+            borderTop: '1px solid #f0f0f0',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '8px',
+          }}>
+            {footer || (
+              <Button onClick={onCancel} type="primary">
+                OK
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -178,72 +307,81 @@ const CourseDetailPage = () => {
                     </>
                   )
                 },
-                // Add other tabs as needed
               ]} />
             </Card>
           </Col>
   
           <Col xs={24} lg={8}>
             <Card style={{ position: 'sticky', top: '80px', marginTop: '20px' }}>
-              {/* Price and action buttons */}
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <Title level={3} style={{ color: '#1890ff' }}>
                   ₹{course.price.toLocaleString('en-IN')}
                 </Title>
                 
-                {/* Show different buttons based on user role and purchase status */}
-                {!isCoursePurchased && !isOwner && (
+                {/* Show enroll button only if not purchased and not owner */}
+                {(!isCoursePurchased && !isOwner) && (
                   <Button 
                     type="primary" 
                     size="large" 
                     block 
-                    style={{ marginBottom: '16px' }}
-                    onClick={handleEnrollCourse}
+                    style={{ 
+                      marginBottom: '16px',
+                      background: '#52c41a',
+                      borderColor: '#52c41a'
+                    }}
+                    onClick={() => setShowEnrollModal(true)}
+                    loading={enrollLoading}
                   >
                     Enroll Now
                   </Button>
                 )}
                 
-                {/* Show these buttons only to course owners (educators) */}
+                {/* Show owner buttons */}
                 {isOwner && (
                   <>
                     <Button 
-                      type="default" 
+                      type="primary" 
                       size="large" 
                       block 
-                      style={{ marginBottom: '16px', borderColor: '#1890ff', color: '#1890ff' }}
+                      style={{ 
+                        marginBottom: '16px',
+                        background: '#faad14',
+                        borderColor: '#faad14'
+                      }}
                       onClick={handleUpdateCourse}
                     >
                       Update Course
                     </Button>
                     
-                    {/* Replace the old delete button with our new component */}
                     <DeleteCourseButton courseId={courseId} />
                   </>
                 )}
                 
-                {/* View chapters button (accessible to enrolled students and owners) */}
+                {/* View chapters button */}
                 <Button 
-                  type={isCoursePurchased || isOwner ? "primary" : "dashed"}
+                  type={isCoursePurchased || isOwner ? "primary" : "default"}
                   size="large" 
                   block 
-                  style={{ marginBottom: '24px' }}
+                  style={{ 
+                    marginBottom: '24px',
+                    ...(isCoursePurchased || isOwner ? {} : {
+                      color: '#1890ff',
+                      borderColor: '#1890ff'
+                    })
+                  }}
                   onClick={handleViewChapters}
                 >
-                <Link href={`${params.courseId}/chapters`}> {isCoursePurchased || isOwner ? "Go to Chapters" : "View All Chapters"} </Link> 
+                  {isCoursePurchased || isOwner ? "Go to Chapters" : "Preview Course"}
                 </Button>
               </div>
 
               <Divider />
               
-              {/* Course meta information */}
               <div style={{ marginBottom: '16px' }}>
                 <Paragraph>
-                  <ClockCircleOutlined style={{ marginRight: '8px' }} />
                   <Text strong>Duration:</Text> {course.duration} hours
                 </Paragraph>
                 <Paragraph>
-                  <TeamOutlined style={{ marginRight: '8px' }} />
                   <Text strong>Educator:</Text> {course.educatorName}
                 </Paragraph>
               </div>
@@ -251,6 +389,56 @@ const CourseDetailPage = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Custom Modals */}
+      <CustomModal
+        visible={showEnrollModal}
+        onCancel={() => setShowEnrollModal(false)}
+        title="Confirm Enrollment"
+        type="default"
+        content={
+          <div>
+            <p>Are you sure you want to enroll in `{course.title}`  for ₹{course.price.toLocaleString('en-IN')}?</p>
+          </div>
+        }
+        footer={
+          <>
+            <Button onClick={() => setShowEnrollModal(false)}>Cancel</Button>
+            <Button 
+              type="primary" 
+              onClick={handleEnroll}
+              loading={enrollLoading}
+              style={{ background: '#52c41a', borderColor: '#52c41a' }}
+            >
+              Enroll Now
+            </Button>
+          </>
+        }
+      />
+
+      <CustomModal
+        visible={showSuccessModal}
+        onCancel={() => setShowSuccessModal(false)}
+        title="Enrollment Successful"
+        type="success"
+        content="You have successfully enrolled in this course!"
+      />
+
+      <CustomModal
+        visible={showErrorModal}
+        onCancel={() => setShowErrorModal(false)}
+        title="Enrollment Failed"
+        type="error"
+        content="There was an error processing your enrollment. Please try again."
+      />
+
+      <CustomModal
+        visible={showWarningModal}
+        onCancel={() => setShowWarningModal(false)}
+        title="Enrollment Required"
+        type="warning"
+        content="Please enroll in this course to view chapters"
+      />
     </>
   );
 };

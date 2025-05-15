@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "@/models/userModel";
+import { User }  from "@/models/models";
 import {Educator} from "@/models/models";  // assuming you have this model
 import { connect } from "@/db/dbConfig";
 import { NextRequest, NextResponse } from "next/server";

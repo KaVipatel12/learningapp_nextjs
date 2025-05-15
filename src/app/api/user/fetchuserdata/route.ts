@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authUserMiddleware, AuthContext } from "@/middleware/authUserMiddleware";
 import { connect } from "@/db/dbConfig";
-import User from "@/models/userModel";
+import { User }  from "@/models/models";
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,8 +32,7 @@ export async function GET(req: NextRequest) {
       const userId = user._id;
       
       const fetchDetails = await User.findById(
-        userId,
-        "username mobile email purchaseCourse controll cart category"
+        userId
       ).populate({
         path: "cart",
         populate: {

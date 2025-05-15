@@ -79,7 +79,7 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
 
     try {
       const res = await fetch("/api/user/category/updatecategory", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
@@ -89,12 +89,9 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
       });
       
       const data = await res.json();
-
+      
       if (!res.ok) {
-        if (res.status === 400 && data.msg) {
           return showNotification(data.msg, "error"); 
-        }
-        return showNotification(data.msg || "Failed to update categories", "error");
       }
 
       showNotification("Categories updated successfully!", "success");
