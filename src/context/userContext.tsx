@@ -3,11 +3,25 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-interface purchasecourse{
-  courseId: string;
+// Define PopulatedCourse interface since it's imported
+interface PopulatedCourse {
+  _id: string;
   title: string;
   category: string;
-  purchaseDate?: Date;
+  // Add other properties as needed
+}
+
+interface PurchaseCourse {
+  courseId: string | PopulatedCourse;
+  _id: string;
+  title?: string;
+  category?: string;
+  purchaseDate?: string;
+  enrollment?: Date;
+}
+
+interface WishList {
+  id: string;
 }
 
 interface UserData {
@@ -19,13 +33,14 @@ interface UserData {
   bio: string;
   phone: string;
   joinDate: string;
-  category : string[]; 
-  purchaseCourse : purchasecourse[]; 
+  category: string[];
+  purchaseCourse: PurchaseCourse[];
   stats: {
     coursesCompleted: number;
     hoursLearned: number;
     certificates: number;
   };
+  wishlist: WishList[];
 }
 
 interface UserContextType {
@@ -33,6 +48,7 @@ interface UserContextType {
   userLoading: boolean;
   error: string | null;
   fetchUserData: () => Promise<void>;
+  purchasedCoursesIds: string[];
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -41,8 +57,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [userLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [purchasedCoursesIds, setPurchasedCoursesIds] = useState<string[]>([]);
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (): Promise<void> => {
     try {
       setLoading(true);
       const response = await fetch('/api/user/fetchuserdata');
@@ -52,7 +69,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      console.log(data)
+      console.log(data);
       if (data.msg) {
         setUser(data.msg);
       } else {
@@ -69,8 +86,41 @@ export function UserProvider({ children }: { children: ReactNode }) {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    if (userLoading) return;
+  
+    if (!userLoading && user && Array.isArray(user.purchaseCourse)) {
+      const purchasedIds: string[] = [];
+  
+      user.purchaseCourse.forEach(item => {
+        if (!item || !item.courseId) return;
+  
+        let courseId: string;
+  
+        if (typeof item.courseId === 'object' && item.courseId !== null) {
+          const course = item.courseId as PopulatedCourse;
+          courseId = course._id;
+        }
+        else {
+          courseId = item.courseId as string;
+        }
+        purchasedIds.push(courseId);
+      });
+  
+      setPurchasedCoursesIds(purchasedIds);
+    }
+  }, [user, userLoading]);
+
   return (
-    <UserContext.Provider value={{ user, userLoading, error, fetchUserData }}>
+    <UserContext.Provider 
+      value={{ 
+        user, 
+        userLoading, 
+        error, 
+        fetchUserData, 
+        purchasedCoursesIds 
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

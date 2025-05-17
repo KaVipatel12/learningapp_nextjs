@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, User, Book, Home, Video, Settings, LogIn, LogOut, UserPlus } from 'lucide-react';
+import { Menu, X, User, Book, Home, Video, Settings, LogIn, LogOut, UserPlus , Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/userContext';
 
@@ -79,17 +79,21 @@ export default function UserNav() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Book className="h-8 w-8 text-blue-600" />
+            <Book className="h-8 w-8 text-pink-600" />
             <span className="ml-2 text-xl font-bold text-gray-900">EduPlatform</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-ce
+          nter space-x-8">
             <Link href="/" className="text-gray-700 hover:text-blue-600 transition flex items-center">
               <Home className="mr-1 h-4 w-4" /> Home
             </Link>
-            <Link href="/course" className="text-gray-700 hover:text-blue-600 transition flex items-center">
+            <Link href="/course" className="text-pink-700 hover:text-pink-900 transition flex items-center">
               <Video className="mr-1 h-4 w-4" /> Courses
+            </Link>
+            <Link href="/user/wishlist" className="text-red-700 hover:text-red-900 transition flex items-center">
+              <Heart className="mr-1 h-4 w-4" /> WishList
             </Link>
             
             {renderAuthButtons()}

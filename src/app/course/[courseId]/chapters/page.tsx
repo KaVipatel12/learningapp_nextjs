@@ -42,26 +42,32 @@ const ChaptersPage = () => {
     try {                
       const response = await fetch(`/api/course/${courseId}/chapters`); 
       if(!response.ok) {
-        return showNotification("There is some error in fetching", "error");
+        return alert("There is some error in fetching");
       }
       const data = await response.json(); 
       setChapters(data.msg);
     } catch {
-      showNotification("Failed to load chapters. Please try again later.", "error");
+      alert("Failed to load chapters. Please try again later.");
     } finally {
       setLoading(false);
     }
-  }, [courseId, showNotification]);
+  }, [courseId]);
   
   useEffect(() => {
     fetchChapters();
   }, [fetchChapters]);
 
   useEffect(() => {
-    if (user && user.purchaseCourse) {
-      const purchased = user.purchaseCourse.some(course => course.courseId?.toString() === courseId);
-      setIsCoursePurchased(purchased);
-    }
+  if (user && user.purchaseCourse) {
+    const purchased = user.purchaseCourse.some(purchase => {
+      // Handle both cases where courseId is a string or populated object
+      const purchaseCourseId = typeof purchase.courseId === 'object' 
+        ? purchase.courseId._id 
+        : purchase.courseId;
+      return purchaseCourseId === courseId;
+    });
+    setIsCoursePurchased(purchased);
+  }
     
     if (educator && educator.courses) {
       const owned = educator?.courses?.some(id => id?._id.toString() === courseId);

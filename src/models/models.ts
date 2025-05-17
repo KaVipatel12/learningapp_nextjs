@@ -1,5 +1,5 @@
 // models/index.js (create this file)
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 
 // Video interface and schema (embedded in Chapter)
 interface IVideo {
@@ -115,7 +115,7 @@ export interface ICourse extends Document {
     mobile: string;
     email: string;
     password: string;
-    cart: mongoose.Types.ObjectId;
+    wishlist : Types.ObjectId[];
     controll: number; // 0 = user, 1 = admin, 2 = editor
     restriction: number; // 0 = not restricted, 1 = restricted
     date: Date;
@@ -131,10 +131,11 @@ export interface ICourse extends Document {
     mobile: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
-    cart: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Cart",
-    },
+    wishlist: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+    default: []
+    }],
     controll: {
       type: Number,
       default: 0, // 0 = user, 1 = admin, 2 = editor

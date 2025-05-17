@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import User, { IUser } from "@/models/models";
+import  { User, IUser } from "@/models/models";
 import { connect } from "@/db/dbConfig";
 
 // Extend JwtPayload to include your custom fields

@@ -1,30 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { Educator } from "@/models/models";
-import { User }  from "@/models/models";
+import { Educator, User } from "@/models/models";
 import { connect } from "@/db/dbConfig";
 import { Types } from "mongoose";
 
-// Extend JwtPayload to include your custom fields
-export interface CustomJwtPayload extends JwtPayload {
+interface CustomJwtPayload extends JwtPayload {
   email: string;
   id: string;
   role: string;
 }
 
-// Define context type for course access
-export interface CourseAccessContext {
+interface CourseAccessContext {
   user?: InstanceType<typeof Educator> | InstanceType<typeof User>;
   courseAccess: boolean;
   courseModify: boolean;
 }
 
-/**
- * Middleware to verify if user has access to a specific course
- * @param req The Next.js request object
- * @param courseId The course ID to check access for
- * @returns Either an error response or the context with user data and access status
- */
 export async function courseAccessMiddleware(
   req: NextRequest,
   courseId: string
@@ -32,104 +23,86 @@ export async function courseAccessMiddleware(
   try {
     await connect();
     
-    const token = req.cookies.get('token')?.value; 
-    
+    const token = req.cookies.get('token')?.value;
     if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized HTTP, Token not provided", courseAccess: false },
-        { status: 401 }
-      );
+      return unauthorizedResponse("Token not provided");
     }
 
     const jwtToken = token.replace('Bearer', "").trim();
+    const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET as string) as CustomJwtPayload;
 
-    try {
-      const decoded = jwt.verify(
-        jwtToken,
-        process.env.JWT_SECRET as string
-      ) as CustomJwtPayload;
-
-      if (!decoded.email) {
-        return NextResponse.json(
-          { msg: "Invalid token payload", courseAccess: false },
-          { status: 403 }
-        );
-      }
-
-      const educatorData = await Educator.findOne({ email: decoded.email });
-      const userData = await User.findOne({ email: decoded.email });
-
-      if (!educatorData && !userData) {
-        return NextResponse.json(
-          { msg: "User not found", courseAccess: false },
-          { status: 401 }
-        );
-      }
-
-      if (educatorData) {
-        if (educatorData.role === "educator") {
-            console.log("new")
-            console.log(educatorData.courses)
-          const educatorVerify = educatorData.courses.some((data: Types.ObjectId) => 
-            data.equals(courseId));
-          
-          if (educatorVerify) {
-            return {
-              user: educatorData,
-              courseAccess: true,
-              courseModify : true
-            };
-          } else {
-            return NextResponse.json(
-              { msg: "Unauthorized Access", courseAccess: false },
-              { status: 403 }
-            );
-          }
-        } else {
-          return NextResponse.json(
-            { msg: "Unauthorized Access", courseAccess: false },
-            { status: 403 }
-          );
-        }
-      } 
-      
-      if (userData) {
-        const isCoursePurchased = userData.purchaseCourse.some(
-          (data => data.courseId === courseId.toString())
-        );
-        
-        if (isCoursePurchased) {
-          return {
-            user: userData,
-            courseAccess: true, 
-            courseModify : false
-          };
-        } else {
-          return NextResponse.json(
-            { msg: "Course not purchased", courseAccess: false },
-            { status: 403 }
-          );
-        }
-      }
-
-      // Fallback for any other case
-      return NextResponse.json(
-        { msg: "Unauthorized Access", courseAccess: false },
-        { status: 403 }
-      );
-
-    } catch (error) {
-      console.error("Token verification error:", error);
-      return NextResponse.json(
-        { msg: "Token verification error", courseAccess: false },
-        { status: 500 }
-      );
+    if (!decoded.email) {
+      return unauthorizedResponse("Invalid token payload");
     }
+
+    const [educatorData, userData] = await Promise.all([
+      Educator.findOne({ email: decoded.email }),
+      User.findOne({ email: decoded.email })
+    ]);
+
+    if (!educatorData && !userData) {
+      return unauthorizedResponse("User not found");
+    }
+
+    // Check educator access
+    if (educatorData && educatorData.role === "educator") {
+      const hasAccess = educatorData.courses.some((course: Types.ObjectId) => 
+        course.toString() === courseId
+      );
+      
+      if (hasAccess) {
+        return {
+          user: educatorData,
+          courseAccess: true,
+          courseModify: true
+        };
+      }
+      return unauthorizedResponse("Unauthorized educator access");
+    }
+
+    // Check user access
+    if (userData) {
+      const hasPurchased = userData.purchaseCourse.some(
+        (purchase: { courseId: Types.ObjectId | string }) => {
+          const purchaseCourseId = purchase.courseId instanceof Types.ObjectId 
+            ? purchase.courseId.toString() 
+            : purchase.courseId;
+          return purchaseCourseId === courseId;
+        }
+      );
+      
+      if (hasPurchased) {
+        return {
+          user: userData,
+          courseAccess: true,
+          courseModify: false
+        };
+      }
+      return unauthorizedResponse("Course not purchased");
+    }
+
+    return unauthorizedResponse("Unauthorized access");
+
   } catch (error) {
-    console.error("Database connection error:", error);
-    return NextResponse.json(
-      { msg: "Internal server error", courseAccess: false },
-      { status: 500 }
-    );
+    console.error("Error in courseAccessMiddleware:", error);
+    if (error instanceof jwt.JsonWebTokenError) {
+      return unauthorizedResponse("Invalid token");
+    }
+    return serverErrorResponse();
   }
+}
+
+// Helper functions
+function unauthorizedResponse(message: string): NextResponse {
+  return NextResponse.json(
+    { message, courseAccess: false },
+    { status: 401 }
+  );
+}
+
+function serverErrorResponse(): NextResponse {
+  return NextResponse.json(
+    { message: "Internal server error", courseAccess: false },
+    { status: 500 }
+  );
 }

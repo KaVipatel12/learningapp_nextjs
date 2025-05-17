@@ -5,24 +5,45 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import UserNav from '@/components/Navbar/UserNav';
 import Card from '@/components/Card';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useUser } from '@/context/userContext';
+import { useRouter } from 'next/navigation';
 
 interface Course {
   id: string;
-  _id? : string;
+  _id?: string;
   imageUrl: string;
   title: string;
   instructor: string;
   price: number;
+  category?: string;
   progress?: number;
   discountedPrice?: number;
   rating?: number;
   totalRatings?: number;
-  educatorName : string
+  educatorName: string;
+}
+
+export interface PopulatedCourse {
+  
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  educatorName: string;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Include other fields as needed
 }
 
 interface Category {
   id: string;
   name: string;
+}
+
+export interface WishList {
+  id: string;
 }
 
 interface Feature {
@@ -33,12 +54,16 @@ interface Feature {
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
+  const { user, userLoading, purchasedCoursesIds } = useUser(); 
+  const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
   const coursesContainerRef = useRef<HTMLDivElement>(null);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [category , setCategory] = useState<string>("")
-  const [courseLoading , setCourseLoading] = useState<boolean>(false)
+  const [category, setCategory] = useState<string>("")
+  const [courseLoading, setCourseLoading] = useState<boolean>(false)
+  const [userWishlist , setUserWishList] = useState<WishList[]>([])
+  const router = useRouter(); 
   // Carousel images
   const carouselImages: string[] = [
     'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
@@ -57,68 +82,106 @@ const HomePage = () => {
     { id: 'science', name: 'Science' },
   ];
 
-const fetchCourses = useCallback(async () => {
-  setCourseLoading(true);
+  // Fetching the purchased course by the user
+useEffect(() => {
+  if (userLoading) return;
 
-  const effectiveCategory: string = category === "all" ? "" : category;
+  if (!userLoading && user && Array.isArray(user.purchaseCourse)) {
+    // Transform the data from the API format to the Course format
+    const formattedPurchasedCourses: Course[] = [];
+    user.purchaseCourse.forEach(item => {
+      if (!item || !item.courseId) return;
 
-  try {
-    const endpoint =
-      effectiveCategory.length === 0
-        ? "/api/course/fetchcourse"
-        : `/api/course/fetchcourse?category=${encodeURIComponent(effectiveCategory)}`;
+      let courseData: Course;
 
-    const response = await fetch(endpoint);
+      // Handle case when courseId is an object (populated)
+      if (typeof item.courseId === 'object' && item.courseId !== null) {
+        const course = item.courseId as PopulatedCourse;
+        courseData = {
+          id: course._id,
+          imageUrl: course.imageUrl || '/default-course.jpg',
+          title: course.title || item.title,
+          instructor: course.educatorName || 'Unknown Instructor',
+          price: course.price || 0,
+          progress: 0,
+          educatorName: course.educatorName || '',
+          category: course.category || item.category,
+        };
+      } 
+      // Handle case when courseId is a string (not populated)
+      else {
+        courseData = {
+          id: item.courseId as string,
+          imageUrl: '/default-course.jpg',
+          title: item.title,
+          instructor: 'Unknown Instructor',
+          price: 0,
+          progress: 0,
+          educatorName: '',
+          category: item.category,
+        };
+      }
 
-    if (!response.ok) {
-      console.log("Error in fetching course")
-    }
+      formattedPurchasedCourses.push(courseData);
+    });
 
-    const data = await response.json();
-
-    if (Array.isArray(data.msg)) {
-      const formattedCourses = data.msg.map((course: Course) => ({
-        id: course._id,
-        imageUrl: '/default-course.jpg',
-        title: course.title,
-        instructor: course.educatorName || 'Unknown Instructor',
-        price: course.price,
-        rating: 4.5,
-        totalRatings: 0
-      }));
-
-      setCourses(formattedCourses);
-    } else {
-      console.warn("Unexpected response format:", data);
-      setCourses([]);
-    }
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    setCourses([]);
-  } finally {
-    setCourseLoading(false);
+    setPurchasedCourses(formattedPurchasedCourses);
   }
-}, [category]);
 
+  if (user?.wishlist) {
+    const userWishlist = user.wishlist.map(id => id);
+    setUserWishList(userWishlist); 
+  }
+}, [user, userLoading]);
+
+  const fetchCourses = useCallback(async () => {
+    setCourseLoading(true);
+
+    const effectiveCategory: string = category === "all" ? "" : category;
+
+    try {
+      const endpoint =
+        effectiveCategory.length === 0
+          ? "/api/course/fetchcourse"
+          : `/api/course/fetchcourse?category=${encodeURIComponent(effectiveCategory)}`;
+
+      const response = await fetch(endpoint);
+
+      if (!response.ok) {
+        console.log("Error in fetching course")
+      }
+
+      const data = await response.json();
+
+      if (Array.isArray(data.msg)) {
+        const formattedCourses = data.msg.map((course: Course) => ({
+          id: course._id,
+          imageUrl: '/default-course.jpg',
+          title: course.title,
+          instructor: course.educatorName || 'Unknown Instructor',
+          price: course.price,
+          rating: 4.5,
+          totalRatings: 0,
+          educatorName: course.educatorName || ''
+        }));
+
+        setCourses(formattedCourses);
+      } else {
+        console.warn("Unexpected response format:", data);
+        setCourses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses([]);
+    } finally {
+      setCourseLoading(false);
+    }
+  }, [category]);
 
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
   
-  // Dummy purchased courses (horizontal scroll)
-  const purchasedCourses: Course[] = [
-    {
-      id: '1',
-      imageUrl: 'https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
-      title: 'Advanced JavaScript',
-      instructor: 'Alex Johnson',
-      price: 149,
-      progress: 65, 
-      educatorName : "kush"
-    },
-    // Add more purchased courses...
-  ];
-
   // Features sections
   const features: Feature[] = [
     {
@@ -164,12 +227,17 @@ const fetchCourses = useCallback(async () => {
     }
   };
 
+  const isWishlisted = (courseId : string) => {
+    return userWishlist.some(id  => id.toString() === courseId)
+  }
+  const isPurchased = (courseId : string) => {
+    return purchasedCoursesIds.some(id  => id.toString() === courseId)
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <UserNav />
-      
-      {/* Hero Carousel */}
+
       <div className="relative h-96 w-full overflow-hidden">
         <div className="flex h-full transition-transform duration-500 ease-in-out">
           {carouselImages.map((img, index) => (
@@ -185,7 +253,7 @@ const fetchCourses = useCallback(async () => {
                 <div className="text-center text-white max-w-2xl px-4">
                   <h1 className="text-4xl font-bold mb-4">Start Learning Today</h1>
                   <p className="text-xl mb-6">Unlock your potential with our expert-led courses</p>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium" onClick={() => {router.push("/course")}}>
                     Browse Courses
                   </button>
                 </div>
@@ -196,6 +264,8 @@ const fetchCourses = useCallback(async () => {
       </div>
 
       {/* Purchased Courses (Horizontal Scroll) */}
+  {
+    purchasedCourses.length > 0 && (
       <div className="max-w-7xl mx-auto px-4 py-12 relative">
         <h2 className="text-2xl font-bold mb-6">Continue Learning</h2>
         <div className="relative">
@@ -218,25 +288,28 @@ const fetchCourses = useCallback(async () => {
             ref={scrollContainerRef}
             className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
           >
-            {purchasedCourses.map((course) => (
-              <div key={course.id} className="flex-shrink-0 w-50">
-                <Card
-                  id={course?.id}
-                  imageUrl={course.imageUrl}
-                  title={course.title}
-                  instructor={course.instructor}
-                  price={course.price}
-                  rating={4.5}
-                  totalRatings={0}
-                  discountedPrice={course.price}
-                  isWishlisted={false}
-                  onWishlistToggle={() => {}}
-                />
-              </div>
-            ))}
+
+             { purchasedCourses.map((course) => (
+                <div key={course.id} className="flex-shrink-0 w-50">
+                  <Card
+                    id={course?.id}
+                    imageUrl={course.imageUrl}
+                    title={course.title}
+                    instructor={course.instructor}
+                    price={course.price}
+                    rating={4.5}
+                    totalRatings={0}
+                    discountedPrice={course.price}
+                    isWishlisted={false}
+                    onWishlistToggle={() => {}}
+                    isPurchased={true}
+                  />
+                </div>
+              ))}
           </div>
         </div>
       </div>
+    )}
 
       {/* Courses Section */}
       <div className="max-w-7xl mx-auto px-4 py-12 bg-white">
@@ -317,8 +390,9 @@ const fetchCourses = useCallback(async () => {
                       rating={course.rating || 0}
                       totalRatings={course.totalRatings  || 0}
                       discountedPrice={course.price}
-                      isWishlisted={false}
+                      isWishlisted={isWishlisted(course.id) || false}
                       onWishlistToggle={() => {}}
+                      isPurchased={isPurchased(course?.id)}
                     />
                   </div>
                 ))

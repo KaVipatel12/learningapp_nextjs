@@ -5,6 +5,8 @@ import Card from "@/components/Card";
 import { FilterBar } from "@/components/CourseSearchPage/FilterBar";
 import { SearchSection } from "@/components/CourseSearchPage/SearchSection";
 import UserNav from "@/components/Navbar/UserNav";
+import { useUser } from "@/context/userContext";
+import { WishList } from "../page";
 
 interface Course {
   id: string;
@@ -76,6 +78,8 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCourses, setTotalCourses] = useState(0);
+  const [userWishlist , setUserWishList] = useState<WishList[]>([])
+  const {purchasedCoursesIds , user , userLoading} = useUser(); 
 
   const totalPages = Math.max(1, Math.ceil(totalCourses / parseInt(filters.limit)));
 
@@ -130,6 +134,21 @@ export default function CoursesPage() {
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
+
+  useEffect(() => {
+    if (user?.wishlist) {
+    const userWishlist = user.wishlist.map(id => id);
+    setUserWishList(userWishlist); 
+  }
+}, [user, userLoading]);
+  
+  const isPurchased = (courseId : string) => {
+    return purchasedCoursesIds.some(id  => id.toString() === courseId)
+  }
+
+  const isWishlisted = (courseId : string) => {
+    return userWishlist.some(id  => id.toString() === courseId)
+  }
 
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page: page.toString() }));
@@ -186,7 +205,8 @@ export default function CoursesPage() {
                 rating={course.rating || 0}
                 totalRatings={course.totalRatings || 0}
                 discountedPrice={course.discountedPrice}
-                isWishlisted={false}
+                isWishlisted={isWishlisted(course.id)}
+                isPurchased={isPurchased(course.id)}
                 onWishlistToggle={() => {}}
                 />
             ))}

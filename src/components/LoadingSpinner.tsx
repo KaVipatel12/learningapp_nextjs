@@ -1,5 +1,4 @@
 import React from 'react';
-import { FiLoader } from 'react-icons/fi';
 
 interface LoadingSpinnerProps {
   height?: string; 
@@ -7,9 +6,9 @@ interface LoadingSpinnerProps {
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ height = 'min-h-screen' }) => {
   return (
-    <div className={`${height} flex items-center justify-center`}>
-      <FiLoader className="animate-spin text-2xl" />
-    </div>
+          <div className={`flex justify-center items-center h-64 ${height}`}>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
   );
 };
 

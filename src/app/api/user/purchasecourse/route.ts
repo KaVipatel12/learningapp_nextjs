@@ -1,5 +1,6 @@
 import { AuthContext, authUserMiddleware } from '@/middleware/authUserMiddleware';
 import { User } from '@/models/models';
+import { Course } from '@/models/models'; // Add Course model import
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 
@@ -76,6 +77,13 @@ export const PUT = async (req: NextRequest) => {
         }
       },
       { new: true }
+    );
+
+    // Increment totalEnrollment for each purchased course
+    const courseIds = newCourses.map(c => new mongoose.Types.ObjectId(c.courseId));
+    await Course.updateMany(
+      { _id: { $in: courseIds } },
+      { $inc: { totalEnrollment: 1 } }
     );
 
     return NextResponse.json({

@@ -24,6 +24,9 @@ export async function GET(req : NextRequest, {params} : {params : {chapterId: st
       if(!chapters){
         return NextResponse.json({msg : "Chapters not found"}, {status : 404})
       }
+      console.log("chapters" , chapters)
+      console.log("courseAccess" , courseAccess)
+      console.log("courseModify" , courseModify)
       return NextResponse.json({msg : chapters ,  courseAccess , courseModify}, {status : 200})
     }catch(err) {
       console.log(err)

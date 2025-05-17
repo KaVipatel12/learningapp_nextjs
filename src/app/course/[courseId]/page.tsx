@@ -81,13 +81,16 @@ const CourseDetailPage = () => {
 
   // Check permissions to delete and update page
   useEffect(() => {
-    if (user && user.purchaseCourse) {
-      const purchased = user.purchaseCourse.some(
-        (purchase) => purchase.courseId?.toString() === courseId
-      );
-      setIsCoursePurchased(purchased);
-    }
-    
+  if (user && user.purchaseCourse) {
+    const purchased = user.purchaseCourse.some(purchase => {
+      // Handle both cases where courseId is a string or populated object
+      const purchaseCourseId = typeof purchase.courseId === 'object' 
+        ? purchase.courseId._id 
+        : purchase.courseId;
+      return purchaseCourseId === courseId;
+    });
+    setIsCoursePurchased(purchased);
+  }
     // Check if educator owns this course
     if (educator && educator.courses) {
       const owned = educator.courses.some(
