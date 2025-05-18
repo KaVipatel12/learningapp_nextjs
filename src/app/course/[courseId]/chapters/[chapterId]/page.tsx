@@ -20,6 +20,9 @@ interface IVideo {
   duration: number;
   _id: string;
 }
+interface Course{
+  educatorName : string; 
+}
 
 interface IChapter {
   _id: string;
@@ -27,7 +30,7 @@ interface IChapter {
   description: string;
   duration: number;
   videos: IVideo[];
-  courseId: string;
+  courseId: string | Course;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -41,8 +44,12 @@ const ChapterPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [chapter, setChapter] = useState<IChapter | null>(null);
   const [loading, setLoading] = useState(true);
+  const [educatorName, setEducatorName] = useState("");
+  const [students, setStudents] = useState(0);
   const [ isOwner , setIsOwner] = useState(false)
+  const [ averageRating , setAverageRating ] = useState(0)
   const {showNotification} = useNotification(); 
+
   const fetchChapter = useCallback(async () => {
     try {
       const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}`); 
@@ -55,6 +62,8 @@ const ChapterPage = () => {
       if(!data.courseAccess){
         router.back()
       }
+      setEducatorName(data.msg.courseId.educatorName);
+      setStudents(data.msg.courseId.totalEnrollment);
       setChapter(data.msg);
 
       setIsOwner(data.courseModify)
@@ -71,23 +80,6 @@ const ChapterPage = () => {
     fetchChapter(); 
   }, [fetchChapter]);
 
-  // Hardcoded reviews data
-  const reviews = [
-    {
-      id: 1,
-      user: "John Smith",
-      rating: 5,
-      comment: "Excellent chapter! The instructor explains complex concepts very clearly.",
-      date: "2 weeks ago"
-    },
-    {
-      id: 2,
-      user: "Alice Johnson",
-      rating: 4,
-      comment: "Very informative, but some sections could use more examples.",
-      date: "1 month ago"
-    }
-  ];
 
   const handleDelete = async () => {
     console.log("toogle delete"); 
@@ -103,6 +95,25 @@ const ChapterPage = () => {
     }
   }
 
+  const fetchReview = useCallback(async () => {
+  try {
+    const response = await fetch(`/api/user/review//${courseId}/averagerating`)
+
+    if (!response.ok) {
+      console.log('Failed to submit rating');
+    }
+
+    const data = await response.json(); 
+    console.log(data)
+    setAverageRating(data.averageRating || 0);
+  } catch{
+    console.log("Error in fetching the error")
+  } 
+  }, [courseId])
+
+  useEffect(() => {
+    fetchReview()
+  }, [fetchReview])
 
   if (loading) {
     return <PageLoading />;
@@ -166,16 +177,16 @@ const ChapterPage = () => {
           {/* Chapter Description */}
           <CourseDescription
             title={chapter.title}
-            instructor="Instructor Name" // Hardcoded for now
+            instructor= {educatorName} // Hardcoded for now
             description={chapter.description}
-            rating={4.5} // Hardcoded for now
-            students={120} // Hardcoded for now
+            rating={averageRating} // Hardcoded for now
+            students={students} // Hardcoded for now
             duration={`${chapter.duration} hours`}
             level="Intermediate" // Hardcoded for now
           />
 
           {/* Reviews Section */}
-          <ReviewsSection reviews={reviews} />
+          <ReviewsSection />
         </div>
 
         {/* Sidebar */}

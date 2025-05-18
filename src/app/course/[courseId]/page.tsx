@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Button, Card, Col, Row, Tabs, Tag, Typography, Divider, Rate 
 } from 'antd';
@@ -26,6 +26,7 @@ interface ICourse {
   duration: number;
   totalSections: number;
   totalLectures: number;
+  totalEnrollment: number;
   educatorName: string;
   isPublished: boolean;
   prerequisites: string;
@@ -44,6 +45,8 @@ const CourseDetailPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const [averageRating , setAverageRating] = useState(0)
+  const [totalRatings , setTotalRatings] = useState(0)
   const { showNotification } = useNotification(); 
   
   const { user } = useUser();
@@ -135,6 +138,28 @@ const CourseDetailPage = () => {
     }
   };
 
+  // fetching the average review 
+    const fetchReview = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/user/review//${courseId}/averagerating`)
+  
+      if (!response.ok) {
+        console.log('Failed to submit rating');
+      }
+  
+      const data = await response.json(); 
+      console.log(data)
+      setAverageRating(data.averageRating || 0);
+      setTotalRatings(data.totalRatings || 0);
+    } catch{
+      console.log("Error in fetching the error")
+    } 
+    }, [courseId])
+  
+    useEffect(() => {
+      fetchReview()
+    }, [fetchReview])
+
   const handleUpdateCourse = () => {
     router.push(`/educator/editcourse/${courseId}`);
   };
@@ -155,6 +180,7 @@ const CourseDetailPage = () => {
     };
     return <Tag color={levelMap[level.toLowerCase()] || 'blue'}>{level}</Tag>;
   };
+
 
   // Custom Modal Component
   const CustomModal = ({ 
@@ -273,8 +299,8 @@ const CourseDetailPage = () => {
             <div style={{ marginBottom: '16px' }}>
               <Tag color="blue">{course.category}</Tag>
               {renderLevelTag(course.level)}
-              <Rate disabled value={4.5} allowHalf style={{ marginLeft: '16px' }} />
-              <Text type="secondary" style={{ marginLeft: '8px' }}>(124 reviews)</Text>
+              <Rate disabled value={averageRating} allowHalf style={{ marginLeft: '16px' }} />
+              <Text type="secondary" style={{ marginLeft: '8px' }}>( {totalRatings} users )</Text>
             </div>
 
             <Card
@@ -386,6 +412,9 @@ const CourseDetailPage = () => {
                 </Paragraph>
                 <Paragraph>
                   <Text strong>Educator:</Text> {course.educatorName}
+                </Paragraph>
+                <Paragraph>
+                  <Text strong>Total Enrollment:</Text> {course.totalEnrollment}
                 </Paragraph>
               </div>
             </Card>

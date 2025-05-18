@@ -10,7 +10,7 @@ interface CustomJwtPayload extends JwtPayload {
   role: string;
 }
 
-interface CourseAccessContext {
+export interface CourseAccessContext {
   user?: InstanceType<typeof Educator> | InstanceType<typeof User>;
   courseAccess: boolean;
   courseModify: boolean;

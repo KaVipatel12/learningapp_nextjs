@@ -9,25 +9,6 @@ interface IVideo {
   duration: number;
 }
 
-const VideoSchema = new mongoose.Schema<IVideo>({
-  title: { 
-    type: String, 
-    required: [true, 'Video title is required'] 
-  },
-  videoUrl: { 
-    type: String, 
-    required: [true, 'Video URL is required'] 
-  },
-  videoPublicId: { 
-    type: String, 
-    required: [true, 'Video public ID is required'] 
-  },
-  duration: { 
-    type: Number, 
-    default: 0 
-  }
-});
-
 // Chapter interface and schema
 export interface IChapter extends mongoose.Document {
   title: string;
@@ -36,38 +17,6 @@ export interface IChapter extends mongoose.Document {
   videos: IVideo[];
   courseId: mongoose.Types.ObjectId;
 }
-
-const ChapterSchema = new mongoose.Schema<IChapter>({
-  title: { 
-    type: String, 
-    required: [true, 'Chapter title is required'] 
-  },
-  description: { 
-    type: String, 
-    required: [true, 'Chapter description is required'] 
-  },
-  duration: { 
-    type: Number, 
-    default: 0 
-  },
-  videos: { 
-    type: [VideoSchema],
-    required: [true, 'Videos are required'],
-    validate: {
-      validator: function(videos: IVideo[]) {
-        return videos.length > 0;
-      },
-      message: 'At least one video is required per chapter'
-    }
-  },
-  courseId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Course',
-    required: [true, 'Course ID is required'] 
-  }
-}, {
-  timestamps: true
-});
 
 export interface ICourse extends Document {
     _id: string;
@@ -124,7 +73,28 @@ export interface ICourse extends Document {
     comment: mongoose.Types.ObjectId[];
     purchaseCourse: IPurchaseCourse[];
   }
-  
+
+  export interface IEducator extends Document {
+    _id: string;
+    username: string;
+    mobile: string;
+    email: string;
+    password: string;
+    role: string;
+    date?: string;
+    courses: ICourse[]; 
+    createdAt: string;
+    updatedAt: string;
+  }
+
+// Define the Review interface
+export interface IReview extends Document {
+    courseId: mongoose.Schema.Types.ObjectId;
+    userId: mongoose.Schema.Types.ObjectId;
+    rating: number;
+}
+
+// Add an index for faster querying
   // Define schema
   const userSchema: Schema<IUser> = new Schema({
     username: { type: String, required: true },
@@ -240,19 +210,56 @@ const CourseSchema = new mongoose.Schema<ICourse>({
   timestamps: true
 });
 
-
-export interface IEducator extends Document {
-    _id: string;
-    username: string;
-    mobile: string;
-    email: string;
-    password: string;
-    role: string;
-    date?: string;
-    courses: ICourse[]; 
-    createdAt: string;
-    updatedAt: string;
+const VideoSchema = new mongoose.Schema<IVideo>({
+  title: { 
+    type: String, 
+    required: [true, 'Video title is required'] 
+  },
+  videoUrl: { 
+    type: String, 
+    required: [true, 'Video URL is required'] 
+  },
+  videoPublicId: { 
+    type: String, 
+    required: [true, 'Video public ID is required'] 
+  },
+  duration: { 
+    type: Number, 
+    default: 0 
   }
+});
+
+const ChapterSchema = new mongoose.Schema<IChapter>({
+  title: { 
+    type: String, 
+    required: [true, 'Chapter title is required'] 
+  },
+  description: { 
+    type: String, 
+    required: [true, 'Chapter description is required'] 
+  },
+  duration: { 
+    type: Number, 
+    default: 0 
+  },
+  videos: { 
+    type: [VideoSchema],
+    required: [true, 'Videos are required'],
+    validate: {
+      validator: function(videos: IVideo[]) {
+        return videos.length > 0;
+      },
+      message: 'At least one video is required per chapter'
+    }
+  },
+  courseId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Course',
+    required: [true, 'Course ID is required'] 
+  }
+}, {
+  timestamps: true
+});
 
 const EducatorSchema = new mongoose.Schema<IEducator>({
   username: { type: String, required: true },
@@ -275,8 +282,32 @@ const EducatorSchema = new mongoose.Schema<IEducator>({
   timestamps: true
 });
 
+
+const ReviewSchema = new mongoose.Schema<IReview>(
+    {
+        courseId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Course",
+            required: true,
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        rating: {
+            type: Number,
+            required: true,
+            min: 1,
+            max: 5,
+        },
+    }
+);
+ReviewSchema.index({ courseId: 1, userId: 1 }, { unique: true });
+
 // Create and export models using the Next.js pattern to prevent overwrite errors
 export const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 export const Chapter = mongoose.models.Chapter || mongoose.model<IChapter>('Chapter', ChapterSchema);
 export const Course = mongoose.models.Course || mongoose.model<ICourse>('Course', CourseSchema);
 export const Educator = mongoose.models.Educator || mongoose.model<IEducator>('Educator', EducatorSchema);
+export const Review = mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
