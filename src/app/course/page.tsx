@@ -6,21 +6,8 @@ import { FilterBar } from "@/components/CourseSearchPage/FilterBar";
 import { SearchSection } from "@/components/CourseSearchPage/SearchSection";
 import UserNav from "@/components/Navbar/UserNav";
 import { useUser } from "@/context/userContext";
-import { WishList } from "../page";
+import { Course, WishList } from "../page";
 
-interface Course {
-  id: string;
-  _id?: string;
-  imageUrl: string;
-  title: string;
-  instructor: string;
-  price: number;
-  rating?: number;
-  totalRatings?: number;
-  educatorName: string;
-  progress?: number;
-  discountedPrice?: number;
-}
 
 interface PaginationProps {
   currentPage: number;
@@ -108,7 +95,7 @@ export default function CoursesPage() {
           title: course.title,
           instructor: course.educatorName || "Unknown Instructor",
           price: course.price,
-          rating: course.rating || 4.5,
+          rating: course.averageRating || 0,
           totalRatings: course.totalRatings || 0,
           discountedPrice: course.discountedPrice || course.price,
         }));

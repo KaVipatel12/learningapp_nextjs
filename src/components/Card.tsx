@@ -16,6 +16,7 @@ interface CardProps {
   discountedPrice?: number;
   isWishlisted?: boolean;
   isPurchased?: boolean; // New prop
+  showRatings ?: boolean; 
   onWishlistToggle?: (id: string) => Promise<boolean> | void;
 }
 
@@ -30,6 +31,7 @@ export default function Card({
   discountedPrice,
   isWishlisted = false,
   isPurchased = false, // Default to false
+  showRatings = true,
   onWishlistToggle,
 }: CardProps) {
   const [isClicked, setIsClicked] = useState(false);
@@ -141,14 +143,16 @@ export default function Card({
 
         <p className="text-xs text-gray-500 mb-2">By {instructor}</p>
 
+       {
+        showRatings &&
         <div className="flex items-center space-x-1 mb-2">
           <Star size={12} className="text-yellow-400 fill-yellow-400" />
           <span className="text-xs font-medium text-gray-900">
             {rating.toFixed(1)}
           </span>
-          <span className="text-xs text-gray-500">({totalRatings.toLocaleString()})</span>
+          <span className="text-xs text-gray-500">({totalRatings.toLocaleString()} reviews)</span>
         </div>
-
+}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <div className="flex items-center space-x-1">
             {discountedPrice && (discountedPrice - price !== 0 ) ? (

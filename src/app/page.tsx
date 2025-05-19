@@ -8,7 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
 
-interface Course {
+export interface Course {
   id: string;
   _id?: string;
   imageUrl: string;
@@ -19,6 +19,7 @@ interface Course {
   progress?: number;
   discountedPrice?: number;
   rating?: number;
+  averageRating? : number;
   totalRatings?: number;
   educatorName: string;
 }
@@ -34,6 +35,8 @@ export interface PopulatedCourse {
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
+  averageRating: number;
+  totalRatings: number;
   // Include other fields as needed
 }
 
@@ -105,6 +108,7 @@ useEffect(() => {
           price: course.price || 0,
           progress: 0,
           educatorName: course.educatorName || '',
+          rating : course.averageRating ,
           category: course.category || item.category,
         };
       } 
@@ -160,8 +164,8 @@ useEffect(() => {
           title: course.title,
           instructor: course.educatorName || 'Unknown Instructor',
           price: course.price,
-          rating: 4.5,
-          totalRatings: 0,
+          rating : course.averageRating ,
+          totalRatings : course.totalRatings,
           educatorName: course.educatorName || ''
         }));
 
@@ -303,6 +307,7 @@ useEffect(() => {
                     isWishlisted={false}
                     onWishlistToggle={() => {}}
                     isPurchased={true}
+                    showRatings={false}
                   />
                 </div>
               ))}

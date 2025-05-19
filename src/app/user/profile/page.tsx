@@ -8,7 +8,7 @@ import { PageLoading } from '@/components/PageLoading';
 import UserNav from '@/components/Navbar/UserNav';
 
 export default function UserProfile() {
-  const {loading } = useUser();
+  const {userLoading } = useUser();
   const [pageLoading, setPageLoading ] = useState(false)
   const user = {
     name: "Alex Johnson",
@@ -29,52 +29,6 @@ export default function UserProfile() {
   useEffect(() => {
       setPageLoading(loading)
   }, [loading])
-
-  // Hardcoded enrolled courses
-  const enrolledCourses = [
-    {
-      id: "1",
-      imageUrl: "/course1.jpg",
-      title: "Advanced React Patterns",
-      instructor: "Sarah Miller",
-      rating: 4.8,
-      totalRatings: 1245,
-      price: 99.99,
-      discountedPrice: 79.99,
-      isWishlisted: false
-    },
-    {
-      id: "2",
-      imageUrl: "/course2.jpg",
-      title: "UI/UX Design Fundamentals",
-      instructor: "David Chen",
-      rating: 4.6,
-      totalRatings: 892,
-      price: 89.99,
-      isWishlisted: true
-    },
-    {
-      id: "3",
-      imageUrl: "/course3.jpg",
-      title: "Node.js Backend Mastery",
-      instructor: "Emma Wilson",
-      rating: 4.7,
-      totalRatings: 1567,
-      price: 109.99,
-      discountedPrice: 89.99,
-      isWishlisted: false
-    },
-    {
-      id: "4",
-      imageUrl: "/course4.jpg",
-      title: "JavaScript Performance",
-      instructor: "Mike Taylor",
-      rating: 4.9,
-      totalRatings: 2103,
-      price: 79.99,
-      isWishlisted: true
-    }
-  ];
 
   const toggleWishlist = (id: string) => {
     console.log("Toggling wishlist for course:", id);

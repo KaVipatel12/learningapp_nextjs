@@ -49,16 +49,16 @@ export interface ICourse extends Document {
     date?: string;
     imageUrl? : string, 
     imagePublicId:  string, 
-  }
+}
   
   // Define a type for the purchaseCourse subdocument
-  interface IPurchaseCourse {
+interface IPurchaseCourse {
     courseId: mongoose.Types.ObjectId;
     purchaseDate?: Date;
-  }
+}
   
   // Define the main User interface
-  export interface IUser extends Document {
+export interface IUser extends Document {
     _id : string;
     username: string;
     mobile: string;
@@ -72,9 +72,19 @@ export interface ICourse extends Document {
     category: string[];
     comment: mongoose.Types.ObjectId[];
     purchaseCourse: IPurchaseCourse[];
-  }
+}
 
-  export interface IEducator extends Document {
+export interface IComment extends Document {
+  comment: string;
+  userId?: Types.ObjectId;
+  chapterId: Types.ObjectId;
+  courseId: Types.ObjectId;
+  educatorId?: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IEducator extends Document {
     _id: string;
     username: string;
     mobile: string;
@@ -85,7 +95,8 @@ export interface ICourse extends Document {
     courses: ICourse[]; 
     createdAt: string;
     updatedAt: string;
-  }
+    comment : Types.ObjectId[]; 
+}
 
 // Define the Review interface
 export interface IReview extends Document {
@@ -278,10 +289,49 @@ const EducatorSchema = new mongoose.Schema<IEducator>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",
   }],
+  comment: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Comment",
+  },
+],
 }, {
   timestamps: true
 });
 
+const commentSchema = new mongoose.Schema<IComment>({
+  userId : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "User",
+    req : true
+  },
+  chapterId : {
+    type : mongoose.Schema.Types.ObjectId, 
+    ref : "Chapter", 
+    req : true
+  },
+  courseId : {
+    type : mongoose.Schema.Types.ObjectId, 
+    ref : "Course",
+    req : true
+  },
+  educatorId : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "User"
+  },
+  comment : {
+    type : String, 
+    req : true
+  },
+  createdAt : {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt : {
+    type: Date,
+    default: Date.now,
+  }
+})
 
 const ReviewSchema = new mongoose.Schema<IReview>(
     {
@@ -301,8 +351,8 @@ const ReviewSchema = new mongoose.Schema<IReview>(
             min: 1,
             max: 5,
         },
-    }
-);
+});
+
 ReviewSchema.index({ courseId: 1, userId: 1 }, { unique: true });
 
 // Create and export models using the Next.js pattern to prevent overwrite errors
@@ -311,3 +361,4 @@ export const Chapter = mongoose.models.Chapter || mongoose.model<IChapter>('Chap
 export const Course = mongoose.models.Course || mongoose.model<ICourse>('Course', CourseSchema);
 export const Educator = mongoose.models.Educator || mongoose.model<IEducator>('Educator', EducatorSchema);
 export const Review = mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
+export const Comment = mongoose.models.Comment || mongoose.model<IComment>('Comment', commentSchema);

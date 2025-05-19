@@ -1,79 +1,70 @@
-// app/api/courses/route.ts
-import { connect } from '@/db/dbConfig';
-import { Course } from '@/models/models';
-import { NextResponse } from 'next/server';
-
-interface QueryParams {
-  page?: string;
-  limit?: string;
-  courseName?: string;
-  educatorName?: string;
-  category?: string;
-  price?: string;
+// Interfaces
+interface ICourse {
+  _id: mongoose.Types.ObjectId;
+  title: string;
+  description: string;
+  // Add other course properties as needed
 }
 
-// Define a type for our query filters
-interface CourseQueryFilters {
-  title?: RegExp;
-  educatorName?: RegExp;
-  category?: RegExp;
-  price?: { $lte: number };
+interface ICourseWithReviews extends ICourse {
+  averageRating: number;
+  totalRatings: number;
 }
 
-export async function GET(request: Request) {
+interface IReviewStats {
+  averageRating: number;
+  totalRatings: number;
+}
+
+// For the course fetch endpoint
+import { connect } from "@/db/dbConfig";
+import { Course, Review } from "@/models/models";
+import {NextResponse } from "next/server";
+import mongoose from "mongoose";
+
+// Get all courses with review statistics
+export async function GET() {
+  await connect();
+  
   try {
-    await connect();
-    console.log("Fetching course")
-    const { searchParams } = new URL(request.url);
-    const params: QueryParams = Object.fromEntries(searchParams.entries());
-
-    // Parse query parameters with defaults
-    const page = parseInt(params.page || '1');
-    const limit = parseInt(params.limit || '4');
-    const skip = (page - 1) * limit;
-
-    // Build the typed query object
-    const query: CourseQueryFilters = {};
-
-    if (params.courseName) {
-      query.title = new RegExp(params.courseName, 'i');
-    }
-    if (params.educatorName) {
-      query.educatorName = new RegExp(params.educatorName, 'i');
-    }
-    if (params.category) {
-      query.category = new RegExp(params.category, 'i');
+    // Fetch all courses
+    const courses = await Course.find({});
+    
+    // Aggregate review statistics for all courses
+    const reviewStats = await Review.aggregate([
+      {
+        $group: {
+          _id: "$courseId",
+          averageRating: { $avg: "$rating" },
+          totalRatings: { $sum: 1 }
+        }
       }
-    if (params.price) {
-      query.price = { $lte: parseInt(params.price) };
-    }
-
-    // Promise.all for parallel execution
-    const [totalCourses, courseData] = await Promise.all([
-      Course.countDocuments(query),
-      Course.find(query)
-        .skip(skip)
-        .limit(limit)
-        .lean()
     ]);
-
-    if (!courseData.length) {
-      return NextResponse.json(
-        { msg: "No courses found", totalCourses: 0, currentPage: page },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      msg: courseData,
-      totalCourses,
-      currentPage: page
+    
+    // Create a map for easy lookup
+    const reviewStatsMap = new Map<string, IReviewStats>();
+    reviewStats.forEach(stat => {
+      reviewStatsMap.set(stat._id.toString(), {
+        averageRating: stat.averageRating,
+        totalRatings: stat.totalRatings
+      });
     });
-
+    
+    // Combine courses with their review stats
+    const coursesWithReviews: ICourseWithReviews[] = courses.map(course => {
+      const stats = reviewStatsMap.get(course._id.toString());
+      return {
+        ...course.toObject(),
+        averageRating: stats ? Number(stats.averageRating.toFixed(1)) : 0,
+        totalRatings: stats?.totalRatings || 0
+      };
+    });
+    
+    return NextResponse.json({msg : coursesWithReviews}, {status : 200});
   } catch (error) {
-    console.error('Error fetching courses:', error);
+    console.error("Error fetching courses with reviews:", error);
     return NextResponse.json(
-      { msg: "Server error", error: error instanceof Error ? error.message : 'Unknown error' },
+      { error: "Failed to fetch courses with review data" },
       { status: 500 }
     );
   }

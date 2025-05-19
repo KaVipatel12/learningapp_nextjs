@@ -17,6 +17,7 @@ interface Course {
   discountedPrice?: number;
   rating?: number;
   totalRatings?: number;
+  averageRating? : number;
 }
 
 export default function WishlistPage() {
@@ -33,7 +34,7 @@ export default function WishlistPage() {
       const response = await fetch('/api/user/wishlist');
       const data = await response.json();
       if (response.ok) {
-        setCourses(data.msg.wishlist);
+        setCourses(data.msg);
       } else {
         showNotification(data.msg || 'Failed to load wishlist', 'error');
       }
@@ -113,7 +114,7 @@ export default function WishlistPage() {
                 instructor={course.instructor}
                 price={course.price}
                 discountedPrice={course.discountedPrice}
-                rating={course.rating || 4.5}
+                rating={course.averageRating || 0}
                 totalRatings={course.totalRatings || 0}
                 isWishlisted={true}
                 onWishlistToggle={() => {}}

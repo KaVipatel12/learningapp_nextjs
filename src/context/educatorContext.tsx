@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 export interface EducatorData {
-  _id: string;
+  _id? : string;
   username: string;
   mobile: string;
   email: string;
