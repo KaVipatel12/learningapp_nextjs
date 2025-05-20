@@ -17,6 +17,7 @@ interface CardProps {
   isWishlisted?: boolean;
   isPurchased?: boolean; // New prop
   showRatings ?: boolean; 
+  showWishlist ?: boolean; 
   onWishlistToggle?: (id: string) => Promise<boolean> | void;
 }
 
@@ -32,6 +33,7 @@ export default function Card({
   isWishlisted = false,
   isPurchased = false, // Default to false
   showRatings = true,
+  showWishlist = true,
   onWishlistToggle,
 }: CardProps) {
   const [isClicked, setIsClicked] = useState(false);
@@ -100,6 +102,9 @@ export default function Card({
         )}
         
         {/* Enhanced Wishlist Button */}
+
+        { showWishlist &&
+        
         <button
           onClick={handleWishlistClick}
           onMouseEnter={() => setIsHovered(true)}
@@ -131,12 +136,12 @@ export default function Card({
             }`}
           />
         </button>
+      }
       </div>
-
       {/* Rest of the card content */}
       <div className="p-3">
         <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 mb-1">
-          <Link href={`/courses/${id}`} className="hover:text-blue-600 transition-colors">
+          <Link href={`/course/${id}`} className="hover:text-blue-600 transition-colors">
             {title}
           </Link>
         </h3>

@@ -5,23 +5,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import UserNav from '@/components/Navbar/UserNav';
 import Card from '@/components/Card';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useUser } from '@/context/userContext';
+import { Course, useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
 
-export interface Course {
+
+interface Category {
   id: string;
-  _id?: string;
-  imageUrl: string;
-  title: string;
-  instructor: string;
-  price: number;
-  category?: string;
-  progress?: number;
-  discountedPrice?: number;
-  rating?: number;
-  averageRating? : number;
-  totalRatings?: number;
-  educatorName: string;
+  name: string;
 }
 
 export interface PopulatedCourse {
@@ -40,11 +30,6 @@ export interface PopulatedCourse {
   // Include other fields as needed
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 export interface WishList {
   id: string;
 }
@@ -57,8 +42,8 @@ interface Feature {
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
-  const { user, userLoading, purchasedCoursesIds } = useUser(); 
-  const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
+  const { user, userLoading, purchasedCoursesIds , purchasedCourses } = useUser(); 
+  const [purchasedCourse, setPurchasedCourse] = useState<Course[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
   const coursesContainerRef = useRef<HTMLDivElement>(null);
@@ -85,58 +70,17 @@ const HomePage = () => {
     { id: 'science', name: 'Science' },
   ];
 
-  // Fetching the purchased course by the user
+  // Receiving the purchased courses and wishlist. 
 useEffect(() => {
   if (userLoading) return;
-
-  if (!userLoading && user && Array.isArray(user.purchaseCourse)) {
-    // Transform the data from the API format to the Course format
-    const formattedPurchasedCourses: Course[] = [];
-    user.purchaseCourse.forEach(item => {
-      if (!item || !item.courseId) return;
-
-      let courseData: Course;
-
-      // Handle case when courseId is an object (populated)
-      if (typeof item.courseId === 'object' && item.courseId !== null) {
-        const course = item.courseId as PopulatedCourse;
-        courseData = {
-          id: course._id,
-          imageUrl: course.imageUrl || '/default-course.jpg',
-          title: course.title || item.title,
-          instructor: course.educatorName || 'Unknown Instructor',
-          price: course.price || 0,
-          progress: 0,
-          educatorName: course.educatorName || '',
-          rating : course.averageRating ,
-          category: course.category || item.category,
-        };
-      } 
-      // Handle case when courseId is a string (not populated)
-      else {
-        courseData = {
-          id: item.courseId as string,
-          imageUrl: '/default-course.jpg',
-          title: item.title,
-          instructor: 'Unknown Instructor',
-          price: 0,
-          progress: 0,
-          educatorName: '',
-          category: item.category,
-        };
-      }
-
-      formattedPurchasedCourses.push(courseData);
-    });
-
-    setPurchasedCourses(formattedPurchasedCourses);
+  if(purchasedCourses.length > 0){
+    setPurchasedCourse(purchasedCourses); 
   }
-
   if (user?.wishlist) {
     const userWishlist = user.wishlist.map(id => id);
     setUserWishList(userWishlist); 
   }
-}, [user, userLoading]);
+}, [user, userLoading, purchasedCourses]);
 
   const fetchCourses = useCallback(async () => {
     setCourseLoading(true);
@@ -269,7 +213,7 @@ useEffect(() => {
 
       {/* Purchased Courses (Horizontal Scroll) */}
   {
-    purchasedCourses.length > 0 && (
+    purchasedCourse.length > 0 && (
       <div className="max-w-7xl mx-auto px-4 py-12 relative">
         <h2 className="text-2xl font-bold mb-6">Continue Learning</h2>
         <div className="relative">
@@ -293,7 +237,7 @@ useEffect(() => {
             className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
           >
 
-             { purchasedCourses.map((course) => (
+             { purchasedCourse.map((course) => (
                 <div key={course.id} className="flex-shrink-0 w-50">
                   <Card
                     id={course?.id}
@@ -307,6 +251,7 @@ useEffect(() => {
                     isWishlisted={false}
                     onWishlistToggle={() => {}}
                     isPurchased={true}
+                    showWishlist={false}
                     showRatings={false}
                   />
                 </div>

@@ -93,6 +93,7 @@ export interface IEducator extends Document {
     role: string;
     date?: string;
     courses: ICourse[]; 
+    teachingFocus: string[]; 
     createdAt: string;
     updatedAt: string;
     comment : Types.ObjectId[]; 
@@ -288,6 +289,9 @@ const EducatorSchema = new mongoose.Schema<IEducator>({
   courses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",
+  }],
+  teachingFocus : [{
+    type : String
   }],
   comment: [
   {

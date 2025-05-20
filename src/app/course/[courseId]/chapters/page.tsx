@@ -58,17 +58,16 @@ const ChaptersPage = () => {
   }, [fetchChapters]);
 
   useEffect(() => {
-  if (user && user.purchaseCourse) {
-    const purchased = user.purchaseCourse.some(purchase => {
-      // Handle both cases where courseId is a string or populated object
-      const purchaseCourseId = typeof purchase.courseId === 'object' 
-        ? purchase.courseId._id 
-        : purchase.courseId;
-      return purchaseCourseId === courseId;
-    });
-    setIsCoursePurchased(purchased);
-  }
-    
+    if (user && user.purchaseCourse) {
+      const purchased = user.purchaseCourse.some(purchase => {
+        const purchaseCourseId = typeof purchase.courseId === 'object' 
+          ? purchase.courseId._id 
+          : purchase.courseId;
+        return purchaseCourseId === courseId;
+      });
+      setIsCoursePurchased(purchased);
+    }
+      
     if (educator && educator.courses) {
       const owned = educator?.courses?.some(id => id?._id.toString() === courseId);
       setIsOwner(owned);
@@ -84,18 +83,17 @@ const ChaptersPage = () => {
   };
 
   const handleDeleteSelected = async () => {
-        console.log("toogle delete"); 
-        const result = await chapterActions.delete(
-          courseId , selectedChapters
-        );
-        
-        if (result.success) {
-          showNotification('Course deleted successfully!', "success");
-          setSelectedChapters([]); 
-          setIsSelectMode(false)
-        } else {
-          showNotification('Error' , "error");
-        }
+    const result = await chapterActions.delete(
+      courseId , selectedChapters
+    );
+    
+    if (result.success) {
+      showNotification('Course deleted successfully!', "success");
+      setSelectedChapters([]); 
+      setIsSelectMode(false)
+    } else {
+      showNotification('Error' , "error");
+    }
   };
 
   const handleChapterClick = (chapter: IChapter) => {
@@ -109,7 +107,6 @@ const ChaptersPage = () => {
       return;
     }
 
-    console.log("pushing")
     router.push(`/course/${courseId}/chapters/${chapter._id}`);
   };
 
@@ -130,58 +127,59 @@ const ChaptersPage = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
- <div className="flex justify-between items-center mb-8">
-  <h1 className="text-3xl font-bold text-gray-800">Course Chapters</h1>
-  
-  <div className="flex items-center gap-4">
-    <button 
-      onClick={() => router.push(`/educator/profile`)}
-      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-1"
-    >
-      <Plus size={16} />
-      Add Chapter
-    </button>
-    
-    {isOwner && (
-      <>
-        {isSelectMode ? (
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handleDeleteSelected}
-              disabled={selectedChapters.length === 0}
-              className={`px-4 py-2 rounded-md transition-colors flex items-center gap-1 ${
-                selectedChapters.length > 0 
-                  ? 'bg-red-600 text-white hover:bg-red-700' 
-                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              <Trash2 size={16} />
-              Delete {selectedChapters.length > 0 ? `(${selectedChapters.length})` : ''}
-            </button>
-            
-            <button 
-              onClick={() => {
-                setSelectedChapters([]);
-                setIsSelectMode(false);
-              }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-purple-900">Course Chapters</h1>
+        
+        <div className="flex items-center gap-4">
           <button 
-            onClick={() => setIsSelectMode(true)}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
+            onClick={() => router.push(`/educator/${courseId}/addchapter`)}
+            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all flex items-center gap-1 shadow-md"
           >
-            Select Chapters
+            <Plus size={16} />
+            Add Chapter
           </button>
-        )}
-      </>
-    )}
-  </div>
-</div>
-      <div className="grid gap-6">
+          
+          {isOwner && (
+            <>
+              {isSelectMode ? (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handleDeleteSelected}
+                    disabled={selectedChapters.length === 0}
+                    className={`px-4 py-2 rounded-lg transition-all flex items-center gap-1 shadow-md ${
+                      selectedChapters.length > 0 
+                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700' 
+                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Trash2 size={16} />
+                    Delete {selectedChapters.length > 0 ? `(${selectedChapters.length})` : ''}
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      setSelectedChapters([]);
+                      setIsSelectMode(false);
+                    }}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all border border-gray-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setIsSelectMode(true)}
+                  className="px-4 py-2 bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition-all border border-purple-300 shadow-sm"
+                >
+                  Select Chapters
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4">
         {chapters.map((chapter) => {
           const totalDuration = chapter.videos.reduce((total, video) => total + video.duration, 0);
           const isSelected = selectedChapters.includes(chapter._id);
@@ -192,27 +190,27 @@ const ChaptersPage = () => {
               onClick={() => handleChapterClick(chapter)}
               className={`p-5 rounded-xl border transition-all relative ${
                 isSelectMode && isSelected
-                  ? "border-purple-500 bg-purple-50"
+                  ? "border-purple-500 bg-purple-50 shadow-md"
                   : (isOwner || isCoursePurchased)
-                    ? "border-purple-200 bg-white hover:shadow-md hover:border-purple-300 cursor-pointer"
-                    : "border-gray-200 bg-gray-50 cursor-not-allowed"
+                    ? "border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:shadow-lg hover:border-purple-300 cursor-pointer"
+                    : "border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 cursor-not-allowed"
               }`}
             >
               {isSelectMode && (
                 <div className={`absolute -left-2 -top-2 w-5 h-5 rounded-full border-2 ${
-                  isSelected ? "bg-purple-500 border-purple-500" : "bg-white border-gray-300"
+                  isSelected ? "bg-purple-500 border-purple-500" : "bg-white border-purple-300"
                 }`}></div>
               )}
               
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    {(!isOwner && !isCoursePurchased) && <Lock className="w-5 h-5 text-red-500" />}
+                  <h2 className="text-xl font-semibold text-purple-900 flex items-center gap-2">
+                    {(!isOwner && !isCoursePurchased) && <Lock className="w-5 h-5 text-pink-600" />}
                     {chapter.title}
                   </h2>
-                  <p className="text-gray-600 mt-1">{chapter.description}</p>
+                  <p className="text-purple-800 mt-1">{chapter.description}</p>
                 </div>
-                <span className="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full" style={{ minWidth: "65px" }}>
+                <span className="text-sm bg-gradient-to-r from-pink-100 to-purple-100 text-purple-800 px-3 py-1 rounded-full shadow-inner" style={{ minWidth: "65px" }}>
                   {totalDuration} min
                 </span>
               </div>

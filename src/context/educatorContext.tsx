@@ -10,6 +10,7 @@ export interface EducatorData {
   password: string;
   role: string;
   date?: string;
+  teachingFocus? : string[];
   courses: Array<{
     _id: string;
     title: string;

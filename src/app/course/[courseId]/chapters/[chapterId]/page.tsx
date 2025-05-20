@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { chapterActions } from '@/utils/ChapterFunctionality';
 import Link from 'next/link';
 import { useNotification } from '@/components/NotificationContext';
+import MoreVideos from '@/components/course/MoreVideos';
 
 interface IVideo {
   title: string;
@@ -193,6 +194,7 @@ const ChapterPage = () => {
         <div className="space-y-6">
           {/* Chat Box */}
           <ChatBox />
+          <MoreVideos/>
         </div>
       </div>
 

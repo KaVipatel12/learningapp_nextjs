@@ -8,6 +8,7 @@ import UserNav from '@/components/Navbar/UserNav';
 import { useEducator} from '@/context/educatorContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import FormattedDate from '@/components/FormattedDate';
 
 export default function EducatorProfile() {
   const { educator, educatorLoading } = useEducator();
@@ -24,6 +25,7 @@ export default function EducatorProfile() {
       email: "",
       phone: "",
       joinDate: "",
+      teachingFocus : [],
       stats: {
         coursesCreated: 0,
         studentsEnrolled: 0,
@@ -39,6 +41,7 @@ export default function EducatorProfile() {
       name: educator.username || "Educator Name",
       email: educator.email || "No email provided",
       phone: educator.mobile || "No phone provided",
+      teachingFocus : educator.teachingFocus || ["Not Provided"],
       joinDate: `Joined ${new Date(educator.date || educator.createdAt || Date.now()).toLocaleDateString()}`,
       stats: {
         coursesCreated: educator.courses?.length || 0,
@@ -159,28 +162,35 @@ export default function EducatorProfile() {
                 <Calendar size={16} className="text-blue-500" />
                 Account Information
               </h3>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">{formattedEducator.joinDate}</p>
-                <p className="text-sm text-gray-600">Last active: Recently</p>
-              </div>
+              <FormattedDate isoString={formattedEducator.joinDate}></FormattedDate>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
               <h3 className="font-medium text-gray-900 mb-3">Teaching Focus</h3>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <p className="text-sm text-gray-600">Quality Education</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <p className="text-sm text-gray-600">Student Success</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                  <p className="text-sm text-gray-600">Practical Skills</p>
-                </div>
-              </div>
+
+              {
+                formattedEducator.teachingFocus.map((focus, key: number) => {
+                  const colors = [
+                    'bg-blue-500', 
+                    'bg-purple-500',
+                    'bg-pink-500',
+                    'bg-indigo-500',
+                    'bg-teal-500'
+                  ];
+                  
+                  // Select color based on index (cycles through the array)
+                  const colorClass = colors[key % colors.length];
+
+                  return (
+                    <div className="space-y-2" key={key}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
+                        <p className="text-sm text-gray-600">{focus}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              }
             </div>
           </div>
 
@@ -197,7 +207,7 @@ export default function EducatorProfile() {
                   </button>
               </div>
             {formattedEducator.courses.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 place-items-center">
                 {formattedEducator.courses.map(course => (
                   <Card
                     key={course._id}
@@ -211,6 +221,8 @@ export default function EducatorProfile() {
                     discountedPrice={course.price - (course.price * (course.discount || 0) / 100)}
                     isWishlisted={false}
                     onWishlistToggle={() => {}}
+                    showWishlist={false}
+                    showRatings={false}
                   />
                 ))}
               </div>

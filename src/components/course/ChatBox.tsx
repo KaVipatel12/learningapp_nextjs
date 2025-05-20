@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useNotification } from '../NotificationContext';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
+import LoadingSpinner from '../LoadingSpinner';
 
 interface Message {
   id: string | number;
@@ -34,6 +35,7 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { showNotification } = useNotification();
+  const [commentLoading , setCommentLoading] = useState(true)
   const { courseId, chapterId } = useParams(); 
   const { user } = useUser();
   const { educator } = useEducator();
@@ -60,6 +62,8 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
   }, [user, educator]);
 
   const fetchComments = useCallback(async () => {
+
+    setCommentLoading(true)
     try {
       const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}/comment`);
       const data = await response.json();
@@ -73,6 +77,8 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
     } catch (error) {
       console.error("Error fetching comments:", error);
       alert("Failed to fetch comments");
+    }finally{
+      setCommentLoading(false)
     }
   }, [courseId, chapterId, transformCommentToMessage]);
 
@@ -244,8 +250,13 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
           <RefreshCw className="h-4 w-4" /> Refresh
         </button>
       </div>
-      
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+{ commentLoading && <LoadingSpinner height={"h-[400px]"}/> }      
+{      
+  (
+  !commentLoading &&
+  <>
+  <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length > 0 ? (
           messages.map(message => (
             <div key={message.id} className={`flex ${message.user === "You" ? "justify-end" : "justify-start"}`}>
@@ -256,7 +267,7 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
                     ? "bg-blue-50 border border-blue-200 text-blue-900" 
                     : "bg-gray-100 text-gray-800"
               }`}>
-                {message.user !== "You" && (
+                { message.user !== "You" && (
                   <p className="font-medium text-sm">
                     {message.user}
                     {message.isEducator && (
@@ -323,7 +334,7 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
                           <Edit className="h-3 w-3" />
                         </button>
                       )}
-                      {canDelete(message) && (
+                      {canDelete(message) && !isDeleting && (
                         <button 
                           onClick={() => handleDeleteMessage(message.id)}
                           className="text-gray-500 hover:text-red-600 p-1 bg-white bg-opacity-70 rounded"
@@ -372,6 +383,9 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
           </button>
         </div>
       </div>
+      </> 
+      )
+      }
     </div>
   );
 };

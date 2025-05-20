@@ -6,7 +6,7 @@ interface ICourse {
   // Add other course properties as needed
 }
 
-interface ICourseWithReviews extends ICourse {
+export interface ICourseWithReviews extends ICourse {
   averageRating: number;
   totalRatings: number;
 }

@@ -12,8 +12,15 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.app.goo.gl',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.google.com',
+      },
     ],
   },
   // Your other Next.js config options here

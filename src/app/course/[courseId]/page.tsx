@@ -165,11 +165,7 @@ const CourseDetailPage = () => {
   };
 
   const handleViewChapters = () => {
-    if (isCoursePurchased || isOwner) {
       router.push(`/course/${courseId}/chapters`);
-    } else {
-      setShowWarningModal(true);
-    }
   };
 
   const renderLevelTag = (level: string) => {
