@@ -10,6 +10,7 @@ import { UserData, useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import UserNav from '@/components/Navbar/UserNav';
 import FormattedDate from '@/components/FormattedDate';
+import Link from 'next/link';
 
 export default function UserProfile() {
   const { user, userLoading, purchasedCourses } = useUser();
@@ -72,15 +73,17 @@ export default function UserProfile() {
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-white">
                     {userData?.username}
                   </h1>
-                  <p className="text-blue-600 font-medium">{userData?.role}</p>
+                  <p className="text-blue-200 font-medium">{userData?.role}</p>
                 </div>
                 <div className="flex gap-3">
                   <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full text-sm font-medium transition">
                     <Settings size={16} />
+                    <Link href={"profile/settings"}>
                     Settings
+                    </Link>
                   </button>
                   <button
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition"

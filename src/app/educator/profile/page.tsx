@@ -57,7 +57,7 @@ export default function EducatorProfile() {
       coverImage: "/cover-placeholder.jpg", // Add default cover image
       avatar: "/avatar-placeholder.jpg", // Add default avatar
       role: educator.role || "Educator",
-      bio: "Passionate educator focused on student success."
+      bio: educator.bio 
     };
   }, [educator]);
 
@@ -115,7 +115,9 @@ export default function EducatorProfile() {
                 <div className="flex gap-3">
                   <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full text-sm font-medium transition">
                     <Settings size={16} />
+                    <Link href="profile/settings">
                     Settings
+                    </Link>
                   </button>
                   <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition">
                     <Bookmark size={16} />

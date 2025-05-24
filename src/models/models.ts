@@ -62,6 +62,7 @@ export interface IUser extends Document {
     _id : string;
     username: string;
     mobile: string;
+    bio : string;
     email: string;
     password: string;
     wishlist : Types.ObjectId[];
@@ -87,6 +88,7 @@ export interface IComment extends Document {
 export interface IEducator extends Document {
     _id: string;
     username: string;
+    bio : string;
     mobile: string;
     email: string;
     password: string;
@@ -112,6 +114,7 @@ export interface IReview extends Document {
     username: { type: String, required: true },
     mobile: { type: String, required: true },
     email: { type: String, required: true },
+    bio: { type: String},
     password: { type: String, required: true },
     wishlist: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -277,6 +280,7 @@ const EducatorSchema = new mongoose.Schema<IEducator>({
   username: { type: String, required: true },
   mobile: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  bio : { type: String},
   password: { type: String, required: true },
   date: {
     type: Date,

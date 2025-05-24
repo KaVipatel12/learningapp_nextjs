@@ -36,7 +36,7 @@ const TeachingFocusPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const {showNotification} = useNotification();
+  const { showNotification } = useNotification();
   const router = useRouter()
   // Fetch teaching focus from API
   const fetchTeachingFocus = useCallback(async () => {

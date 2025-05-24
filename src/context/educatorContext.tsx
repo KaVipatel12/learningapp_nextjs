@@ -9,6 +9,7 @@ export interface EducatorData {
   email: string;
   password: string;
   role: string;
+  bio : string;
   date?: string;
   teachingFocus? : string[];
   courses: Array<{
