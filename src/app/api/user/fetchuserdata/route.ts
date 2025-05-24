@@ -31,11 +31,11 @@ export async function GET(req: NextRequest) {
     try {
       const userId = user._id;
       
-const fetchDetails = await User.findById(userId)
-  .populate({
-    path: "purchaseCourse.courseId",
-    model: "Course"
-  });
+    const fetchDetails = await User.findById(userId)
+      .populate({
+        path: "purchaseCourse.courseId",
+        model: "Course"
+      });
 
       
       if (!fetchDetails) {

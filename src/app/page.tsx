@@ -48,8 +48,10 @@ const HomePage = () => {
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
   const coursesContainerRef = useRef<HTMLDivElement>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [categoryCourses, setCategoryCourses] = useState<Course[]>([]);
   const [category, setCategory] = useState<string>("")
   const [courseLoading, setCourseLoading] = useState<boolean>(false)
+  const [courseCategoryLoading, setCourseCategoryLoading] = useState<boolean>(true)
   const [userWishlist , setUserWishList] = useState<WishList[]>([])
   const router = useRouter(); 
   // Carousel images
@@ -81,6 +83,51 @@ useEffect(() => {
     setUserWishList(userWishlist); 
   }
 }, [user, userLoading, purchasedCourses]);
+
+
+const fetchCourseByCategory = async () => {
+    setCourseCategoryLoading(true);
+
+    console.log("loading"); 
+    try {
+
+      const response = await fetch(`/api/course/fetchcourse/fetchbycategory`);
+
+      if (!response.ok) {
+        console.log("Error in fetching course")
+      }
+
+      const data = await response.json();
+
+      console.log("category course" + data.msg)
+      if (Array.isArray(data.msg)) {
+        const formattedCourses = data.msg.map((course: Course) => ({
+          id: course._id,
+          imageUrl: course.courseImg,
+          title: course.title,
+          instructor: course.educatorName || 'Unknown Instructor',
+          price: course.price,
+          rating : course.averageRating ,
+          totalRatings : course.totalRatings,
+          educatorName: course.educatorName || ''
+        }));
+
+        setCategoryCourses(formattedCourses);
+      } else {
+        console.warn("Unexpected response format:", data);
+        setCategoryCourses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCategoryCourses([]);
+    } finally {
+      setCourseCategoryLoading(false);
+    }
+}
+
+useEffect(() => {
+  fetchCourseByCategory();
+}, []);
 
   const fetchCourses = useCallback(async () => {
     setCourseLoading(true);
@@ -260,6 +307,62 @@ useEffect(() => {
         </div>
       </div>
     )}
+
+
+    <div className="max-w-7xl mx-auto px-4 py-12 relative">
+      <h2 className="text-2xl font-bold mb-6">Courses of your Interest</h2>
+  {
+    !courseCategoryLoading ? 
+    (
+    categoryCourses.length > 0 && (
+        <div className="relative">
+          {/* Scroll buttons (hidden on mobile) */}
+          <button 
+            onClick={() => scrollLeft(scrollContainerRef)}
+            className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={() => scrollRight(scrollContainerRef)}
+            className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+          
+          {/* Horizontal scroll container */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
+          >
+
+             { categoryCourses.map((course) => (
+                <div key={course.id} className="flex-shrink-0 w-50">
+                  <Card
+                    id={course?.id}
+                    imageUrl={course.imageUrl}
+                    title={course.title}
+                    instructor={course.instructor}
+                    price={course.price}
+                    rating={course.averageRating || 0}
+                    totalRatings={course.totalRatings || 0}
+                    discountedPrice={course.price}
+                    isWishlisted={false}
+                    onWishlistToggle={() => {}}
+                    isPurchased={isPurchased(course?.id)}
+                  />
+                </div>
+              ))}
+          </div>
+        </div>
+    )
+    ) : (
+       <div className="flex-shrink-0 w-full text-center py-8">
+        <LoadingSpinner height='h-30'></LoadingSpinner>
+      </div>
+    )
+  }
+      </div>
 
       {/* Courses Section */}
       <div className="max-w-7xl mx-auto px-4 py-12 bg-white">

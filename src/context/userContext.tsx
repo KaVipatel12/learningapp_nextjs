@@ -70,6 +70,7 @@ export interface Course {
   instructor: string;
   price: number;
   category?: string;
+  courseImg ? : string;
   progress?: number;
   discountedPrice?: number;
   rating?: number;

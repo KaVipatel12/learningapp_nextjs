@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Edit, Settings, Bookmark, Mail, Calendar } from 'lucide-react';
+import { Settings, Bookmark, Mail, Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -47,12 +47,6 @@ export default function UserProfile() {
             className="object-cover"
             priority
           />
-          <div className="absolute bottom-4 right-4">
-            <button className="flex items-center gap-2 bg-white/90 text-gray-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition">
-              <Edit size={16} />
-              Edit Profile
-            </button>
-          </div>
         </div>
 
         {/* Profile Header */}
@@ -73,10 +67,10 @@ export default function UserProfile() {
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-white">
+                  <h1 className="text-2xl font-bold text-gray-900">
                     {userData?.username}
                   </h1>
-                  <p className="text-blue-200 font-medium">{userData?.role}</p>
+                  <p className="text-blue-600 font-medium">{userData?.role}</p>
                 </div>
                 <div className="flex gap-3">
                   <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full text-sm font-medium transition">
@@ -152,7 +146,7 @@ export default function UserProfile() {
           {/* Enrolled Courses */}
           <div className="mt-12">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Enrolled Courses</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 place-items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 place-items-center">
               {purchasedCourses?.map((course) => (
                 <Card
                   key={course.id}

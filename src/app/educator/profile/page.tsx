@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { Edit, Settings, Bookmark, Award, User, Mail, Calendar, Plus } from 'lucide-react';
+import { Settings, Bookmark, Award, User, Mail, Calendar, Plus } from 'lucide-react';
 import Card from '@/components/Card';
 import { useEffect, useState, useMemo } from 'react';
 import { PageLoading } from '@/components/PageLoading';
@@ -83,12 +83,6 @@ export default function EducatorProfile() {
             className="object-cover"
             priority
           />
-          <div className="absolute bottom-4 right-4">
-            <button className="flex items-center gap-2 bg-white/90 text-gray-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition">
-              <Edit size={16} />
-              Edit Profile
-            </button>
-          </div>
         </div>
 
         {/* Profile Header */}
@@ -209,7 +203,7 @@ export default function EducatorProfile() {
                   </button>
               </div>
             {formattedEducator.courses.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 place-items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 place-items-center">
                 {formattedEducator.courses.map(course => (
                   <Card
                     key={course._id}
