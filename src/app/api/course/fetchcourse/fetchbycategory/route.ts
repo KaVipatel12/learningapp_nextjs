@@ -89,6 +89,12 @@ export async function GET(req: NextRequest) {
       };
     });
 
+      coursesWithReviews.sort((a, b) => {
+      const scoreA = a.averageRating * Math.log(a.totalRatings + 1);
+      const scoreB = b.averageRating * Math.log(b.totalRatings + 1);
+      return scoreB - scoreA; 
+    });
+
     return NextResponse.json({ msg: coursesWithReviews }, { status: 200 });
   } catch (error) {
     console.error("Error fetching courses with reviews:", error);

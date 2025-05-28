@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  Button, Card, Col, Row, Tabs, Tag, Typography, Divider, Rate 
+  Button, Card, Tabs, Typography, Divider, Rate, 
+  Row,
+  Col
 } from 'antd';
 import Image from 'next/image';
 import UserNav from '@/components/Navbar/UserNav';
@@ -20,7 +22,7 @@ interface ICourse {
   title: string;
   description: string;
   price: number;
-  courseImage: string;
+  courseImg: string;
   category: string;
   level: string;
   duration: number;
@@ -42,11 +44,8 @@ const CourseDetailPage = () => {
   const [isOwner, setIsOwner] = useState(false); 
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showWarningModal, setShowWarningModal] = useState(false);
-  const [averageRating , setAverageRating] = useState(0)
-  const [totalRatings , setTotalRatings] = useState(0)
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalRatings, setTotalRatings] = useState(0);
   const { showNotification } = useNotification(); 
   
   const { user } = useUser();
@@ -84,17 +83,16 @@ const CourseDetailPage = () => {
 
   // Check permissions to delete and update page
   useEffect(() => {
-  if (user && user.purchaseCourse) {
-    const purchased = user.purchaseCourse.some(purchase => {
-      // Handle both cases where courseId is a string or populated object
-      const purchaseCourseId = typeof purchase.courseId === 'object' 
-        ? purchase.courseId._id 
-        : purchase.courseId;
-      return purchaseCourseId === courseId;
-    });
-    setIsCoursePurchased(purchased);
-  }
-    // Check if educator owns this course
+    if (user && user.purchaseCourse) {
+      const purchased = user.purchaseCourse.some(purchase => {
+        const purchaseCourseId = typeof purchase.courseId === 'object' 
+          ? purchase.courseId._id 
+          : purchase.courseId;
+        return purchaseCourseId === courseId;
+      });
+      setIsCoursePurchased(purchased);
+    }
+    
     if (educator && educator.courses) {
       const owned = educator.courses.some(
         (course) => course._id?.toString() === courseId
@@ -121,154 +119,57 @@ const CourseDetailPage = () => {
       
       if (!res.ok) {
         setIsCoursePurchased(false);
-        console.log(data.msg)
-        setShowEnrollModal(false);
         showNotification(data.msg, "error"); 
         return;
       }
       setIsCoursePurchased(true);
       setShowEnrollModal(false);
-      setShowSuccessModal(true);
+      showNotification("Enrollment successful!", "success");
     } catch {
       showNotification("There is some error please try again later", "error"); 
-      setShowEnrollModal(false);
-      setShowErrorModal(true);
     } finally {
       setEnrollLoading(false);
     }
   };
 
   // fetching the average review 
-    const fetchReview = useCallback(async () => {
+  const fetchReview = useCallback(async () => {
     try {
-      const response = await fetch(`/api/user/review//${courseId}/averagerating`)
-  
+      const response = await fetch(`/api/user/review/${courseId}/averagerating`);
       if (!response.ok) {
         console.log('Failed to submit rating');
       }
-  
       const data = await response.json(); 
-      console.log(data)
       setAverageRating(data.averageRating || 0);
       setTotalRatings(data.totalRatings || 0);
-    } catch{
+    } catch {
       console.log("Error in fetching the error")
     } 
-    }, [courseId])
+  }, [courseId]);
   
-    useEffect(() => {
-      fetchReview()
-    }, [fetchReview])
+  useEffect(() => {
+    fetchReview();
+  }, [fetchReview]);
 
   const handleUpdateCourse = () => {
     router.push(`/educator/editcourse/${courseId}`);
   };
 
   const handleViewChapters = () => {
-      router.push(`/course/${courseId}/chapters`);
+    router.push(`/course/${courseId}/chapters`);
   };
 
   const renderLevelTag = (level: string) => {
-    const levelMap: Record<string, string> = {
-      beginner: 'green',
-      intermediate: 'orange',
-      advanced: 'red'
+    const levelMap: Record<string, { color: string, bg: string }> = {
+      beginner: { color: 'text-green-700', bg: 'bg-green-100 border-green-300' },
+      intermediate: { color: 'text-orange-700', bg: 'bg-orange-100 border-orange-300' },
+      advanced: { color: 'text-red-700', bg: 'bg-red-100 border-red-300' }
     };
-    return <Tag color={levelMap[level.toLowerCase()] || 'blue'}>{level}</Tag>;
-  };
-
-
-  // Custom Modal Component
-  const CustomModal = ({ 
-    visible, 
-    onCancel, 
-    title, 
-    content, 
-    footer, 
-    type = 'default' 
-  }: {
-    visible: boolean;
-    onCancel: () => void;
-    title: string;
-    content: React.ReactNode;
-    footer?: React.ReactNode;
-    type?: 'default' | 'success' | 'error' | 'warning';
-  }) => {
-    if (!visible) return null;
-
-    const getColor = () => {
-      switch (type) {
-        case 'success': return '#52c41a';
-        case 'error': return '#f5222d';
-        case 'warning': return '#faad14';
-        default: return '#1890ff';
-      }
-    };
-
+    const style = levelMap[level.toLowerCase()] || { color: 'text-blue-700', bg: 'bg-blue-100 border-blue-300' };
     return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-      }}>
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          width: '420px',
-          maxWidth: '90%',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        }}>
-          <div style={{
-            padding: '16px 24px',
-            borderBottom: '1px solid #f0f0f0',
-            display: 'flex',
-            alignItems: 'center',
-          }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              backgroundColor: getColor(),
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginRight: '16px',
-              color: 'white',
-              fontWeight: 'bold',
-            }}>
-              {type === 'success' ? '✓' : 
-               type === 'error' ? '✕' : 
-               type === 'warning' ? '!' : 'i'}
-            </div>
-            <Title level={4} style={{ margin: 0 }}>{title}</Title>
-          </div>
-          
-          <div style={{ padding: '24px' }}>
-            {content}
-          </div>
-          
-          <div style={{
-            padding: '10px 16px',
-            borderTop: '1px solid #f0f0f0',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '8px',
-          }}>
-            {footer || (
-              <Button onClick={onCancel} type="primary">
-                OK
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+      <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${style.bg} ${style.color}`}>
+        {level}
+      </span>
     );
   };
 
@@ -277,196 +178,318 @@ const CourseDetailPage = () => {
   }
 
   if (error) {
-    return <div className="error-message">Error: {error}</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white flex items-center justify-center">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200">
+          <div className="text-rose-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-rose-800 mb-2">Oops! Something went wrong</h2>
+          <p className="text-rose-600">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (!course) {
-    return <div>Course not found</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white flex items-center justify-center">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200">
+          <div className="text-rose-500 text-6xl mb-4">📚</div>
+          <h2 className="text-2xl font-bold text-rose-800 mb-2">Course not found</h2>
+          <p className="text-rose-600">The course you are looking for doesn not exist.</p>
+        </div>
+      </div>
+    );
   }
 
-  return (
+return (
     <>
       <UserNav />
-      <div className="course-detail-page" style={{ padding: '24px' }}>
-        <Row gutter={[24, 24]}>
-          <Col xs={24} lg={16}>
-            <Title level={2}>{course.title}</Title>
-            
-            <div style={{ marginBottom: '16px' }}>
-              <Tag color="blue">{course.category}</Tag>
-              {renderLevelTag(course.level)}
-              <Rate disabled value={averageRating} allowHalf style={{ marginLeft: '16px' }} />
-              <Text type="secondary" style={{ marginLeft: '8px' }}>( {totalRatings} users )</Text>
-            </div>
-
-            <Card
-              cover={
-                <div style={{ height: '400px', overflow: 'hidden', position: 'relative' }}>
-                  <Image
-                    alt={course.title}
-                    src={course.courseImage}
-                    width={800}
-                    height={400}
-                    style={{ objectFit: 'cover' }}
-                    priority
-                  />
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white">
+        {/* Hero Section */}
+        <div className="relative bg-gradient-to-r from-pink-600 via-rose-500 to-cherry-600 text-white py-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-900/20 via-rose-800/20 to-cherry-900/20"></div>
+          <div className="relative max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="mb-6">
+                  <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-4 mr-2">
+                    {course.category}
+                  </span>
+                  {renderLevelTag(course.level)}
                 </div>
-              }
-            >
-              <Tabs activeKey={activeTab} onChange={setActiveTab} items={[
-                {
-                  key: 'overview',
-                  label: 'Overview',
-                  children: (
-                    <>
-                      <Title level={4}>About This Course</Title>
-                      <Paragraph>{course.description}</Paragraph>
-                      
-                      <Divider />
-                      
-                      <Title level={4}>Prerequisites</Title>
-                      <Paragraph>{course.prerequisites}</Paragraph>
-                      
-                      <Title level={4}>{"What You'll Learn"}</Title>
-                      <Paragraph>{course.learningOutcomes}</Paragraph>
-                    </>
-                  )
-                },
-              ]} />
-            </Card>
-          </Col>
-  
-          <Col xs={24} lg={8}>
-            <Card style={{ position: 'sticky', top: '80px', marginTop: '20px' }}>
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <Title level={3} style={{ color: '#1890ff' }}>
-                  ₹{course.price.toLocaleString('en-IN')}
+                
+                <Title level={1} className="!text-white !text-4xl lg:!text-5xl !font-bold !mb-6 leading-tight">
+                  {course.title}
                 </Title>
                 
-                {/* Show enroll button only if not purchased and not owner */}
-                {(!isCoursePurchased && !isOwner) && (
-                  <Button 
-                    type="primary" 
-                    size="large" 
-                    block 
-                    style={{ 
-                      marginBottom: '16px',
-                      background: '#52c41a',
-                      borderColor: '#52c41a'
-                    }}
-                    onClick={() => setShowEnrollModal(true)}
-                    loading={enrollLoading}
-                  >
-                    Enroll Now
-                  </Button>
-                )}
+                <div className="flex items-center gap-4 mb-6">
+                  <Rate 
+                    disabled 
+                    value={averageRating} 
+                    allowHalf 
+                    className="text-yellow-400" 
+                  />
+                  <Text className="!text-white text-lg">
+                    {averageRating} ({totalRatings} reviews)
+                  </Text>
+                </div>
                 
-                {/* Show owner buttons */}
-                {isOwner && (
-                  <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div className="text-2xl font-bold">{course.duration}h</div>
+                    <div className="text-white/80 text-sm">Duration</div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div className="text-2xl font-bold">{course.totalSections}</div>
+                    <div className="text-white/80 text-sm">Sections</div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div className="text-2xl font-bold">{course.totalLectures}</div>
+                    <div className="text-white/80 text-sm">Lectures</div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div className="text-2xl font-bold">{course.totalEnrollment}</div>
+                    <div className="text-white/80 text-sm">Students</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <div className="relative h-80 lg:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+                  <Image
+                    alt={course.title}
+                    src={course.courseImg}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <Row gutter={[32, 32]}>
+            <Col xs={24} lg={16}>
+              {/* Course Content Card */}
+              <Card
+                className="border-0 shadow-2xl bg-white/90 backdrop-blur-sm hover:shadow-3xl transition-all duration-300"
+                style={{ borderRadius: '24px' }}
+              >
+                <Tabs 
+                  activeKey={activeTab} 
+                  onChange={setActiveTab}
+                  className="course-tabs"
+                  items={[
+                    {
+                      key: 'overview',
+                      label: (
+                        <span className="flex items-center gap-2 font-semibold text-lg">
+                          📋 Overview
+                        </span>
+                      ),
+                      children: (
+                        <div className="space-y-8">
+                          <div>
+                            <Title level={3} className="!text-rose-800 !mb-4 flex items-center gap-2">
+                              📖 About This Course
+                            </Title>
+                            <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border border-pink-200">
+                              <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0">
+                                {course.description}
+                              </Paragraph>
+                            </div>
+                          </div>
+                          
+                          <Divider className="!border-pink-200" />
+                          
+                          <div>
+                            <Title level={3} className="!text-rose-800 !mb-4 flex items-center gap-2">
+                              ✅ Prerequisites
+                            </Title>
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                              <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0">
+                                {course.prerequisites}
+                              </Paragraph>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Title level={3} className="!text-rose-800 !mb-4 flex items-center gap-2">
+                              🎯 What You Will Learn
+                            </Title>
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                              <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0">
+                                {course.learningOutcomes}
+                              </Paragraph>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    },
+                  ]} 
+                />
+              </Card>
+            </Col>
+  
+            <Col xs={24} lg={8}>
+              {/* Pricing Card */}
+              <Card 
+                className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm hover:shadow-3xl transition-all duration-300 sticky top-24"
+                style={{ borderRadius: '24px' }}
+                bodyStyle={{ padding: '32px' }}
+              >
+                <div className="text-center mb-8">
+                  <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 inline-block">
+                    💎 Premium Course
+                  </div>
+                  <Title level={2} className="!text-rose-600 !mb-2 !text-4xl">
+                    ₹{course.price.toLocaleString('en-IN')}
+                  </Title>
+                  <Text className="text-rose-500 text-lg font-medium">One-time payment • Lifetime access</Text>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="space-y-4 mb-8">
+                  {(!isCoursePurchased && !isOwner) && (
                     <Button 
                       type="primary" 
                       size="large" 
                       block 
-                      style={{ 
-                        marginBottom: '16px',
-                        background: '#faad14',
-                        borderColor: '#faad14'
-                      }}
-                      onClick={handleUpdateCourse}
+                      className="!h-14 !bg-gradient-to-r !from-pink-500 !to-rose-500 hover:!from-pink-600 hover:!to-rose-600 !border-0 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      onClick={() => setShowEnrollModal(true)}
+                      loading={enrollLoading}
                     >
-                      Update Course
+                      🚀 Enroll Now
                     </Button>
-                    
-                    <DeleteCourseButton courseId={courseId} />
-                  </>
-                )}
+                  )}
+                  
+                  {isOwner && (
+                    <>
+                      <Button 
+                        type="primary" 
+                        size="large" 
+                        block 
+                        className="!h-14 !bg-gradient-to-r !from-amber-500 !to-orange-500 hover:!from-amber-600 hover:!to-orange-600 !border-0 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                        onClick={handleUpdateCourse}
+                      >
+                        ✏️ Update Course
+                      </Button>
+                      
+                      <DeleteCourseButton courseId={courseId} />
+                    </>
+                  )}
+                  
+                  <Button 
+                    type={isCoursePurchased || isOwner ? "primary" : "default"}
+                    size="large" 
+                    block 
+                    className={`!h-14 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ${
+                      isCoursePurchased || isOwner 
+                        ? "!bg-gradient-to-r !from-indigo-500 !to-purple-500 hover:!from-indigo-600 hover:!to-purple-600 !border-0" 
+                        : "!text-rose-600 !border-2 !border-rose-300 hover:!text-rose-700 hover:!border-rose-400 !bg-gradient-to-r !from-rose-50 !to-pink-50 hover:!from-rose-100 hover:!to-pink-100"
+                    }`}
+                    onClick={handleViewChapters}
+                  >
+                    {isCoursePurchased || isOwner ? "📚 Go to Chapters" : "👀 Preview Course"}
+                  </Button>
+                </div>
+
+                <Divider className="!border-pink-200 !my-8" />
                 
-                {/* View chapters button */}
-                <Button 
-                  type={isCoursePurchased || isOwner ? "primary" : "default"}
-                  size="large" 
-                  block 
-                  style={{ 
-                    marginBottom: '24px',
-                    ...(isCoursePurchased || isOwner ? {} : {
-                      color: '#1890ff',
-                      borderColor: '#1890ff'
-                    })
-                  }}
-                  onClick={handleViewChapters}
-                >
-                  {isCoursePurchased || isOwner ? "Go to Chapters" : "Preview Course"}
-                </Button>
-              </div>
+                {/* Course Details */}
+                <div className="space-y-4">
+                  <Title level={4} className="!text-rose-800 !mb-6 flex items-center gap-2">
+                    📊 Course Details
+                  </Title>
+                  
+                  <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        ⏰ Duration:
+                      </span>
+                      <span className="font-bold text-rose-700">{course.duration} hours</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        👨‍🏫 Educator:
+                      </span>
+                      <span className="font-bold text-rose-700">{course.educatorName}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        👥 Enrollment:
+                      </span>
+                      <span className="font-bold text-rose-700">{course.totalEnrollment} students</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        📑 Sections:
+                      </span>
+                      <span className="font-bold text-rose-700">{course.totalSections}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        🎥 Lectures:
+                      </span>
+                      <span className="font-bold text-rose-700">{course.totalLectures}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </div>
 
-              <Divider />
+        {/* Enhanced Enrollment Modal */}
+        {showEnrollModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-pink-200 transform animate-pulse">
+              <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-t-2xl">
+                <Title level={3} className="!text-white !mb-2 flex items-center gap-2">
+                  🎓 Confirm Enrollment
+                </Title>
+                <Text className="text-pink-100">Join thousands of successful learners</Text>
+              </div>
               
-              <div style={{ marginBottom: '16px' }}>
-                <Paragraph>
-                  <Text strong>Duration:</Text> {course.duration} hours
-                </Paragraph>
-                <Paragraph>
-                  <Text strong>Educator:</Text> {course.educatorName}
-                </Paragraph>
-                <Paragraph>
-                  <Text strong>Total Enrollment:</Text> {course.totalEnrollment}
-                </Paragraph>
+              <div className="p-6">
+                <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl border border-pink-200 mb-6">
+                  <p className="text-gray-700 text-lg">
+                    Ready to start your journey with <span className="font-bold text-rose-700">{course.title}</span>?
+                  </p>
+                  <div className="mt-4 p-3 bg-white rounded-lg border border-pink-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Total Amount:</span>
+                      <span className="text-2xl font-bold text-rose-600">₹{course.price.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => setShowEnrollModal(false)}
+                    className="flex-1 !h-12 !border-2 !border-pink-300 !text-pink-600 hover:!border-pink-400 hover:!text-pink-700 !font-semibold !rounded-xl"
+                    size="large"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="primary" 
+                    onClick={handleEnroll}
+                    loading={enrollLoading}
+                    className="flex-1 !h-12 !bg-gradient-to-r !from-pink-500 !to-rose-500 hover:!from-pink-600 hover:!to-rose-600 !border-0 !font-semibold !rounded-xl shadow-lg"
+                    size="large"
+                  >
+                    {enrollLoading ? 'Processing...' : '💳 Confirm & Pay'}
+                  </Button>
+                </div>
               </div>
-            </Card>
-          </Col>
-        </Row>
-      </div>
-
-      {/* Custom Modals */}
-      <CustomModal
-        visible={showEnrollModal}
-        onCancel={() => setShowEnrollModal(false)}
-        title="Confirm Enrollment"
-        type="default"
-        content={
-          <div>
-            <p>Are you sure you want to enroll in `{course.title}`  for ₹{course.price.toLocaleString('en-IN')}?</p>
+            </div>
           </div>
-        }
-        footer={
-          <>
-            <Button onClick={() => setShowEnrollModal(false)}>Cancel</Button>
-            <Button 
-              type="primary" 
-              onClick={handleEnroll}
-              loading={enrollLoading}
-              style={{ background: '#52c41a', borderColor: '#52c41a' }}
-            >
-              Enroll Now
-            </Button>
-          </>
-        }
-      />
-
-      <CustomModal
-        visible={showSuccessModal}
-        onCancel={() => setShowSuccessModal(false)}
-        title="Enrollment Successful"
-        type="success"
-        content="You have successfully enrolled in this course!"
-      />
-
-      <CustomModal
-        visible={showErrorModal}
-        onCancel={() => setShowErrorModal(false)}
-        title="Enrollment Failed"
-        type="error"
-        content="There was an error processing your enrollment. Please try again."
-      />
-
-      <CustomModal
-        visible={showWarningModal}
-        onCancel={() => setShowWarningModal(false)}
-        title="Enrollment Required"
-        type="warning"
-        content="Please enroll in this course to view chapters"
-      />
+        )}
+      </div>
     </>
   );
 };

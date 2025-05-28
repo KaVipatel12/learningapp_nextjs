@@ -63,7 +63,7 @@ const HomePage = () => {
 
   // Categories
   const categories: Category[] = [
-    { id: 'all', name: 'All Courses' },
+    { id: 'all', name: 'Trending' },
     { id: 'tech', name: 'Technology' },
     { id: 'business', name: 'Business' },
     { id: 'design', name: 'Design' },
@@ -229,7 +229,7 @@ useEffect(() => {
     return purchasedCoursesIds.some(id  => id.toString() === courseId)
   }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white">
       {/* Navbar */}
       <UserNav />
 
@@ -244,11 +244,11 @@ useEffect(() => {
                 className="object-cover"
                 priority
               />
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-900/60 via-rose-800/40 to-purple-900/60 flex items-center justify-center">
                 <div className="text-center text-white max-w-2xl px-4">
-                  <h1 className="text-4xl font-bold mb-4">Start Learning Today</h1>
-                  <p className="text-xl mb-6">Unlock your potential with our expert-led courses</p>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium" onClick={() => {router.push("/course")}}>
+                  <h1 className="text-4xl font-bold mb-4 drop-shadow-lg">Start Learning Today</h1>
+                  <p className="text-xl mb-6 drop-shadow-md">Unlock your potential with our expert-led courses</p>
+                  <button className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-3 rounded-xl font-medium shadow-xl transform hover:scale-105 transition-all duration-200" onClick={() => {router.push("/course")}}>
                     Browse Courses
                   </button>
                 </div>
@@ -262,47 +262,49 @@ useEffect(() => {
   {
     purchasedCourse.length > 0 && (
       <div className="max-w-7xl mx-auto px-4 py-12 relative">
-        <h2 className="text-2xl font-bold mb-6">Continue Learning</h2>
-        <div className="relative">
-          {/* Scroll buttons (hidden on mobile) */}
-          <button 
-            onClick={() => scrollLeft(scrollContainerRef)}
-            className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button 
-            onClick={() => scrollRight(scrollContainerRef)}
-            className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          
-          {/* Horizontal scroll container */}
-          <div 
-            ref={scrollContainerRef}
-            className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
-          >
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-pink-100">
+          <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Continue Learning</h2>
+          <div className="relative">
+            {/* Scroll buttons (hidden on mobile) */}
+            <button 
+              onClick={() => scrollLeft(scrollContainerRef)}
+              className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={() => scrollRight(scrollContainerRef)}
+              className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+            
+            {/* Horizontal scroll container */}
+            <div 
+              ref={scrollContainerRef}
+              className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
+            >
 
-             { purchasedCourse.map((course) => (
-                <div key={course.id} className="flex-shrink-0 w-50">
-                  <Card
-                    id={course?.id}
-                    imageUrl={course.imageUrl}
-                    title={course.title}
-                    instructor={course.instructor}
-                    price={course.price}
-                    rating={4.5}
-                    totalRatings={0}
-                    discountedPrice={course.price}
-                    isWishlisted={false}
-                    onWishlistToggle={() => {}}
-                    isPurchased={true}
-                    showWishlist={false}
-                    showRatings={false}
-                  />
-                </div>
-              ))}
+               { purchasedCourse.map((course) => (
+                  <div key={course.id} className="flex-shrink-0 w-50">
+                    <Card
+                      id={course?.id}
+                      imageUrl={course.imageUrl}
+                      title={course.title}
+                      instructor={course.instructor}
+                      price={course.price}
+                      rating={4.5}
+                      totalRatings={0}
+                      discountedPrice={course.price}
+                      isWishlisted={false}
+                      onWishlistToggle={() => {}}
+                      isPurchased={true}
+                      showWishlist={false}
+                      showRatings={false}
+                    />
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       </div>
@@ -310,154 +312,159 @@ useEffect(() => {
 
 
     <div className="max-w-7xl mx-auto px-4 py-12 relative">
-      <h2 className="text-2xl font-bold mb-6">Courses of your Interest</h2>
-  {
-    !courseCategoryLoading ? 
-    (
-    categoryCourses.length > 0 && (
-        <div className="relative">
-          {/* Scroll buttons (hidden on mobile) */}
-          <button 
-            onClick={() => scrollLeft(scrollContainerRef)}
-            className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button 
-            onClick={() => scrollRight(scrollContainerRef)}
-            className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          
-          {/* Horizontal scroll container */}
-          <div 
-            ref={scrollContainerRef}
-            className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
-          >
-
-             { categoryCourses.map((course) => (
-                <div key={course.id} className="flex-shrink-0 w-50">
-                  <Card
-                    id={course?.id}
-                    imageUrl={course.imageUrl}
-                    title={course.title}
-                    instructor={course.instructor}
-                    price={course.price}
-                    rating={course.averageRating || 0}
-                    totalRatings={course.totalRatings || 0}
-                    discountedPrice={course.price}
-                    isWishlisted={false}
-                    onWishlistToggle={() => {}}
-                    isPurchased={isPurchased(course?.id)}
-                  />
-                </div>
-              ))}
-          </div>
-        </div>
-    )
-    ) : (
-       <div className="flex-shrink-0 w-full text-center py-8">
-        <LoadingSpinner height='h-30'></LoadingSpinner>
-      </div>
-    )
-  }
-      </div>
-
-      {/* Courses Section */}
-      <div className="max-w-7xl mx-auto px-4 py-12 bg-white">
-        {/* Categories with scroll buttons */}
-        <div className="relative mb-8">
-          {/* Scroll buttons */}
-          <button 
-            onClick={scrollCategoriesLeft}
-            className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button 
-            onClick={scrollCategoriesRight}
-            className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          
-          {/* Horizontal scroll container for categories */}
-          <div 
-            ref={categoriesContainerRef}
-            className="flex overflow-x-auto pb-2 scrollbar-hide"
-          >
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                className={`px-6 py-2 mr-4 rounded-full whitespace-nowrap flex-shrink-0 ${
-                  activeTab === category.id 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200'
-                }`}
-                onClick={() => { 
-                  setActiveTab(category.id) 
-                  setCategory(category.id)
-                 }}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* All Courses (Horizontal Scroll) */}
-        <div className="relative">
-          <h2 className="text-2xl font-bold mb-6">All Courses</h2>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-pink-100">
+        <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Courses of your Interest</h2>
+    {
+      !courseCategoryLoading ? 
+      (
+      categoryCourses.length > 0 && (
           <div className="relative">
             {/* Scroll buttons (hidden on mobile) */}
             <button 
-              onClick={() => scrollLeft(coursesContainerRef)}
-              className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+              onClick={() => scrollLeft(scrollContainerRef)}
+              className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button 
-              onClick={() => scrollRight(coursesContainerRef)}
-              className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+              onClick={() => scrollRight(scrollContainerRef)}
+              className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
             
             {/* Horizontal scroll container */}
             <div 
-              ref={coursesContainerRef}
+              ref={scrollContainerRef}
               className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
             >
-              {
-              !courseLoading ? (
-               courses.length > 0 ? (
-                courses.map((course) => (
-                  <div key={course.id} className="flex-shrink-0 w-50 gap-1">
+
+               { categoryCourses.map((course) => (
+                  <div key={course.id} className="flex-shrink-0 w-50">
                     <Card
-                      id={course.id}
+                      id={course?.id}
                       imageUrl={course.imageUrl}
                       title={course.title}
                       instructor={course.instructor}
                       price={course.price}
-                      rating={course.rating || 0}
-                      totalRatings={course.totalRatings  || 0}
+                      rating={course.averageRating || 0}
+                      totalRatings={course.totalRatings || 0}
                       discountedPrice={course.price}
-                      isWishlisted={isWishlisted(course.id) || false}
+                      isWishlisted={isWishlisted(course.id)}
                       onWishlistToggle={() => {}}
                       isPurchased={isPurchased(course?.id)}
                     />
                   </div>
-                ))
-              ) : (
-                <div className="flex-shrink-0 w-full text-center py-8">
-                  <p> No course found </p>
-                </div>
-              )) : (
-                 <div className="flex-shrink-0 w-full text-center py-8">
-                  <LoadingSpinner height='h-30'></LoadingSpinner>
-                </div>
-              )}
+                ))}
+            </div>
+          </div>
+      )
+      ) : (
+         <div className="flex-shrink-0 w-full text-center py-8">
+          <LoadingSpinner height='h-30'></LoadingSpinner>
+        </div>
+      )
+    }
+      </div>
+    </div>
+
+      {/* Courses Section */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-100">
+          {/* Categories with scroll buttons */}
+          <div className="relative mb-8 p-8 pb-4">
+            <h2 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Explore Categories</h2>
+            {/* Scroll buttons */}
+            <button 
+              onClick={scrollCategoriesLeft}
+              className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={scrollCategoriesRight}
+              className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+            
+            {/* Horizontal scroll container for categories */}
+            <div 
+              ref={categoriesContainerRef}
+              className="flex overflow-x-auto pb-2 scrollbar-hide"
+            >
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  className={`px-6 py-3 mr-4 rounded-full whitespace-nowrap flex-shrink-0 font-medium transition-all duration-200 transform hover:scale-105 ${
+                    activeTab === category.id 
+                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg' 
+                      : 'bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 text-pink-700 border border-pink-200'
+                  }`}
+                  onClick={() => { 
+                    setActiveTab(category.id) 
+                    setCategory(category.id)
+                   }}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* All Courses (Horizontal Scroll) */}
+          <div className="relative p-8 pt-0">
+            <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">All Courses</h3>
+            <div className="relative">
+              {/* Scroll buttons (hidden on mobile) */}
+              <button 
+                onClick={() => scrollLeft(coursesContainerRef)}
+                className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={() => scrollRight(coursesContainerRef)}
+                className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+              
+              {/* Horizontal scroll container */}
+              <div 
+                ref={coursesContainerRef}
+                className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
+              >
+                {
+                !courseLoading ? (
+                 courses.length > 0 ? (
+                  courses.map((course) => (
+                    <div key={course.id} className="flex-shrink-0 w-50 gap-1">
+                      <Card
+                        id={course.id}
+                        imageUrl={course.imageUrl}
+                        title={course.title}
+                        instructor={course.instructor}
+                        price={course.price}
+                        rating={course.rating || 0}
+                        totalRatings={course.totalRatings  || 0}
+                        discountedPrice={course.price}
+                        isWishlisted={isWishlisted(course.id) || false}
+                        onWishlistToggle={() => {}}
+                        isPurchased={isPurchased(course?.id)}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex-shrink-0 w-full text-center py-8">
+                    <p className="text-pink-600 text-lg"> No course found </p>
+                  </div>
+                )) : (
+                   <div className="flex-shrink-0 w-full text-center py-8">
+                    <LoadingSpinner height='h-30'></LoadingSpinner>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -465,22 +472,23 @@ useEffect(() => {
 
       {/* Features Sections */}
       {features.map((feature, index) => (
-        <div key={index} className={`py-16 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+        <div key={index} className={`py-16 ${index % 2 === 0 ? 'bg-gradient-to-r from-pink-50 to-rose-50' : 'bg-white'}`}>
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
             <div className={`md:w-1/2 ${index % 2 === 0 ? 'order-1' : 'order-2'}`}>
-              <h2 className="text-3xl font-bold mb-4">{feature.title}</h2>
-              <p className="text-gray-600 text-lg mb-6">{feature.description}</p>
-              <button className="text-blue-600 font-medium hover:text-blue-700 flex items-center">
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">{feature.title}</h2>
+              <p className="text-gray-700 text-lg mb-6">{feature.description}</p>
+              <button className="text-pink-600 font-medium hover:text-pink-700 flex items-center bg-gradient-to-r from-pink-50 to-rose-50 px-4 py-2 rounded-lg border border-pink-200 hover:border-pink-300 transition-all duration-200">
                 Learn more <ChevronRight className="ml-1 w-4 h-4" />
               </button>
             </div>
             <div className={`md:w-1/2 ${index % 2 === 0 ? 'order-2' : 'order-1'}`}>
-              <div className="relative h-64 md:h-80 rounded-xl overflow-hidden shadow-lg">
+              <div className="relative h-64 md:h-80 rounded-xl overflow-hidden shadow-2xl border-4 border-white">
                 <Image
                   src={feature.image}
                   alt={feature.title}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             </div>
@@ -489,12 +497,12 @@ useEffect(() => {
       ))}
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
+      <footer className="bg-gradient-to-r from-pink-900 via-rose-800 to-purple-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">LearnHub</h3>
-              <p className="text-gray-400">Empowering learners worldwide since 2023</p>
+              <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-pink-200 to-rose-200 bg-clip-text text-transparent">LearnHub</h3>
+              <p className="text-pink-200">Empowering learners worldwide since 2023</p>
             </div>
             {/* Add more footer columns as needed */}
           </div>

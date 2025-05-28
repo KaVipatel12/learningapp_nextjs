@@ -8,6 +8,7 @@ import { PageLoading } from "@/components/PageLoading";
 import { useUser } from "@/context/userContext"; 
 import { useEducator } from "@/context/educatorContext"; 
 import { chapterActions } from "@/utils/ChapterFunctionality";
+import UserNav from "@/components/Navbar/UserNav";
 
 interface IVideo {
   title: string;
@@ -88,11 +89,12 @@ const ChaptersPage = () => {
     );
     
     if (result.success) {
-      showNotification('Course deleted successfully!', "success");
+      showNotification('Chapters deleted successfully!', "success");
       setSelectedChapters([]); 
-      setIsSelectMode(false)
+      setIsSelectMode(false);
+      fetchChapters();
     } else {
-      showNotification('Error' , "error");
+      showNotification('Error deleting chapters', "error");
     }
   };
 
@@ -116,40 +118,47 @@ const ChaptersPage = () => {
 
   if (error) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">Course Chapters</h1>
-        <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded">
-          {error}
+      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+        <UserNav />
+        <div className="p-6 max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8 text-pink-800">Course Chapters</h1>
+          <div className="p-4 bg-pink-100 border border-pink-300 text-pink-800 rounded-xl shadow-sm">
+            {error}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-purple-900">Course Chapters</h1>
-        
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => router.push(`/educator/${courseId}/addchapter`)}
-            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all flex items-center gap-1 shadow-md"
-          >
-            <Plus size={16} />
-            Add Chapter
-          </button>
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+      <UserNav />
+      
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="flex justify-between items-center mb-8 my-9">
+          <h1 className="text-3xl font-bold text-pink-800 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text">
+            Course Chapters
+          </h1>
           
           {isOwner && (
-            <>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => router.push(`/educator/${courseId}/addchapter`)}
+                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all flex items-center gap-2 shadow-pink hover:shadow-pink-md"
+              >
+                <Plus size={16} />
+                Add Chapter
+              </button>
+              
               {isSelectMode ? (
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={handleDeleteSelected}
                     disabled={selectedChapters.length === 0}
-                    className={`px-4 py-2 rounded-lg transition-all flex items-center gap-1 shadow-md ${
+                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
                       selectedChapters.length > 0 
-                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700' 
-                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-pink hover:shadow-pink-md hover:from-rose-600 hover:to-pink-700' 
+                        : 'bg-pink-100 text-pink-400 cursor-not-allowed'
                     }`}
                   >
                     <Trash2 size={16} />
@@ -161,7 +170,7 @@ const ChaptersPage = () => {
                       setSelectedChapters([]);
                       setIsSelectMode(false);
                     }}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all border border-gray-300"
+                    className="px-4 py-2 bg-white text-pink-700 rounded-xl hover:bg-pink-50 transition-all border border-pink-200 shadow-sm hover:shadow-pink-sm"
                   >
                     Cancel
                   </button>
@@ -169,55 +178,73 @@ const ChaptersPage = () => {
               ) : (
                 <button 
                   onClick={() => setIsSelectMode(true)}
-                  className="px-4 py-2 bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition-all border border-purple-300 shadow-sm"
+                  className="px-4 py-2 bg-white text-pink-700 rounded-xl hover:bg-pink-50 transition-all border border-pink-200 shadow-sm hover:shadow-pink-sm"
                 >
                   Select Chapters
                 </button>
               )}
-            </>
+            </div>
           )}
+        </div>
+
+        <div className="grid gap-4">
+          {chapters.map((chapter) => {
+            const totalDuration = chapter.videos.reduce((total, video) => total + video.duration, 0);
+            const isSelected = selectedChapters.includes(chapter._id);
+            
+            return (
+              <div
+                key={chapter._id}
+                onClick={() => handleChapterClick(chapter)}
+                className={`p-6 rounded-xl border transition-all relative ${
+                  isSelectMode && isSelected
+                    ? "border-pink-500 bg-gradient-to-r from-pink-100 to-rose-100 shadow-pink-md"
+                    : (isOwner || isCoursePurchased)
+                      ? "border-pink-200 bg-gradient-to-r from-pink-50 to-rose-50 hover:shadow-pink-lg hover:border-pink-300 cursor-pointer hover:-translate-y-0.5"
+                      : "border-pink-100 bg-gradient-to-r from-pink-50 to-pink-100 cursor-not-allowed"
+                }`}
+              >
+                {isSelectMode && (
+                  <div className={`absolute -left-2 -top-2 w-5 h-5 rounded-full border-2 ${
+                    isSelected ? "bg-pink-500 border-pink-500 shadow-pink-sm" : "bg-white border-pink-300"
+                  }`}></div>
+                )}
+                
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-semibold text-pink-900 flex items-center gap-2">
+                      {(!isOwner && !isCoursePurchased) && <Lock className="w-5 h-5 text-pink-600" />}
+                      {chapter.title}
+                    </h2>
+                    <p className="text-pink-800 mt-2">{chapter.description}</p>
+                  </div>
+                  <span className="text-sm bg-gradient-to-r from-pink-200 to-rose-200 text-pink-800 px-3 py-1 rounded-full shadow-pink-inner">
+                    {totalDuration} min
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid gap-4">
-        {chapters.map((chapter) => {
-          const totalDuration = chapter.videos.reduce((total, video) => total + video.duration, 0);
-          const isSelected = selectedChapters.includes(chapter._id);
-          
-          return (
-            <div
-              key={chapter._id}
-              onClick={() => handleChapterClick(chapter)}
-              className={`p-5 rounded-xl border transition-all relative ${
-                isSelectMode && isSelected
-                  ? "border-purple-500 bg-purple-50 shadow-md"
-                  : (isOwner || isCoursePurchased)
-                    ? "border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 hover:shadow-lg hover:border-purple-300 cursor-pointer"
-                    : "border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 cursor-not-allowed"
-              }`}
-            >
-              {isSelectMode && (
-                <div className={`absolute -left-2 -top-2 w-5 h-5 rounded-full border-2 ${
-                  isSelected ? "bg-purple-500 border-purple-500" : "bg-white border-purple-300"
-                }`}></div>
-              )}
-              
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-xl font-semibold text-purple-900 flex items-center gap-2">
-                    {(!isOwner && !isCoursePurchased) && <Lock className="w-5 h-5 text-pink-600" />}
-                    {chapter.title}
-                  </h2>
-                  <p className="text-purple-800 mt-1">{chapter.description}</p>
-                </div>
-                <span className="text-sm bg-gradient-to-r from-pink-100 to-purple-100 text-purple-800 px-3 py-1 rounded-full shadow-inner" style={{ minWidth: "65px" }}>
-                  {totalDuration} min
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <style jsx global>{`
+        .shadow-pink {
+          box-shadow: 0 4px 14px -2px rgba(236, 72, 153, 0.25);
+        }
+        .shadow-pink-sm {
+          box-shadow: 0 2px 8px -1px rgba(236, 72, 153, 0.2);
+        }
+        .shadow-pink-md {
+          box-shadow: 0 6px 18px -3px rgba(236, 72, 153, 0.3);
+        }
+        .shadow-pink-lg {
+          box-shadow: 0 8px 24px -4px rgba(236, 72, 153, 0.35);
+        }
+        .shadow-pink-inner {
+          box-shadow: inset 2px 2px 4px rgba(244, 114, 182, 0.2);
+        }
+      `}</style>
     </div>
   );
 };
