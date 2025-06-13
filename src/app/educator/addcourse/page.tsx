@@ -134,7 +134,7 @@ export default function AddCourse() {
         <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-2xl font-semibold text-gray-800">Create New Course</h2>
+            <h2 className="text-2xl font-semibold text-pink-700">Create New Course</h2>
             <p className="mt-1 text-gray-600">Fill in the details to add a new course</p>
           </div>
 
@@ -501,7 +501,7 @@ export default function AddCourse() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-700 hover:bg-pink-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 {isLoading ? (
                   <>

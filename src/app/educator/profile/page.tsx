@@ -72,7 +72,7 @@ export default function EducatorProfile() {
   
   return (
     <>
-      <div className="bg-pink-50 min-h-screen pb-12">
+      <div className="min-h-screen pb-12">
         {/* Cover Photo */}
         <div className="relative h-48 bg-gradient-to-r from-pink-500 to-rose-500">
           <div className="absolute inset-0 bg-gradient-to-t from-pink-900/20 via-transparent to-transparent" />

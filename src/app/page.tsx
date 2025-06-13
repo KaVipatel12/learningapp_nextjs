@@ -507,49 +507,46 @@ const HomePage = () => {
       </div>
 
       {/* Features Sections */}
-      {features.map((feature, index) => (
-        <center key={index}>
-        <div 
-          key={index} 
-          className={`py-8 lg:py-16 ${index % 2 === 0 ? 'bg-gradient-to-r from-pink-50 to-rose-50' : 'bg-white'} rounded-xl`}
-          style={{ minHeight: '400px' , width : "90%" }}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-              
-              {/* TEXT SECTION */}
-              <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}`}>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                  {feature.title}
-                </h2>
-                <p className="text-gray-700 text-base sm:text-lg mb-6">
-                  {feature.description}
-                </p>
-                <button className="text-pink-600 font-medium hover:text-pink-700 flex items-center bg-gradient-to-r from-pink-50 to-rose-50 px-4 py-2 rounded-lg border border-pink-200 hover:border-pink-300 transition-all duration-200">
-                  Learn more <ChevronRight className="ml-1 w-4 h-4" />
-                </button>
-              </div>
-              
-              {/* IMAGE SECTION */}
-              <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}>
-                <div className="relative aspect-video h-60 lg:h-80 rounded-xl overflow-hidden shadow-2xl border-4 border-white">
-                  <Image
-                    src={feature.image}
-                    alt={feature.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    priority={index === 0}
-                  />
-                </div>
-              </div>
-
+{features.map((feature, index) => (
+  <center key={index}>
+    <div 
+      key={index} 
+      className={`py-8 lg:py-16 ${index % 2 === 0 ? 'bg-gradient-to-r from-pink-50 to-rose-50' : 'bg-white'} rounded-xl my-6`}
+      style={{ minHeight: '400px', width: "90%" }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          
+          {/* TEXT SECTION */}
+          <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}`}>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+              {feature.title}
+            </h2>
+            <p className="text-gray-700 text-base sm:text-lg mb-6">
+              {feature.description}
+            </p>
+          </div>
+          
+          {/* IMAGE SECTION - Modified for better mobile display */}
+          <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}>
+            <div className="relative w-full h-auto aspect-video max-h-60 lg:max-h-80 rounded-xl overflow-hidden shadow-2xl border-4 border-white">
+              <Image
+                src={feature.image}
+                alt={feature.title}
+                width={600} 
+                height={400} 
+                className="object-cover w-full h-full"
+                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 50vw, 600px"
+                priority={index === 0}
+              />
             </div>
           </div>
-        </div>
-        </center>
-      ))}
 
+        </div>
+      </div>
+    </div>
+  </center>
+))}
 
     </div>
   );

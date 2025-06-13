@@ -62,9 +62,13 @@ export default function RegisterPage() {
         showNotification('Registration successful!', 'success');
         resetForm();
         
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+        if(userData.role === "educator"){
+         return router.push('/educator/teachingfocus');
+        }
+        else{
+         return router.push('/category');
+        }
+
       } else {
         showNotification(response.data.msg || 'Registration failed', 'error');
       }
@@ -87,7 +91,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden border border-rose-100 mt-14">
         {/* Header */}
         <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white">

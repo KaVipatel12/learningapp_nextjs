@@ -190,7 +190,7 @@ const CourseDetailPage = () => {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200">
           <div className="text-rose-500 text-6xl mb-4">📚</div>
           <h2 className="text-2xl font-bold text-rose-800 mb-2">Course not found</h2>
@@ -202,7 +202,7 @@ const CourseDetailPage = () => {
 
 return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white mb-20">
+      <div className="min-h-screen mb-20">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-pink-600 via-rose-500 to-cherry-600 text-white py-16">
           <div className="absolute inset-0 bg-gradient-to-r from-pink-900/20 via-rose-800/20 to-cherry-900/20"></div>

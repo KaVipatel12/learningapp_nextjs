@@ -140,7 +140,8 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
                 return category ? (
                   <div 
                     key={category.id}
-                    className="flex items-center gap-2 bg-gradient-to-r from-pink-100 to-purple-100 text-purple-800 px-4 py-2 rounded-full shadow-sm"
+                    className="flex items-center gap-2 
+                    -to-r from-pink-100 to-purple-100 text-purple-800 px-4 py-2 rounded-full shadow-sm"
                   >
                     <span>{category.name}</span>
                     <button 

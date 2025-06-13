@@ -141,7 +141,7 @@ const ChapterPage = () => {
   const video = chapter.videos[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200">
+    <div className="min-h-screen">
       {/* Cherry blossom decorative elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-10 left-10 w-4 h-4 bg-pink-300 rounded-full opacity-60 animate-pulse"></div>

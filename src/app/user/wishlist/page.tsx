@@ -79,7 +79,7 @@ export default function WishlistPage() {
   const totalPrice = courses.reduce((sum, course) => sum + (course.discountedPrice || course.price), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 pb-24">      
+    <div className="min-h-screen">      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12 mt-10">

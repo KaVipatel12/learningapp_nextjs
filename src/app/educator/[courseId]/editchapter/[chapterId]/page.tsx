@@ -260,8 +260,8 @@ export default function EditChapterPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Chapter</h2>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mb-10">
+      <h2 className="text-2xl font-bold text-pink-700 mb-6 mt-15">Edit Chapter</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
@@ -426,7 +426,7 @@ export default function EditChapterPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center ${
+            className={`px-6 py-2 bg-pink-700 text-white rounded-md hover:bg-pink-900 flex items-center ${
               isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >

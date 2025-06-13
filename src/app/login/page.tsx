@@ -64,7 +64,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden border border-rose-100">
         {/* Header */}
         <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white">

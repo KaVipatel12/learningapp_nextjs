@@ -34,7 +34,7 @@ export default function UserSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mt-11">
           <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-6 text-white">

@@ -200,7 +200,7 @@ export default function AppNavbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/educator/profile" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+            <Link href={educator ? `/educator/profile` : "/"} className="text-rose-800 hover:text-rose-600 transition flex items-center">
               <Home className="mr-1 h-5 w-5" /> Home
             </Link>            
             {renderAuthButtons()}
