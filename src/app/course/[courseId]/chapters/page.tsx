@@ -8,7 +8,6 @@ import { PageLoading } from "@/components/PageLoading";
 import { useUser } from "@/context/userContext"; 
 import { useEducator } from "@/context/educatorContext"; 
 import { chapterActions } from "@/utils/ChapterFunctionality";
-import UserNav from "@/components/Navbar/UserNav";
 
 interface IVideo {
   title: string;
@@ -119,7 +118,6 @@ const ChaptersPage = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
-        <UserNav />
         <div className="p-6 max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-8 text-pink-800">Course Chapters</h1>
           <div className="p-4 bg-pink-100 border border-pink-300 text-pink-800 rounded-xl shadow-sm">
@@ -131,9 +129,7 @@ const ChaptersPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
-      <UserNav />
-      
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">      
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="flex justify-between items-center mb-8 my-9">
           <h1 className="text-3xl font-bold text-pink-800 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text">

@@ -213,6 +213,14 @@ const CourseSchema = new mongoose.Schema<ICourse>({
     type : String, 
     required : true
   }, 
+  learningOutcomes : {
+    type : String, 
+    required : true
+  }, 
+  prerequisites : {
+    type : String, 
+    required : true
+  }, 
   isPublished: { 
     type: Boolean, 
     default: false 

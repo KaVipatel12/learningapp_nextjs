@@ -1,7 +1,6 @@
 "use client";
 
 import LoadingSpinner from '@/components/LoadingSpinner';
-import UserNav from '@/components/Navbar/UserNav';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
 import { EducatorData, useEducator } from '@/context/educatorContext';
@@ -38,7 +37,7 @@ export default function SettingsPage() {
 
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mt-11">
           <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-6 text-white">
             <h1 className="text-2xl font-bold">Account Settings</h1>
             <p className="text-purple-100">Manage your profile and preferences</p>
@@ -134,9 +133,7 @@ function ProfileSection({
   }
 
   return (
-  <>
-    
-    <UserNav></UserNav>
+  <>  
       <div className="max-w-lg mx-auto">
       <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
         <FiUser className="mr-2 text-purple-600" /> Profile Information
@@ -249,7 +246,6 @@ function PasswordSection() {
 
   return (
   <>
-      <UserNav></UserNav>
     <div className="max-w-lg mx-auto">
       <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
         <FiLock className="mr-2 text-purple-600" /> Password Settings
@@ -374,7 +370,6 @@ function GoalsSection() {
   return (
 
 <>
-   <UserNav></UserNav>
     <div className="max-w-lg mx-auto">
       <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
         <FiBook className="mr-2 text-purple-600" /> Teaching Goals

@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { FiUpload, FiPlus, FiLoader, FiX, FiSave } from 'react-icons/fi';
 import Image from 'next/image';
 import { useNotification } from '@/components/NotificationContext';
-import EducatorNav from '@/components/Navbar/EducatorNav';
 import { useEducator } from '@/context/educatorContext';
 import { PageLoading } from '@/components/PageLoading';
 
@@ -223,7 +222,6 @@ export default function UpdateCourse() {
 
   return (
     <>
-      <EducatorNav />
       <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
@@ -323,7 +321,7 @@ export default function UpdateCourse() {
               {/* Prerequisites */}
               <div>
                 <label htmlFor="prerequisites" className="block text-sm font-medium text-gray-700">
-                  Prerequisites
+                  Prerequisites  | `Use Dots . for new pointers`
                 </label>
                 <textarea
                   id="prerequisites"
@@ -339,7 +337,7 @@ export default function UpdateCourse() {
               {/* Learning Outcomes */}
               <div>
                 <label htmlFor="learningOutcomes" className="block text-sm font-medium text-gray-700">
-                  Learning Outcomes
+                  Learning Outcomes | `Use Dots . for new pointers`
                 </label>
                 <textarea
                   id="learningOutcomes"

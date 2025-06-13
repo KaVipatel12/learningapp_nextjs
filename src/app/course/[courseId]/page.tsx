@@ -4,16 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { 
   Button, Card, Tabs, Typography, Divider, Rate, 
   Row,
-  Col
+  Col, 
 } from 'antd';
 import Image from 'next/image';
-import UserNav from '@/components/Navbar/UserNav';
 import { PageLoading } from '@/components/PageLoading';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
 import DeleteCourseButton from './DeleteButton';
 import { useNotification } from '@/components/NotificationContext';
+import ErrorPage from '@/components/ErrorPage';
+import Link from 'next/link';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -33,6 +34,9 @@ interface ICourse {
   isPublished: boolean;
   prerequisites: string;
   learningOutcomes: string;
+  educator : {
+    _id : string;
+  }; 
 }
 
 const CourseDetailPage = () => {
@@ -68,6 +72,7 @@ const CourseDetailPage = () => {
         
         const data = await response.json();
         setCourse(data.msg);
+        console.log(data.msg)
       } catch (err) {
         console.error('Error fetching course:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -179,13 +184,7 @@ const CourseDetailPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white flex items-center justify-center">
-        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200">
-          <div className="text-rose-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-rose-800 mb-2">Oops! Something went wrong</h2>
-          <p className="text-rose-600">{error}</p>
-        </div>
-      </div>
+      <ErrorPage error={error}></ErrorPage>
     );
   }
 
@@ -203,12 +202,11 @@ const CourseDetailPage = () => {
 
 return (
     <>
-      <UserNav />
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-white mb-20">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-pink-600 via-rose-500 to-cherry-600 text-white py-16">
           <div className="absolute inset-0 bg-gradient-to-r from-pink-900/20 via-rose-800/20 to-cherry-900/20"></div>
-          <div className="relative max-w-7xl mx-auto px-6">
+          <div className="relative max-w-7xl mx-auto px-6 mt-20">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <div className="mb-6">
@@ -310,9 +308,14 @@ return (
                               ✅ Prerequisites
                             </Title>
                             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-                              <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0">
-                                {course.prerequisites}
+                        {
+                        course?.prerequisites?.split(".").map( (pre , sr) => (
+                          <>
+                          <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0" key={sr}>
+                                ✅ { pre } 
                               </Paragraph>
+                          </>
+                              ) )}
                             </div>
                           </div>
                           
@@ -321,9 +324,14 @@ return (
                               🎯 What You Will Learn
                             </Title>
                             <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
-                              <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0">
-                                {course.learningOutcomes}
+                              {course?.learningOutcomes?.split(".").map((content , sr) => (
+<>
+                                <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0" key={sr}>
+                                ✅ { content }
                               </Paragraph>
+</>
+                              ))
+                              }
                             </div>
                           </div>
                         </div>
@@ -416,8 +424,8 @@ return (
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         👨‍🏫 Educator:
                       </span>
-                      <span className="font-bold text-rose-700">{course.educatorName}</span>
-                    </div>
+                      <Link href={`/profile/${course?.educator?._id}`} className="font-bold text-rose-700">{course.educatorName}</Link>
+                    </div>                    
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         👥 Enrollment:

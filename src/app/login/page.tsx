@@ -64,10 +64,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-[#E2E8F0] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden border border-rose-100">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5] p-6 text-white">
+        <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white">
           <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="text-white/90">Sign in to your account</p>
         </div>
@@ -86,7 +86,7 @@ export default function LoginPage() {
               <Form className="space-y-4">
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-rose-800 mb-1">
                     Email
                   </label>
                   <Field
@@ -94,8 +94,8 @@ export default function LoginPage() {
                     type="email"
                     placeholder="Enter your email"
                     className={`w-full px-4 py-2 rounded-lg border ${
-                      errors.email && touched.email ? 'border-red-500' : 'border-[#CBD5E0]'
-                    } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                      errors.email && touched.email ? 'border-red-500' : 'border-rose-200'
+                    } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                   />
                   {errors.email && touched.email && (
                     <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-rose-800 mb-1">
                     Password
                   </label>
                   <div className="relative">
@@ -113,12 +113,12 @@ export default function LoginPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       className={`w-full px-4 py-2 rounded-lg border ${
-                        errors.password && touched.password ? 'border-red-500' : 'border-[#CBD5E0]'
-                      } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                        errors.password && touched.password ? 'border-red-500' : 'border-rose-200'
+                      } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#718096] hover:text-[#4FD1C5]"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-rose-400 hover:text-rose-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
@@ -133,7 +133,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5] text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 px-4 rounded-lg font-medium hover:to-rose-600 transition shadow-md disabled:opacity-70"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center">
@@ -149,9 +149,9 @@ export default function LoginPage() {
                 </button>
 
                 {/* Register Link */}
-                <p className="text-center text-sm text-[#718096]">
-                  Dont have an account?{' '}
-                  <Link href="/register" className="text-[#6C63FF] font-medium hover:underline">
+                <p className="text-center text-sm text-rose-700/80">
+                  Do not have an account?{' '}
+                  <Link href="/register" className="text-rose-600 font-medium hover:underline">
                     Register
                   </Link>
                 </p>

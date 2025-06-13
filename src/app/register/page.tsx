@@ -6,6 +6,7 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
+import Link from 'next/link';
 
 interface RegisterValues {
   username: string;
@@ -57,12 +58,10 @@ export default function RegisterPage() {
       
       const response = await axios.post('/api/auth/signup', userData);
       
-      // Check if the response was successful
       if (response.data.success) {
         showNotification('Registration successful!', 'success');
         resetForm();
         
-        // Give user time to see the notification before redirecting
         setTimeout(() => {
           router.push('/login');
         }, 2000);
@@ -73,13 +72,11 @@ export default function RegisterPage() {
       let errorMessage = 'An error occurred during registration';
       
       if (axios.isAxiosError(error)) {
-        // Handle Axios errors (network errors, 4xx/5xx responses)
         errorMessage = error.response?.data?.msg || 
                       error.response?.data?.message || 
                       error.message || 
                       errorMessage;
       } else if (error instanceof Error) {
-        // Handle generic JavaScript errors
         errorMessage = error.message;
       }
       
@@ -90,11 +87,10 @@ export default function RegisterPage() {
   };
 
   return (
-<>
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-[#E2E8F0] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden border border-rose-100 mt-14">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5] p-6 text-white">
+        <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white">
           <h1 className="text-2xl font-bold">Create an Account</h1>
           <p className="text-white/90">Join our learning community today</p>
         </div>
@@ -117,7 +113,7 @@ export default function RegisterPage() {
               <Form className="space-y-4">
                 {/* Username */}
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="username" className="block text-sm font-medium text-rose-800 mb-1">
                     Username
                   </label>
                   <Field
@@ -125,8 +121,8 @@ export default function RegisterPage() {
                     type="text"
                     placeholder="Enter your username"
                     className={`w-full px-4 py-2 rounded-lg border ${
-                      errors.username && touched.username ? 'border-red-500' : 'border-[#CBD5E0]'
-                    } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                      errors.username && touched.username ? 'border-red-500' : 'border-rose-200'
+                    } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                   />
                   {errors.username && touched.username && (
                     <p className="mt-1 text-sm text-red-500">{errors.username}</p>
@@ -135,7 +131,7 @@ export default function RegisterPage() {
 
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-rose-800 mb-1">
                     Email
                   </label>
                   <Field
@@ -143,16 +139,17 @@ export default function RegisterPage() {
                     type="email"
                     placeholder="Enter your email"
                     className={`w-full px-4 py-2 rounded-lg border ${
-                      errors.email && touched.email ? 'border-red-500' : 'border-[#CBD5E0]'
-                    } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                      errors.email && touched.email ? 'border-red-500' : 'border-rose-200'
+                    } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                   />
                   {errors.email && touched.email && (
                     <p className="mt-1 text-sm text-red-500">{errors.email}</p>
                   )}
                 </div>
-                {/* mobile */}
+
+                {/* Mobile */}
                 <div>
-                  <label htmlFor="text" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="mobile" className="block text-sm font-medium text-rose-800 mb-1">
                     Mobile
                   </label>
                   <Field
@@ -160,8 +157,8 @@ export default function RegisterPage() {
                     type="text"
                     placeholder="Enter your Mobile"
                     className={`w-full px-4 py-2 rounded-lg border ${
-                      errors.mobile && touched.mobile ? 'border-red-500' : 'border-[#CBD5E0]'
-                    } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                      errors.mobile && touched.mobile ? 'border-red-500' : 'border-rose-200'
+                    } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                   />
                   {errors.mobile && touched.mobile && (
                     <p className="mt-1 text-sm text-red-500">{errors.mobile}</p>
@@ -170,7 +167,7 @@ export default function RegisterPage() {
 
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-rose-800 mb-1">
                     Password
                   </label>
                   <div className="relative">
@@ -179,12 +176,12 @@ export default function RegisterPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       className={`w-full px-4 py-2 rounded-lg border ${
-                        errors.password && touched.password ? 'border-red-500' : 'border-[#CBD5E0]'
-                      } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                        errors.password && touched.password ? 'border-red-500' : 'border-rose-200'
+                      } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#718096] hover:text-[#4FD1C5]"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-rose-400 hover:text-rose-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
@@ -197,7 +194,7 @@ export default function RegisterPage() {
 
                 {/* Confirm Password */}
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-rose-800 mb-1">
                     Confirm Password
                   </label>
                   <div className="relative">
@@ -206,12 +203,12 @@ export default function RegisterPage() {
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm your password"
                       className={`w-full px-4 py-2 rounded-lg border ${
-                        errors.confirmPassword && touched.confirmPassword ? 'border-red-500' : 'border-[#CBD5E0]'
-                      } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                        errors.confirmPassword && touched.confirmPassword ? 'border-red-500' : 'border-rose-200'
+                      } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#718096] hover:text-[#4FD1C5]"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-rose-400 hover:text-rose-600"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
@@ -224,15 +221,15 @@ export default function RegisterPage() {
 
                 {/* Role Selection */}
                 <div>
-                  <label htmlFor="role" className="block text-sm font-medium text-[#2D3748] mb-1">
+                  <label htmlFor="role" className="block text-sm font-medium text-rose-800 mb-1">
                     I am a
                   </label>
                   <Field
                     as="select"
                     name="role"
                     className={`w-full px-4 py-2 rounded-lg border ${
-                      errors.role && touched.role ? 'border-red-500' : 'border-[#CBD5E0]'
-                    } focus:outline-none focus:ring-2 focus:ring-[#6C63FF]/50 transition`}
+                      errors.role && touched.role ? 'border-red-500' : 'border-rose-200'
+                    } focus:outline-none focus:ring-2 focus:ring-rose-300/50 transition text-rose-900`}
                   >
                     <option value="">Select your role</option>
                     <option value="student">Student</option>
@@ -247,7 +244,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5] text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 px-4 rounded-lg font-medium hover:to-rose-600 transition shadow-md disabled:opacity-70"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center">
@@ -263,11 +260,11 @@ export default function RegisterPage() {
                 </button>
 
                 {/* Login Link */}
-                <p className="text-center text-sm text-[#718096]">
+                <p className="text-center text-sm text-rose-700/80">
                   Already have an account?{' '}
-                  <a href="/login" className="text-[#6C63FF] font-medium hover:underline">
+                  <Link href="/login" className="text-rose-600 font-medium hover:underline">
                     Sign in
-                  </a>
+                  </Link>
                 </p>
               </Form>
             )}
@@ -275,6 +272,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-</>
   );
 }
