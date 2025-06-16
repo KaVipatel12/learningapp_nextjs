@@ -35,7 +35,7 @@ interface DeleteCourseButtonProps {
         setTimeout(() => {
           setIsDeleting(false);
           setIsModalOpen(false);
-          router.push('/educator/courses');
+          router.push('/educator/profile');
         }, 500);
       } else {
         const errorData = await response.json();

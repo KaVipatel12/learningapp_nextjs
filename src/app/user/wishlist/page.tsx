@@ -25,8 +25,8 @@ export default function WishlistPage() {
   const [loading, setLoading] = useState(true);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
-  const { purchasedCoursesIds } = useUser();
-
+  const { purchasedCoursesIds , fetchUserData } = useUser();
+  
   const fetchWishlist = useCallback(async () => {
     try {
       setLoading(true);
@@ -61,6 +61,7 @@ export default function WishlistPage() {
       if (response.ok) {
         showNotification('All courses purchased successfully!', 'success');
         setCourses([]);
+        fetchUserData();
         setShowPurchaseModal(false);
       } else {
         showNotification(data.msg || 'Purchase failed', 'error');

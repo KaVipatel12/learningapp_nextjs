@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap } from 'lucide-react';
+import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
+import { useRouter } from 'next/navigation';
 
 export default function AppNavbar() {
   const { user, userLoading } = useUser();
@@ -12,6 +13,9 @@ export default function AppNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter(); 
+  const { fetchUserData } = useUser(); 
 
   useEffect(() => {
     setIsClient(true);
@@ -23,6 +27,73 @@ export default function AppNavbar() {
   useEffect(() => {
     setIsOpen(false);
   }, []);
+
+  const logOut = async () => {
+    if (loggingOut) return; // Prevent multiple clicks
+    
+    setLoggingOut(true);
+    
+    try {
+      // Call backend logout API
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important: include cookies in request
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log('Logout successful:', result.message);
+      } else {
+        console.error('Logout API error:', result.message);
+        // Continue with logout process even if API fails
+      }
+      
+    } catch (error) {
+      console.error('Logout request failed:', error);
+      // Continue with logout process even if request fails
+    }
+    
+    try {
+      // Refresh user data to update UI state
+      await fetchUserData();
+      
+      // Navigate to home page
+      router.push("/");
+      
+      // Force a page refresh to clear any cached data
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error during logout cleanup:', error);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  const LogoutButton = ({ isMobile = false }) => (
+    <button 
+      onClick={logOut} 
+      disabled={loggingOut}
+      className={`text-rose-700 hover:text-rose-900 transition flex items-center ${
+        loggingOut ? 'opacity-50 cursor-not-allowed' : ''
+      } ${isMobile ? 'px-3 py-2 rounded-md text-base font-medium hover:bg-pink-50' : ''}`}
+    >
+      {loggingOut ? (
+        <Loader2 className="mr-1 h-5 w-5 animate-spin" />
+      ) : (
+        <LogOut className="mr-1 h-5 w-5" />
+      )}
+      <span className={isMobile ? '' : 'hidden md:inline'}>
+        {loggingOut ? 'Logging out...' : 'Logout'}
+      </span>
+    </button>
+  );
 
   const renderAuthButtons = () => {
     if (!isClient || userLoading || educatorLoading) {
@@ -61,10 +132,7 @@ export default function AppNavbar() {
             )}
             <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
           </Link>
-          <Link href="/api/auth/logout" className="text-rose-700 hover:text-rose-900 transition flex items-center">
-            <LogOut className="mr-1 h-5 w-5" />
-            <span className="hidden md:inline">Logout</span>
-          </Link>
+          <LogoutButton />
         </div>
       );
     }
@@ -78,10 +146,7 @@ export default function AppNavbar() {
             </div>
             <span className="ml-2 text-rose-800">{educator.username?.split(' ')[0]}</span>
           </Link>
-          <Link href="/api/auth/logout" className="text-rose-700 hover:text-rose-900 transition flex items-center">
-            <LogOut className="mr-1 h-5 w-5" />
-            <span className="hidden md:inline">Logout</span>
-          </Link>
+          <LogoutButton />
         </div>
       );
     }
@@ -89,7 +154,7 @@ export default function AppNavbar() {
     // Default navigation for unauthenticated users
     return (
       <div className="flex items-center space-x-6">
-        <Link href="/courses" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+        <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
           <Video className="mr-1 h-5 w-5" />
           <span className="hidden md:inline">Browse Courses</span>
         </Link>
@@ -134,12 +199,7 @@ export default function AppNavbar() {
           >
             <User className="mr-2 h-5 w-5" /> Profile
           </Link>
-          <Link 
-            href="/api/auth/logout" 
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <LogOut className="mr-2 h-5 w-5" /> Logout
-          </Link>
+          <LogoutButton isMobile={true} />
         </>
       );
     }
@@ -153,12 +213,7 @@ export default function AppNavbar() {
           >
             <GraduationCap className="mr-2 h-5 w-5" /> Profile
           </Link>
-          <Link 
-            href="/api/auth/logout" 
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <LogOut className="mr-2 h-5 w-5" /> Logout
-          </Link>
+          <LogoutButton isMobile={true} />
         </>
       );
     }
@@ -167,7 +222,7 @@ export default function AppNavbar() {
     return (
       <>
         <Link 
-          href="/courses" 
+          href="/course" 
           className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
         >
           <Video className="mr-2 h-5 w-5" /> Browse Courses

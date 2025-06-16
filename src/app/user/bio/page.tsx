@@ -3,9 +3,13 @@
 import { useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
+import { useNotification } from '@/components/NotificationContext';
+import { useRouter } from 'next/navigation';
 
 const UserBioPage = () => {
   const { user, userLoading } = useUser();
+  const { showNotification } = useNotification(); 
+  const router  = useRouter(); 
   if (userLoading) {
     return <PageLoading />;
   }
@@ -22,8 +26,11 @@ const UserBioPage = () => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.msg || 'Failed to update bio');
+      return showNotification(data.msg || 'Failed to update bio', "error");
     }
+    
+    showNotification('Bio Updated successfully', "success");
+    return router.push("/user/profile")
   };
 
 

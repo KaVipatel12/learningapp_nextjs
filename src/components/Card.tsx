@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Star, Heart, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNotification } from './NotificationContext';
+import { useUser } from '@/context/userContext';
 
 interface CardProps {
   id: string;
@@ -41,6 +42,7 @@ export default function Card({
   const [localWishlisted, setLocalWishlisted] = useState(isWishlisted);
   const [isProcessing, setIsProcessing] = useState(false);
   const { showNotification } = useNotification();
+  const {fetchUserData} = useUser();
 
   useEffect(() => {
     setLocalWishlisted(isWishlisted);
@@ -70,6 +72,7 @@ export default function Card({
           return showNotification(data.msg, "error"); 
         }
         showNotification(data.msg, "success"); 
+        fetchUserData();
       }
     } catch {
       showNotification('Wishlist update failed', "error");

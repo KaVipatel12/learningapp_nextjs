@@ -323,14 +323,14 @@ const HomePage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-lg border border-pink-100">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-            {user ? 'Courses of your Interest' : 'Programming Courses'}
+            Courses of your Interest 
           </h2>
           
           {!user && !courseCategoryLoading && (
             <div className="mb-4 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-pink-200">
               <p className="text-pink-700 text-center">
                 <span className="font-medium">Login to get your favorite categories!</span> 
-                <span className="ml-2">Meanwhile, check out these programming courses.</span>
+                <span className="ml-2">Meanwhile, check out other courses.</span>
               </p>
             </div>
           )}

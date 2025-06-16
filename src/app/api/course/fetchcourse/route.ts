@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     }
 
     if (category) {
-      query.category = category;
+      query.category = { $regex: category, $options: "i" };
     }
 
     if (price === "free") {

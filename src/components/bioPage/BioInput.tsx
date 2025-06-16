@@ -54,13 +54,12 @@ const BioInput = ({
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen">
       <div className="max-w-4xl mx-auto">
         <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-6 rounded-t-xl text-white">
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="text-2xl font-bold mt-13">{title}</h1>
           <p className="text-purple-100">{description}</p>
         </div>
-
         <div className="bg-white rounded-b-xl shadow-lg p-6 border border-gray-200">
           <form onSubmit={handleFormSubmit} className="space-y-6">
             <div>

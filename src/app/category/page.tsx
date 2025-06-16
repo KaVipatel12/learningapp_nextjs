@@ -95,7 +95,7 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
       }
 
       showNotification("Categories updated successfully!", "success");
-      router.push("/user/profile");
+      router.push("/user/bio");
       fetchUserData(); 
     } catch (error) {
       let errorMessage = "An unknown error occurred";

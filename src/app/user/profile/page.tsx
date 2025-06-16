@@ -54,7 +54,7 @@ export default function UserProfile() {
             <div className="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-pink-300 to-rose-300 opacity-30" />
               <Image
-                src="/avatar.jpg" // Replace with a valid image URL or local path
+                src="/profilepic.png" // Replace with a valid image URL or local path
                 alt="User profile"
                 width={128}
                 height={128}
@@ -143,17 +143,10 @@ export default function UserProfile() {
           <div className="mt-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-rose-900">Enrolled Courses</h2>
-              {purchasedCourses && purchasedCourses.length > 6 && (
-                <button 
-                  className="text-sm text-rose-600 hover:text-rose-800 font-medium"
-                  onClick={() => router.push('/user/courses')}
-                >
-                  View All →
-                </button>
-              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 place-items-center">
-              {purchasedCourses?.slice(0, 6).map((course) => (
+            { 
+              purchasedCourses?.slice(0, 6).map((course) => (
                 <Card
                   key={course.id}
                   id={course.id}
@@ -172,6 +165,20 @@ export default function UserProfile() {
                 />
               ))}
             </div>
+
+            {
+              purchasedCourses?.length === 0 && (
+                 <div className="bg-white p-8 rounded-xl shadow-sm border border-rose-100 text-center">
+                    <p className="text-rose-800/80">You have not enrolled any courses yet.</p>
+                    <button 
+                      onClick={() => router.push('/course')}
+                      className="mt-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:to-rose-600 text-white px-4 py-2 rounded-md text-sm font-medium transition shadow-md"
+                    >
+                      Explore courses
+                    </button>
+                  </div>
+              )
+            }
           </div>
         </div>
       </div>
