@@ -13,11 +13,16 @@ export default function EducatorProfile() {
   const { educator, educatorLoading } = useEducator();
   const [pageLoading, setPageLoading] = useState(false);
   const router = useRouter(); 
+    
+    
   
   useEffect(() => {
-    console.log(educator); 
     setPageLoading(educatorLoading);
   }, [educatorLoading, educator]);
+  
+  useEffect(() => {  
+  if(!educator && !educatorLoading) return router.push("/unauthorized/user")
+}, [router , educator , educatorLoading]);
 
   const formattedEducator = useMemo(() => {
     if (!educator) return {
@@ -33,7 +38,7 @@ export default function EducatorProfile() {
       },
       courses: [],
       coverImage: "/cover-placeholder.jpg",
-      avatar: "/avatar-placeholder.jpg",
+      avatar: "/profilepic.png",
       role: "Educator",
       bio: ""
     };
@@ -56,7 +61,7 @@ export default function EducatorProfile() {
       },
       courses: educator.courses || [],
       coverImage: "/cover-placeholder.jpg",
-      avatar: "/avatar-placeholder.jpg",
+      avatar: "/profilepic.png",
       role: educator.role || "Educator",
       bio: educator.bio 
     };
@@ -198,12 +203,12 @@ export default function EducatorProfile() {
             </div>
             
             {formattedEducator.courses.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
                 {formattedEducator.courses.map(course => (
                   <Card
                     key={course._id}
                     id={course._id}
-                    imageUrl={course.courseImage || "/course-placeholder.jpg"}
+                    imageUrl={course.imageUrl || "/course-placeholder.jpg"}
                     title={course.title}
                     instructor={formattedEducator.name}
                     rating={4.5}

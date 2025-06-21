@@ -23,7 +23,7 @@ import mongoose from "mongoose";
 import {
   AuthContext,
   authUserMiddleware,
-} from "@/middleware/authUserMiddleware";
+} from "@/app/middleware/authUserMiddleware";
 
 // Get all courses with review statistics
 export async function GET(req: NextRequest) {

@@ -4,7 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
 import { EducatorData, useEducator } from '@/context/educatorContext';
+import { useUser } from '@/context/userContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FiUser, FiLock, FiBook, FiArrowRight } from 'react-icons/fi';
 
@@ -19,7 +21,12 @@ export default function SettingsPage() {
   const { educator, educatorLoading } = useEducator();
   const [educatorData, setEducatorData] = useState<EducatorData | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const { user } = useUser(); 
+  const router = useRouter();
+  
+  
+  
+  
   useEffect(() => {
     if (educator) {
       setLoading(educatorLoading);
@@ -28,6 +35,10 @@ export default function SettingsPage() {
       }
     }
   }, [educator, educatorLoading]);
+  
+  useEffect(() => {  
+  if(user) return router.push("/unauthorized/user")
+}, [ user , router]);
 
   if (loading) {
     return <PageLoading />;
@@ -69,7 +80,7 @@ export default function SettingsPage() {
 
             <div className="md:col-span-3 p-6 md:p-8">
               {activeTab === 'profile' && (
-                <ProfileSection educatorData={educatorData} setEducatorData={setEducatorData} />
+                <ProfileSection educatorData={educatorData!} setEducatorData={setEducatorData} />
               )}
               {activeTab === 'password' && <PasswordSection />}
               {activeTab === 'goals' && <GoalsSection />}

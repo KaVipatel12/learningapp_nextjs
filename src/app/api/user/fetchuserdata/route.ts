@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authUserMiddleware, AuthContext } from "@/middleware/authUserMiddleware";
+import { authUserMiddleware, AuthContext } from "@/app/middleware/authUserMiddleware";
 import { connect } from "@/db/dbConfig";
 import { User }  from "@/models/models";
 

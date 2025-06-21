@@ -1,6 +1,6 @@
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
-import { courseModifyMiddleware } from '@/middleware/courseModifyMiddleware';
+import { courseModifyMiddleware } from '@/app/middleware/courseModifyMiddleware';
 import {Course} from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 
@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest, { params }: { params: { courseId: st
     // Process image
     let imageUrl = existingCourse.imageUrl;
     let imagePublicId = existingCourse.imagePublicId;
-    const imageFile = formData.get('courseImage');
+    const imageFile = formData.get('imageUrl');
     
     // Only process image if the imageChanged flag is true AND we have a file
     if (imageChanged) {
@@ -181,7 +181,7 @@ export async function PUT(req: NextRequest, { params }: { params: { courseId: st
       {
         msg: "Course updated successfully",
         course: updatedCourse,
-        courseImage: imageUrl // Return the image URL so frontend can update if needed
+        imageUrl: imageUrl // Return the image URL so frontend can update if needed
       },
       { status: 200 }
     );

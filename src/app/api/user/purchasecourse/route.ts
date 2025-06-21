@@ -1,4 +1,4 @@
-import { AuthContext, authUserMiddleware } from '@/middleware/authUserMiddleware';
+import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
 import { User } from '@/models/models';
 import { Course } from '@/models/models'; // Add Course model import
 import { NextRequest, NextResponse } from 'next/server';

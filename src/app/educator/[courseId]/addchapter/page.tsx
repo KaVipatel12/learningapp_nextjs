@@ -5,9 +5,10 @@ import { useRouter, useParams } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
 import { useEducator } from '@/context/educatorContext';
 import { PageLoading } from '@/components/PageLoading';
+import PleaseWait from '@/components/PleaseWait';
 
 // Constants
-const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_MB = 50;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 // Type definitions
@@ -47,11 +48,10 @@ export default function AddChaptersPage() {
 
 useEffect(() => {
   if (educatorLoading) return setPageLoading(true)
-
   const ownsCourse = educator?.courses?.some(course => course._id?.toString() === courseId);
 
   if (!ownsCourse) {
-    router.back();
+    router.push('/unauthorized/user');
   }
 
   setPageLoading(false)
@@ -413,6 +413,7 @@ useEffect(() => {
             {isSubmitting ? 'Saving...' : 'Save All Chapters'}
           </button>
         </div>
+        {isSubmitting && <PleaseWait message={"Saving chapters"}/> }
       </form>
     </div>
   );

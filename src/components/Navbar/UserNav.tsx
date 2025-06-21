@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2 } from 'lucide-react';
+import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/userContext';
 import { useEducator } from '@/context/educatorContext';
@@ -140,6 +140,10 @@ export default function AppNavbar() {
     if (educator) {
       return (
         <div className="flex items-center space-x-6">
+          <Link href="/educator/addcourse" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+            <Plus className="mr-1 h-5 w-5" />
+            <span className="hidden md:inline">Add Course</span>
+          </Link>
           <Link href="/educator/profile" className="flex items-center">
             <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
               <GraduationCap className="h-4 w-4 text-pink-600" />
@@ -207,6 +211,12 @@ export default function AppNavbar() {
     if (educator) {
       return (
         <>
+          <Link 
+            href="/educator/addcourse" 
+            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+          >
+            <Plus className="mr-2 h-5 w-5" /> Add Course
+          </Link>
           <Link 
             href="/educator/profile" 
             className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"

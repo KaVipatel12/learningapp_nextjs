@@ -24,7 +24,7 @@ export interface ICourse extends Document {
     description: string;
     price: number;
     discount?: number;
-    courseImage?: string;
+    imageUrl?: string;
     category: string;
     level: string;
     language?: string;

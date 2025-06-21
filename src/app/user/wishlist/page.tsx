@@ -6,6 +6,8 @@ import { useNotification } from '@/components/NotificationContext';
 import Link from 'next/link';
 import Modal from '@/components/Modal';
 import { useUser } from '@/context/userContext';
+import { useEducator } from '@/context/educatorContext';
+import { useRouter } from 'next/navigation';
 
 interface Course {
   _id: string;
@@ -25,6 +27,8 @@ export default function WishlistPage() {
   const [loading, setLoading] = useState(true);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
+  const { educator } = useEducator(); 
+  const router = useRouter();  
   const { purchasedCoursesIds , fetchUserData } = useUser();
   
   const fetchWishlist = useCallback(async () => {
@@ -35,14 +39,14 @@ export default function WishlistPage() {
       if (response.ok) {
         setCourses(data.msg);
       } else {
-        showNotification(data.msg || 'Failed to load wishlist', 'error');
+        alert(data.msg || 'Failed to load wishlist');
       }
     } catch {
-      showNotification('Network error', 'error');
+      alert('Network error');
     } finally {
       setLoading(false);
     }
-  }, [showNotification]);
+  }, []);
 
   useEffect(() => {
     fetchWishlist();
@@ -72,6 +76,10 @@ export default function WishlistPage() {
       setPurchasing(false);
     }
   };
+  
+    useEffect(() => {  
+      if(educator) return router.push("/unauthorized/educator")
+    }, [educator , router]);
 
   const isPurchased = (courseId: string) => {
     return purchasedCoursesIds.some(id => id.toString() === courseId);

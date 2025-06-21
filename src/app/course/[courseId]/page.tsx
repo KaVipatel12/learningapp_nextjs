@@ -1,20 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  Button, Card, Tabs, Typography, Divider, Rate, 
-  Row,
-  Col, 
-} from 'antd';
-import Image from 'next/image';
-import { PageLoading } from '@/components/PageLoading';
-import { useParams, useRouter } from 'next/navigation';
-import { useUser } from '@/context/userContext';
-import { useEducator } from '@/context/educatorContext';
-import DeleteCourseButton from './DeleteButton';
-import { useNotification } from '@/components/NotificationContext';
-import ErrorPage from '@/components/ErrorPage';
-import Link from 'next/link';
+import { useState, useEffect, useCallback } from "react";
+import { Button, Card, Tabs, Typography, Divider, Rate, Row, Col } from "antd";
+import Image from "next/image";
+import { PageLoading } from "@/components/PageLoading";
+import { useParams, useRouter } from "next/navigation";
+import { useUser } from "@/context/userContext";
+import { useEducator } from "@/context/educatorContext";
+import DeleteCourseButton from "./DeleteButton";
+import { useNotification } from "@/components/NotificationContext";
+import ErrorPage from "@/components/ErrorPage";
+import Link from "next/link";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -23,7 +19,7 @@ interface ICourse {
   title: string;
   description: string;
   price: number;
-  courseImg: string;
+  imageUrl: string;
   category: string;
   level: string;
   duration: number;
@@ -34,29 +30,29 @@ interface ICourse {
   isPublished: boolean;
   prerequisites: string;
   learningOutcomes: string;
-  educator : {
-    _id : string;
-  }; 
+  educator: {
+    _id: string;
+  };
 }
 
 const CourseDetailPage = () => {
   const [course, setCourse] = useState<ICourse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [isCoursePurchased, setIsCoursePurchased] = useState(false); 
-  const [isOwner, setIsOwner] = useState(false); 
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isCoursePurchased, setIsCoursePurchased] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [totalRatings, setTotalRatings] = useState(0);
-  const { showNotification } = useNotification(); 
-  
-  const { user } = useUser();
+  const { showNotification } = useNotification();
+
+  const { user, fetchUserData } = useUser();
   const { educator } = useEducator();
   const params = useParams();
   const router = useRouter();
-  
+
   const courseId = params.courseId as string;
 
   // Fetch course data
@@ -65,17 +61,17 @@ const CourseDetailPage = () => {
       try {
         setLoading(true);
         const response = await fetch(`/api/course/${courseId}`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch course');
+          throw new Error("Failed to fetch course");
         }
-        
+
         const data = await response.json();
         setCourse(data.msg);
-        console.log(data.msg)
+        console.log(data.msg);
       } catch (err) {
-        console.error('Error fetching course:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        console.error("Error fetching course:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -89,15 +85,16 @@ const CourseDetailPage = () => {
   // Check permissions to delete and update page
   useEffect(() => {
     if (user && user.purchaseCourse) {
-      const purchased = user.purchaseCourse.some(purchase => {
-        const purchaseCourseId = typeof purchase.courseId === 'object' 
-          ? purchase.courseId._id 
-          : purchase.courseId;
+      const purchased = user.purchaseCourse.some((purchase) => {
+        const purchaseCourseId =
+          typeof purchase.courseId === "object"
+            ? purchase.courseId._id
+            : purchase.courseId;
         return purchaseCourseId === courseId;
       });
       setIsCoursePurchased(purchased);
     }
-    
+
     if (educator && educator.courses) {
       const owned = educator.courses.some(
         (course) => course._id?.toString() === courseId
@@ -113,45 +110,48 @@ const CourseDetailPage = () => {
       const res = await fetch("/api/user/purchasecourse", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          courses: [courseId]
-        })
+          courses: [courseId],
+        }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         setIsCoursePurchased(false);
-        showNotification(data.msg, "error"); 
+        showNotification(data.msg, "error");
         return;
       }
       setIsCoursePurchased(true);
       setShowEnrollModal(false);
+      fetchUserData();
       showNotification("Enrollment successful!", "success");
     } catch {
-      showNotification("There is some error please try again later", "error"); 
+      showNotification("There is some error please try again later", "error");
     } finally {
       setEnrollLoading(false);
     }
   };
 
-  // fetching the average review 
+  // fetching the average review
   const fetchReview = useCallback(async () => {
     try {
-      const response = await fetch(`/api/user/review/${courseId}/averagerating`);
+      const response = await fetch(
+        `/api/user/review/${courseId}/averagerating`
+      );
       if (!response.ok) {
-        console.log('Failed to submit rating');
+        console.log("Failed to submit rating");
       }
-      const data = await response.json(); 
+      const data = await response.json();
       setAverageRating(data.averageRating || 0);
       setTotalRatings(data.totalRatings || 0);
     } catch {
-      console.log("Error in fetching the error")
-    } 
+      console.log("Error in fetching the error");
+    }
   }, [courseId]);
-  
+
   useEffect(() => {
     fetchReview();
   }, [fetchReview]);
@@ -165,14 +165,25 @@ const CourseDetailPage = () => {
   };
 
   const renderLevelTag = (level: string) => {
-    const levelMap: Record<string, { color: string, bg: string }> = {
-      beginner: { color: 'text-green-700', bg: 'bg-green-100 border-green-300' },
-      intermediate: { color: 'text-orange-700', bg: 'bg-orange-100 border-orange-300' },
-      advanced: { color: 'text-red-700', bg: 'bg-red-100 border-red-300' }
+    const levelMap: Record<string, { color: string; bg: string }> = {
+      beginner: {
+        color: "text-green-700",
+        bg: "bg-green-100 border-green-300",
+      },
+      intermediate: {
+        color: "text-orange-700",
+        bg: "bg-orange-100 border-orange-300",
+      },
+      advanced: { color: "text-red-700", bg: "bg-red-100 border-red-300" },
     };
-    const style = levelMap[level.toLowerCase()] || { color: 'text-blue-700', bg: 'bg-blue-100 border-blue-300' };
+    const style = levelMap[level.toLowerCase()] || {
+      color: "text-blue-700",
+      bg: "bg-blue-100 border-blue-300",
+    };
     return (
-      <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${style.bg} ${style.color}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-sm font-semibold border ${style.bg} ${style.color}`}
+      >
         {level}
       </span>
     );
@@ -183,9 +194,7 @@ const CourseDetailPage = () => {
   }
 
   if (error) {
-    return (
-      <ErrorPage error={error}></ErrorPage>
-    );
+    return <ErrorPage error={error}></ErrorPage>;
   }
 
   if (!course) {
@@ -193,14 +202,18 @@ const CourseDetailPage = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200">
           <div className="text-rose-500 text-6xl mb-4">📚</div>
-          <h2 className="text-2xl font-bold text-rose-800 mb-2">Course not found</h2>
-          <p className="text-rose-600">The course you are looking for doesn not exist.</p>
+          <h2 className="text-2xl font-bold text-rose-800 mb-2">
+            Course not found
+          </h2>
+          <p className="text-rose-600">
+            The course you are looking for doesn not exist.
+          </p>
         </div>
       </div>
     );
   }
 
-return (
+  return (
     <>
       <div className="min-h-screen mb-20">
         {/* Hero Section */}
@@ -215,48 +228,57 @@ return (
                   </span>
                   {renderLevelTag(course.level)}
                 </div>
-                
-                <Title level={1} className="!text-white !text-4xl lg:!text-5xl !font-bold !mb-6 leading-tight">
+
+                <Title
+                  level={1}
+                  className="!text-white !text-4xl lg:!text-5xl !font-bold !mb-6 leading-tight"
+                >
                   {course.title}
                 </Title>
-                
+
                 <div className="flex items-center gap-4 mb-6">
-                  <Rate 
-                    disabled 
-                    value={averageRating} 
-                    allowHalf 
-                    className="text-yellow-400" 
+                  <Rate
+                    disabled
+                    value={averageRating}
+                    allowHalf
+                    className="text-yellow-400"
                   />
                   <Text className="!text-white text-lg">
                     {averageRating} ({totalRatings} reviews)
                   </Text>
                 </div>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                     <div className="text-2xl font-bold">{course.duration}h</div>
                     <div className="text-white/80 text-sm">Duration</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="text-2xl font-bold">{course.totalSections}</div>
+                    <div className="text-2xl font-bold">
+                      {course.totalSections}
+                    </div>
                     <div className="text-white/80 text-sm">Sections</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="text-2xl font-bold">{course.totalLectures}</div>
+                    <div className="text-2xl font-bold">
+                      {course.totalLectures}
+                    </div>
                     <div className="text-white/80 text-sm">Lectures</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="text-2xl font-bold">{course.totalEnrollment}</div>
+                    <div className="text-2xl font-bold">
+                      {course.totalEnrollment}
+                    </div>
                     <div className="text-white/80 text-sm">Students</div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="relative">
                 <div className="relative h-80 lg:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
                   <Image
                     alt={course.title}
-                    src={course.courseImg}
+                    src={course.imageUrl}
                     fill
                     className="object-cover"
                     priority
@@ -274,15 +296,15 @@ return (
               {/* Course Content Card */}
               <Card
                 className="border-0 shadow-2xl bg-white/90 backdrop-blur-sm hover:shadow-3xl transition-all duration-300"
-                style={{ borderRadius: '24px' }}
+                style={{ borderRadius: "24px" }}
               >
-                <Tabs 
-                  activeKey={activeTab} 
+                <Tabs
+                  activeKey={activeTab}
                   onChange={setActiveTab}
                   className="course-tabs"
                   items={[
                     {
-                      key: 'overview',
+                      key: "overview",
                       label: (
                         <span className="flex items-center gap-2 font-semibold text-lg">
                           📋 Overview
@@ -291,7 +313,10 @@ return (
                       children: (
                         <div className="space-y-8">
                           <div>
-                            <Title level={3} className="!text-rose-800 !mb-4 flex items-center gap-2">
+                            <Title
+                              level={3}
+                              className="!text-rose-800 !mb-4 flex items-center gap-2"
+                            >
                               📖 About This Course
                             </Title>
                             <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border border-pink-200">
@@ -300,72 +325,90 @@ return (
                               </Paragraph>
                             </div>
                           </div>
-                          
+
                           <Divider className="!border-pink-200" />
-                          
+
                           <div>
-                            <Title level={3} className="!text-rose-800 !mb-4 flex items-center gap-2">
+                            <Title
+                              level={3}
+                              className="!text-rose-800 !mb-4 flex items-center gap-2"
+                            >
                               ✅ Prerequisites
                             </Title>
                             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-                        {
-                        course?.prerequisites?.split(".").map( (pre , sr) => (
-                          <>
-                          <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0" key={sr}>
-                                ✅ { pre } 
-                              </Paragraph>
-                          </>
-                              ) )}
+                              {course?.prerequisites?.split(".").map(
+                                (pre, sr) =>
+                                  pre.length > 0 && (
+                                    <>
+                                      <Paragraph
+                                        className="!text-gray-700 !text-lg !leading-relaxed !mb-0"
+                                        key={sr}
+                                      >
+                                        ✅ {pre}
+                                      </Paragraph>
+                                    </>
+                                  )
+                              )}
                             </div>
                           </div>
-                          
+
                           <div>
-                            <Title level={3} className="!text-rose-800 !mb-4 flex items-center gap-2">
+                            <Title
+                              level={3}
+                              className="!text-rose-800 !mb-4 flex items-center gap-2"
+                            >
                               🎯 What You Will Learn
                             </Title>
                             <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
-                              {course?.learningOutcomes?.split(".").map((content , sr) => (
-<>
-                                <Paragraph className="!text-gray-700 !text-lg !leading-relaxed !mb-0" key={sr}>
-                                ✅ { content }
-                              </Paragraph>
-</>
-                              ))
-                              }
+                              {course?.learningOutcomes?.split(".").map(
+                                (content, sr) =>
+                                  content.length > 0 && (
+                                    <>
+                                      <Paragraph
+                                        className="!text-gray-700 !text-lg !leading-relaxed !mb-0"
+                                        key={sr}
+                                      >
+                                        ✅ {content}
+                                      </Paragraph>
+                                    </>
+                                  )
+                              )}
                             </div>
                           </div>
                         </div>
-                      )
+                      ),
                     },
-                  ]} 
+                  ]}
                 />
               </Card>
             </Col>
-  
+
             <Col xs={24} lg={8}>
               {/* Pricing Card */}
-              <Card 
+              <Card
                 className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm hover:shadow-3xl transition-all duration-300 sticky top-24"
-                style={{ borderRadius: '24px' }}
-                bodyStyle={{ padding: '32px' }}
+                style={{ borderRadius: "24px" }}
+                bodyStyle={{ padding: "32px" }}
               >
                 <div className="text-center mb-8">
                   <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 inline-block">
                     💎 Premium Course
                   </div>
                   <Title level={2} className="!text-rose-600 !mb-2 !text-4xl">
-                    ₹{course.price.toLocaleString('en-IN')}
+                    ₹{course.price.toLocaleString("en-IN")}
                   </Title>
-                  <Text className="text-rose-500 text-lg font-medium">One-time payment • Lifetime access</Text>
+                  <Text className="text-rose-500 text-lg font-medium">
+                    One-time payment • Lifetime access
+                  </Text>
                 </div>
-                
+
                 {/* Action Buttons */}
                 <div className="space-y-4 mb-8">
-                  {(!isCoursePurchased && !isOwner) && (
-                    <Button 
-                      type="primary" 
-                      size="large" 
-                      block 
+                  {!isCoursePurchased && !isOwner && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      block
                       className="!h-14 !bg-gradient-to-r !from-pink-500 !to-rose-500 hover:!from-pink-600 hover:!to-rose-600 !border-0 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                       onClick={() => setShowEnrollModal(true)}
                       loading={enrollLoading}
@@ -373,76 +416,94 @@ return (
                       🚀 Enroll Now
                     </Button>
                   )}
-                  
+
                   {isOwner && (
                     <>
-                      <Button 
-                        type="primary" 
-                        size="large" 
-                        block 
+                      <Button
+                        type="primary"
+                        size="large"
+                        block
                         className="!h-14 !bg-gradient-to-r !from-amber-500 !to-orange-500 hover:!from-amber-600 hover:!to-orange-600 !border-0 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                         onClick={handleUpdateCourse}
                       >
                         ✏️ Update Course
                       </Button>
-                      
+
                       <DeleteCourseButton courseId={courseId} />
                     </>
                   )}
-                  
-                  <Button 
+
+                  <Button
                     type={isCoursePurchased || isOwner ? "primary" : "default"}
-                    size="large" 
-                    block 
+                    size="large"
+                    block
                     className={`!h-14 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ${
-                      isCoursePurchased || isOwner 
-                        ? "!bg-gradient-to-r !from-indigo-500 !to-purple-500 hover:!from-indigo-600 hover:!to-purple-600 !border-0" 
+                      isCoursePurchased || isOwner
+                        ? "!bg-gradient-to-r !from-indigo-500 !to-purple-500 hover:!from-indigo-600 hover:!to-purple-600 !border-0"
                         : "!text-rose-600 !border-2 !border-rose-300 hover:!text-rose-700 hover:!border-rose-400 !bg-gradient-to-r !from-rose-50 !to-pink-50 hover:!from-rose-100 hover:!to-pink-100"
                     }`}
                     onClick={handleViewChapters}
                   >
-                    {isCoursePurchased || isOwner ? "📚 Go to Chapters" : "👀 Preview Course"}
+                    {isCoursePurchased || isOwner
+                      ? "📚 Go to Chapters"
+                      : "👀 Preview Course"}
                   </Button>
                 </div>
 
                 <Divider className="!border-pink-200 !my-8" />
-                
+
                 {/* Course Details */}
                 <div className="space-y-4">
-                  <Title level={4} className="!text-rose-800 !mb-6 flex items-center gap-2">
+                  <Title
+                    level={4}
+                    className="!text-rose-800 !mb-6 flex items-center gap-2"
+                  >
                     📊 Course Details
                   </Title>
-                  
+
                   <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         ⏰ Duration:
                       </span>
-                      <span className="font-bold text-rose-700">{course.duration} hours</span>
+                      <span className="font-bold text-rose-700">
+                        {course.duration} hours
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         👨‍🏫 Educator:
                       </span>
-                      <Link href={`/profile/${course?.educator?._id}`} className="font-bold text-rose-700">{course.educatorName}</Link>
-                    </div>                    
+                      <Link
+                        href={`/profile/${course?.educator?._id}`}
+                        className="font-bold text-rose-700"
+                      >
+                        {course.educatorName}
+                      </Link>
+                    </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         👥 Enrollment:
                       </span>
-                      <span className="font-bold text-rose-700">{course.totalEnrollment} students</span>
+                      <span className="font-bold text-rose-700">
+                        {course.totalEnrollment} students
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         📑 Sections:
                       </span>
-                      <span className="font-bold text-rose-700">{course.totalSections}</span>
+                      <span className="font-bold text-rose-700">
+                        {course.totalSections}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         🎥 Lectures:
                       </span>
-                      <span className="font-bold text-rose-700">{course.totalLectures}</span>
+                      <span className="font-bold text-rose-700">
+                        {course.totalLectures}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -456,41 +517,52 @@ return (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-pink-200 transform animate-pulse">
               <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-t-2xl">
-                <Title level={3} className="!text-white !mb-2 flex items-center gap-2">
+                <Title
+                  level={3}
+                  className="!text-white !mb-2 flex items-center gap-2"
+                >
                   🎓 Confirm Enrollment
                 </Title>
-                <Text className="text-pink-100">Join thousands of successful learners</Text>
+                <Text className="text-pink-100">
+                  Join thousands of successful learners
+                </Text>
               </div>
-              
+
               <div className="p-6">
                 <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl border border-pink-200 mb-6">
                   <p className="text-gray-700 text-lg">
-                    Ready to start your journey with <span className="font-bold text-rose-700">{course.title}</span>?
+                    Ready to start your journey with{" "}
+                    <span className="font-bold text-rose-700">
+                      {course.title}
+                    </span>
+                    ?
                   </p>
                   <div className="mt-4 p-3 bg-white rounded-lg border border-pink-200">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Total Amount:</span>
-                      <span className="text-2xl font-bold text-rose-600">₹{course.price.toLocaleString('en-IN')}</span>
+                      <span className="text-2xl font-bold text-rose-600">
+                        ₹{course.price.toLocaleString("en-IN")}
+                      </span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3">
-                  <Button 
+                  <Button
                     onClick={() => setShowEnrollModal(false)}
                     className="flex-1 !h-12 !border-2 !border-pink-300 !text-pink-600 hover:!border-pink-400 hover:!text-pink-700 !font-semibold !rounded-xl"
                     size="large"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     onClick={handleEnroll}
                     loading={enrollLoading}
                     className="flex-1 !h-12 !bg-gradient-to-r !from-pink-500 !to-rose-500 hover:!from-pink-600 hover:!to-rose-600 !border-0 !font-semibold !rounded-xl shadow-lg"
                     size="large"
                   >
-                    {enrollLoading ? 'Processing...' : '💳 Confirm & Pay'}
+                    {enrollLoading ? "Processing..." : "💳 Confirm & Pay"}
                   </Button>
                 </div>
               </div>

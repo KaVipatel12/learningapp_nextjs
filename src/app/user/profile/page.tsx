@@ -10,19 +10,26 @@ import { UserData, useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import FormattedDate from '@/components/FormattedDate';
 import Link from 'next/link';
+import { useEducator } from '@/context/educatorContext';
 
 export default function UserProfile() {
   const { user, userLoading, purchasedCourses } = useUser();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [pageLoading, setPageLoading] = useState(false);
   const router = useRouter();
-
+  const { educator } = useEducator(); 
+    
+  
   useEffect(() => {
     setPageLoading(userLoading);
     if (user) {
       setUserData(user);
     }
   }, [userLoading, user]);
+  
+    useEffect(() => {  
+    if(educator) return router.push("/unauthorized/educator")
+  }, [ educator , router]);
 
   if (pageLoading) {
     return (
@@ -144,7 +151,7 @@ export default function UserProfile() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-rose-900">Enrolled Courses</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 place-items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 place-items-center">
             { 
               purchasedCourses?.slice(0, 6).map((course) => (
                 <Card

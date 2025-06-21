@@ -1,19 +1,22 @@
 "use client"
 
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { MoreVertical, Trash2, Edit } from 'lucide-react';
 import ReviewsSection from '@/components/course/ReviewSection';
 import ChatBox from '@/components/course/ChatBox';
 import CourseDescription from '@/components/course/CourseDescription';
 import { PageLoading } from '@/components/PageLoading';
-import {Dialog , Button , DialogFooter , DialogTitle , DialogHeader , DialogContent} from "@/components/course/ChapterPageFuncs"
-import { useRouter } from 'next/navigation';
+import {Button } from "@/components/course/ChapterPageFuncs";
 import { chapterActions } from '@/utils/ChapterFunctionality';
 import Link from 'next/link';
 import { useNotification } from '@/components/NotificationContext';
 import MoreVideos from '@/components/course/MoreVideos';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import Modal from '@/components/Modal';
+import PleaseWait from '@/components/PleaseWait';
 
+// Types
 interface IVideo {
   title: string;
   videoUrl: string;
@@ -21,8 +24,10 @@ interface IVideo {
   duration: number;
   _id: string;
 }
-interface Course{
-  educatorName : string; 
+
+interface ICourse {
+  educatorName: string;
+  totalEnrollment: number;
 }
 
 interface IChapter {
@@ -31,114 +36,185 @@ interface IChapter {
   description: string;
   duration: number;
   videos: IVideo[];
-  courseId: string | Course;
+  courseId: string | ICourse;
   createdAt: string;
   updatedAt: string;
   __v: number;
 }
 
+interface IChapterResponse {
+  msg: IChapter;
+  courseAccess: boolean;
+  courseModify: boolean;
+}
+
+interface IRatingResponse {
+  averageRating: number;
+}
+
 const ChapterPage = () => {
-  const router = useRouter(); 
+  const router = useRouter();
   const params = useParams();
-  const courseId = params.courseId as string; 
-  const chapterId = params.chapterId as string; 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { showNotification } = useNotification();
+
+  // Extract params with proper typing
+  const courseId = params.courseId as string;
+  const chapterId = params.chapterId as string;
+
+  // State management
   const [chapter, setChapter] = useState<IChapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [educatorName, setEducatorName] = useState("");
   const [students, setStudents] = useState(0);
-  const [ isOwner , setIsOwner] = useState(false)
-  const [ averageRating , setAverageRating ] = useState(0)
+  const [isOwner, setIsOwner] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const {showNotification} = useNotification(); 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  // Fetch chapter data
   const fetchChapter = useCallback(async () => {
+    if (!courseId || !chapterId) {
+      setError("Invalid course or chapter ID");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}`); 
+      setError("");
+      const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch chapter');
+        throw new Error(`Failed to fetch chapter: ${response.status}`);
       }
 
-      const data = await response.json(); 
-      if(!data.courseAccess){
-        router.back()
+      const data: IChapterResponse = await response.json();
+      
+      if (!data.courseAccess) {
+        showNotification("You don't have access to this course", "error");
+        router.back();
+        return;
       }
-      setEducatorName(data.msg.courseId.educatorName);
-      setStudents(data.msg.courseId.totalEnrollment);
+
+      // Type guard for courseId
+      if (typeof data.msg.courseId === 'object') {
+        setEducatorName(data.msg.courseId.educatorName);
+        setStudents(data.msg.courseId.totalEnrollment);
+      }
+
       setChapter(data.msg);
+      setIsOwner(data.courseModify);
 
-      setIsOwner(data.courseModify)
     } catch (error) {
-       router.back()
-      console.error(error);
+      console.error("Error fetching chapter:", error);
+      setError(error instanceof Error ? error.message : "Failed to load chapter");
+      showNotification("Failed to load chapter", "error");
+      router.back();
     } finally {
       setLoading(false);
     }
-  }, [chapterId, courseId, router]);
+  }, [chapterId, courseId, router, showNotification]);
 
-  
-  useEffect(() => {
-    fetchChapter(); 
-  }, [fetchChapter]);
-
-
-  const handleDelete = async () => {
-    console.log("toogle delete"); 
-    setDropdownOpen(false);
-    const result = await chapterActions.delete(
-      courseId , [chapterId]
-    );
-    
-    if (result.success) {
-      showNotification('Course deleted successfully!' , "success");
-      router.push(`/course/${courseId}/chapters`)
-    } else {
-      showNotification('Error: ' + result.msg , "error");
-    }
-  }
-
+  // Fetch average rating
   const fetchReview = useCallback(async () => {
-  try {
-    const response = await fetch(`/api/user/review//${courseId}/averagerating`)
+    if (!courseId) return;
 
-    if (!response.ok) {
-      console.log('Failed to submit rating');
+    try {
+      // Fixed the API endpoint (removed double slash)
+      const response = await fetch(`/api/user/review/${courseId}/averagerating`);
+
+      if (!response.ok) {
+        console.warn('Failed to fetch rating');
+        return;
+      }
+
+      const data: IRatingResponse = await response.json();
+      setAverageRating(data.averageRating || 0);
+    } catch (error) {
+      console.warn("Error fetching rating:", error);
     }
+  }, [courseId]);
 
-    const data = await response.json(); 
-    console.log(data)
-    setAverageRating(data.averageRating || 0);
-  } catch{
-    console.log("Error in fetching the error")
-  } 
-  }, [courseId])
+  // Handle chapter deletion
+  const handleDelete = async () => {
+    if (!courseId || !chapterId) return;
 
-  useEffect(() => {
-    fetchReview()
-  }, [fetchReview])
-
-  const handleEditClick = () => {
+    setDeleteLoading(true);
     setDropdownOpen(false);
+
+    try {
+      const result = await chapterActions.delete(courseId, [chapterId]);
+      
+      if (result.success) {
+        showNotification('Chapter deleted successfully!', "success");
+        router.push(`/course/${courseId}/chapters`);
+      } else {
+        showNotification('Error: ' + result.msg, "error");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      showNotification('Failed to delete chapter', "error");
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+    }
   };
 
+  // Effects
+  useEffect(() => {
+    fetchChapter();
+  }, [fetchChapter]);
+
+  useEffect(() => {
+    fetchReview();
+  }, [fetchReview]);
+
+  // Loading state
   if (loading) {
     return <PageLoading />;
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 text-center">
+            <p className="text-red-600 text-lg font-medium">Error</p>
+            <p className="text-gray-700 mt-2">{error}</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Chapter not found
   if (!chapter) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 text-center">
             <p className="text-gray-700 text-lg">Chapter not found</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+            >
+              Go Back
+            </button>
           </div>
         </div>
       </div>
     );
   }
-  
-  const video = chapter.videos[0];
+
+  const video = chapter.videos?.[0];
 
   return (
     <div className="min-h-screen">
@@ -153,13 +229,16 @@ const ChapterPage = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header with chapter title and options */}
-        <div className="flex justify-between items-start mb-8  mt-10">
+        <div className="flex justify-between items-start mb-8 mt-10">
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-200/50 flex-1 mr-4">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-3">
               {chapter.title}
             </h1>
             <p className="text-gray-700 leading-relaxed">
-              {chapter.description.substring(0, 150)}...
+              {chapter.description.length > 150 
+                ? `${chapter.description.substring(0, 150)}...`
+                : chapter.description
+              }
             </p>
           </div>
           
@@ -168,6 +247,7 @@ const ChapterPage = () => {
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="p-3 hover:bg-pink-100/70 text-pink-700 rounded-xl transition-colors duration-200 flex items-center justify-center"
+                aria-label="Chapter options"
               >
                 <MoreVertical className="h-5 w-5" />
               </button>
@@ -201,6 +281,7 @@ const ChapterPage = () => {
                 <div 
                   className="fixed inset-0 z-40" 
                   onClick={() => setDropdownOpen(false)}
+                  aria-hidden="true"
                 />
               )}
             </div>
@@ -213,13 +294,22 @@ const ChapterPage = () => {
             {/* Video Player */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-pink-200/50">
               <div className="bg-black rounded-xl overflow-hidden shadow-inner">
-                {video && (
+                {video ? (
                   <div className="w-full aspect-video flex items-center justify-center">
                     <video 
                       src={video.videoUrl} 
                       controls 
                       className="w-full h-full"
-                    />
+                      preload="metadata"
+                    >
+                      <p className="text-white text-center p-4">
+                        Your browser does not support the video element.
+                      </p>
+                    </video>
+                  </div>
+                ) : (
+                  <div className="w-full aspect-video flex items-center justify-center text-white">
+                    <p>No video available for this chapter</p>
                   </div>
                 )}
               </div>
@@ -253,39 +343,62 @@ const ChapterPage = () => {
             
             {/* More Videos */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-pink-200/50">
-              <MoreVideos/>
+              <MoreVideos />
             </div>
           </div>
         </div>
 
-        {/* Delete Confirmation Modal */}
-        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-          <DialogContent className="bg-white/95 backdrop-blur-sm border-pink-200">
-            <DialogHeader>
-              <DialogTitle className="text-gray-800">Delete chapter</DialogTitle>
-            </DialogHeader>
-            <p className="text-gray-600">
-              Are you sure you want to delete this chapter? This action cannot be undone.
-            </p>
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowDeleteModal(false)}
-                className="border-pink-300 text-pink-700 hover:bg-pink-50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDelete}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Delete Confirmation Modal - FIXED POSITIONING */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowDeleteModal(false)}
+            />
+            
+            {/* Modal Content */}
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+              <div className="flex items-center mb-4">
+                <ExclamationCircleOutlined className="text-red-500 text-xl mr-2" />
+                <h2 className="text-lg font-semibold">Confirm Chapter Deletion</h2>
+              </div>
+              
+              <div className="mb-6">
+                <p className="mb-2">Are you sure you want to delete this chapter?</p>
+                <p className="mb-2">This action will permanently delete:</p>
+                <ul className="list-disc ml-5 mb-3">
+                  <li>Chapter content and details</li>
+                  <li>Associated videos and materials</li>
+                </ul>
+                <p><strong>This action cannot be undone.</strong></p>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {deleteLoading && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {deleteLoading && < PleaseWait message={"Deleting the chapter"} />}
     </div>
   );
 };

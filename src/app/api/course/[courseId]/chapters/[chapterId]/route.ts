@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connect } from '@/db/dbConfig';
 import { Chapter } from '@/models/models';
-import { CourseAccessContext, courseAccessMiddleware } from '@/middleware/courseAccessMiddleware';
+import { CourseAccessContext, courseAccessMiddleware } from '@/app/middleware/courseAccessMiddleware';
 
 export async function GET(req : NextRequest, {params} : {params : {chapterId: string , courseId : string}}){
 

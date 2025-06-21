@@ -5,6 +5,7 @@ import { Check, Plus, X } from 'lucide-react';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
 import { useRouter } from 'next/navigation';
+import { useEducator } from '@/context/educatorContext';
 
 // All available focus areas
 const allFocusAreas = [
@@ -37,6 +38,7 @@ const TeachingFocusPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const { showNotification } = useNotification();
+  const { fetchEducatorData } = useEducator()
   const router = useRouter()
   // Fetch teaching focus from API
   const fetchTeachingFocus = useCallback(async () => {
@@ -84,6 +86,7 @@ const TeachingFocusPage = () => {
       }
       
       showNotification("Saved Successfully", "success");
+      fetchEducatorData(); 
       router.push("/educator/profile")
     } catch {
       showNotification("There is some error", "error");

@@ -1,5 +1,5 @@
 import { connect } from "@/db/dbConfig";
-import { CourseAccessContext, courseAccessMiddleware } from "@/middleware/courseAccessMiddleware";
+import { CourseAccessContext, courseAccessMiddleware } from "@/app/middleware/courseAccessMiddleware";
 import { Review } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 

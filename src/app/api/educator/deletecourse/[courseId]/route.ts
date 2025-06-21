@@ -1,7 +1,7 @@
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
-import { courseModifyMiddleware } from '@/middleware/courseModifyMiddleware';
-import { Chapter, Course } from '@/models/models';
+import { courseModifyMiddleware } from '@/app/middleware/courseModifyMiddleware';
+import { Chapter, Course, Educator } from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 import mongoose from 'mongoose';
 
@@ -100,8 +100,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { courseId:
     
     // 5. Delete database records regardless of Cloudinary results
     await Chapter.deleteMany({ courseId }).session(session);
-    await Course.findByIdAndDelete(courseId).session(session);
-    
+     const deleteCourse = await Course.findByIdAndDelete(courseId).session(session);
+     await Educator.findByIdAndUpdate(deleteCourse.educator, {
+        $pull : {
+          courses : courseId
+      }
+     }, {new : true}).session(session)
     // 6. Commit transaction
     await session.commitTransaction();
 

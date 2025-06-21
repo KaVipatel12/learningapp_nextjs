@@ -1,6 +1,6 @@
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
-import { courseModifyMiddleware } from '@/middleware/courseModifyMiddleware';
+import { courseModifyMiddleware } from '@/app/middleware/courseModifyMiddleware';
 import { Chapter, Course } from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest, { params }: { params: { courseId: s
           }
 
           // Validate file size (5MB limit)
-          if (videoFile.size > 5 * 1024 * 1024) {
+          if (videoFile.size > 50 * 1024 * 1024) {
             throw new Error(`Video file exceeds 5MB limit`);
           }
 

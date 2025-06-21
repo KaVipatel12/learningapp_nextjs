@@ -3,8 +3,10 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
+import { useEducator } from '@/context/educatorContext';
 import { UserData, useUser } from '@/context/userContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FiUser, FiLock, FiBook, FiArrowRight } from 'react-icons/fi';
 
@@ -19,6 +21,8 @@ export default function UserSettingsPage() {
   const { user, userLoading } = useUser();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { educator } = useEducator(); 
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -28,6 +32,10 @@ export default function UserSettingsPage() {
       }
     }
   }, [user, userLoading]);
+
+  useEffect(() => {  
+    if(educator) return router.push("/unauthorized/educator")
+  }, [ educator , router]);
 
   if (loading) {
     return <PageLoading />;
@@ -68,7 +76,7 @@ export default function UserSettingsPage() {
 
             <div className="md:col-span-3 p-6 md:p-8">
               {activeTab === 'profile' && (
-                <ProfileSection userData={userData} setUserData={setUserData} />
+                <ProfileSection userData={userData!} setUserData={setUserData} />
               )}
               {activeTab === 'password' && <PasswordSection />}
               {activeTab === 'goals' && <GoalsSection />}

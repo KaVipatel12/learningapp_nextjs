@@ -1,9 +1,12 @@
 "use client";
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiUpload, FiPlus, FiLoader, FiX } from 'react-icons/fi';
 import Image from 'next/image';
 import { useNotification } from '@/components/NotificationContext';
+import { useUser } from '@/context/userContext';
+import { useEducator } from '@/context/educatorContext';
+import PleaseWait from '@/components/PleaseWait';
 
 export default function AddCourse() {
   const [formData, setFormData] = useState({
@@ -33,7 +36,10 @@ export default function AddCourse() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
+  const { user } = useUser(); 
+  const { educator , educatorLoading, fetchEducatorData } = useEducator(); 
+      
+  
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -45,7 +51,11 @@ export default function AddCourse() {
       [name]: type === 'checkbox' ? checked : value 
     }));
   };
-
+  
+    useEffect(() => {  
+      if(user && !educator && !educatorLoading) return router.push("/unauthorized/educator")
+    }, [ user , router, educator , educatorLoading]);
+  
   // function to add photo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -99,7 +109,7 @@ export default function AddCourse() {
     
     // Append file if exists
     if (file) {
-      formPayload.append('courseImage', file);
+      formPayload.append('imageUrl', file);
     }
     
     try {
@@ -115,35 +125,36 @@ export default function AddCourse() {
       }
 
       const data = await response.json();
-      router.push(`/educator/${data.course._id}/addchapter`);
-      
-    } catch {
-      showNotification('Submission error:', "error");
+      fetchEducatorData(); 
+      return router.push(`/educator/${data.course._id}/addchapter`);
+    } catch (error){
+      showNotification('Submission error', "error");
+      console.log("Submission error" , error);
     } finally {
       setIsLoading(false);
     }
   };
 
-
-  const category = ["Programming", "Data Science", "Language", "Communication", "AI" , "Machine Learning", "Business"];
+  
+  const category = ["Programming", "Data Science", "Language", "Communication", "Ai" , "Machine Learning", "Business", "Design"];
   
   return (
     <>
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white shadow rounded-lg overflow-hidden mt-10">
+    <div className="min-h-screen py-4 px-2 sm:py-8 sm:px-4 lg:px-8">
+      <div className="max-w-4xl mx-auto w-full">
+        <div className="bg-white shadow rounded-lg overflow-hidden mt-4 sm:mt-10 mx-2 sm:mx-0">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-2xl font-semibold text-pink-700">Create New Course</h2>
-            <p className="mt-1 text-gray-600">Fill in the details to add a new course</p>
+          <div className="px-4 py-4 sm:px-6 border-b border-gray-200">
+            <h2 className="text-xl sm:text-2xl font-semibold text-pink-700">Create New Course</h2>
+            <p className="mt-1 text-sm sm:text-base text-gray-600">Fill in the details to add a new course</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
+          <form onSubmit={handleSubmit} className="px-4 py-4 sm:px-6 space-y-4 sm:space-y-6">
             {/* Error Message */}
             {error && (
-              <div className="p-4 bg-red-50 border-l-4 border-red-500">
-                <p className="text-red-700">{error}</p>
+              <div className="p-3 sm:p-4 bg-red-50 border-l-4 border-red-500">
+                <p className="text-sm sm:text-base text-red-700">{error}</p>
               </div>
             )}
 
@@ -152,8 +163,8 @@ export default function AddCourse() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Course Thumbnail (Max 5MB)
               </label>
-              <div className="mt-1 flex items-center">
-                <div className="relative w-32 h-32 rounded-md overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
+              <div className="mt-1 flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-md overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 mx-auto sm:mx-0">
                   {previewUrl ? (
                     <>
                       <Image 
@@ -174,14 +185,14 @@ export default function AddCourse() {
                     </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <FiUpload className="w-8 h-8" />
+                      <FiUpload className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                   )}
                 </div>
-                <label className="ml-4 cursor-pointer">
-                  <div className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm flex items-center">
-                    <FiPlus className="mr-2" />
-                    <span>Upload Image</span>
+                <label className="cursor-pointer w-full sm:w-auto mx-5">
+                  <div className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm flex items-center justify-center">
+                    <FiPlus className="mr-2 w-4 h-4" />
+                    <span className="text-sm">Upload Image</span>
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -205,7 +216,7 @@ export default function AddCourse() {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                 required
               />
             </div>
@@ -221,7 +232,7 @@ export default function AddCourse() {
                 rows={4}
                 value={formData.description}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                 required
               />
             </div>
@@ -229,7 +240,7 @@ export default function AddCourse() {
             {/* Prerequisites */}
             <div>
               <label htmlFor="prerequisites" className="block text-sm font-medium text-gray-700">
-                Prerequisites | `Use Dots . for new pointers` 
+                Prerequisites | <span className="text-xs text-gray-500">Use Dots . for new pointers</span>
               </label>
               <textarea
                 id="prerequisites"
@@ -237,7 +248,7 @@ export default function AddCourse() {
                 rows={3}
                 value={formData.prerequisites}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                 placeholder="What students should know before taking this course"
               />
             </div>
@@ -245,7 +256,7 @@ export default function AddCourse() {
             {/* Learning Outcomes */}
             <div>
               <label htmlFor="learningOutcomes" className="block text-sm font-medium text-gray-700">
-                Learning Outcomes | `Use Dots . for new pointers`
+                Learning Outcomes | <span className="text-xs text-gray-500">Use Dots . for new pointers</span>
               </label>
               <textarea
                 id="learningOutcomes"
@@ -253,7 +264,7 @@ export default function AddCourse() {
                 rows={3}
                 value={formData.learningOutcomes}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                 placeholder="What students will learn from this course"
               />
             </div>
@@ -269,7 +280,7 @@ export default function AddCourse() {
                 rows={2}
                 value={formData.welcomeMessage}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                 placeholder="Message students will see when they enroll"
               />
             </div>
@@ -285,14 +296,14 @@ export default function AddCourse() {
                 rows={2}
                 value={formData.completionMessage}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                 placeholder="Message students will see when they complete the course"
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Column 1 */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Category */}
                 <div>
                   <label htmlFor="category" className="block text-sm font-medium text-gray-700">
@@ -303,7 +314,7 @@ export default function AddCourse() {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                   >
                     <option value="">Select a category</option>
                     {category.map((cat, index) => (
@@ -325,7 +336,7 @@ export default function AddCourse() {
                     step="0.01"
                     value={formData.price}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                     required
                   />
                 </div>
@@ -343,7 +354,7 @@ export default function AddCourse() {
                     max="100"
                     value={formData.discount}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                   />
                 </div>
 
@@ -357,7 +368,7 @@ export default function AddCourse() {
                     name="level"
                     value={formData.level}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -382,7 +393,7 @@ export default function AddCourse() {
               </div>
 
               {/* Column 2 */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Duration */}
                 <div>
                   <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
@@ -395,7 +406,7 @@ export default function AddCourse() {
                     min="1"
                     value={formData.duration}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                     required
                   />
                 </div>
@@ -411,7 +422,7 @@ export default function AddCourse() {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                   />
                 </div>
 
@@ -426,7 +437,7 @@ export default function AddCourse() {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                   />
                 </div>
 
@@ -440,7 +451,7 @@ export default function AddCourse() {
                     name="language"
                     value={formData.language}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
                   >
                     <option value="english">English</option>
                     <option value="spanish">Spanish</option>
@@ -461,7 +472,7 @@ export default function AddCourse() {
                       min="0"
                       value={formData.totalSections}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs p-1 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs p-1 sm:p-2 border"
                     />
                   </div>
                   <div>
@@ -475,7 +486,7 @@ export default function AddCourse() {
                       min="0"
                       value={formData.totalLectures}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs p-1 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs p-1 sm:p-2 border"
                     />
                   </div>
                   <div>
@@ -489,7 +500,7 @@ export default function AddCourse() {
                       min="0"
                       value={formData.totalQuizzes}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs p-1 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs p-1 sm:p-2 border"
                     />
                   </div>
                 </div>
@@ -505,7 +516,7 @@ export default function AddCourse() {
               >
                 {isLoading ? (
                   <>
-                    <FiLoader className="animate-spin mr-2" />
+                    <FiLoader className="animate-spin mr-2 w-4 h-4" />
                     Creating Course...
                   </>
                 ) : (
@@ -513,6 +524,7 @@ export default function AddCourse() {
                 )}
               </button>
             </div>
+              {isLoading && <PleaseWait message={"Saving Course"}/> }
           </form>
         </div>
       </div>

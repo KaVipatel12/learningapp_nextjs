@@ -2,7 +2,7 @@ import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
-import { AuthContext, authUserMiddleware } from '@/middleware/authUserMiddleware';
+import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
 import { User } from '@/models/models';
 
 export async function PATCH(req: NextRequest) {

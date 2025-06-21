@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useNotification } from '@/components/NotificationContext';
 import { useEducator } from '@/context/educatorContext';
 import { PageLoading } from '@/components/PageLoading';
+import PleaseWait from '@/components/PleaseWait';
 
 interface CourseData {
   title: string;
@@ -30,7 +31,7 @@ interface CourseData {
 }
 
 export default function UpdateCourse() {
-  const { educator , educatorLoading } = useEducator(); 
+  const { educator , educatorLoading , fetchEducatorData } = useEducator(); 
   const router = useRouter()
   const [formData, setFormData] = useState<CourseData>({
     title: '',
@@ -58,7 +59,7 @@ export default function UpdateCourse() {
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const params = useParams();
-  const [isFetching, setIsFetching] = useState(true);
+  const [isFetching, setIsFetching] = useState(true); 
   const [imageChanged, setImageChanged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { courseId } = params;
@@ -71,10 +72,10 @@ export default function UpdateCourse() {
     else if (educator && educator.courses) {
       const owned = educator?.courses?.some(id => id._id?.toString() === courseId);
       if(!owned){
-        router.back()
+        router.push('/unauthorized/user')
       }
     }else{
-        router.back()
+      router.push('/unauthorized/user')
   }}, [educator, courseId , router, educatorLoading]);
 
   useEffect(() => {
@@ -89,8 +90,8 @@ export default function UpdateCourse() {
         setFormData(data.msg);
         
         // Store the original image URL from the database
-        if (data.course && data.course.courseImage) {
-          setPreviewUrl(data.course.courseImage);
+        if (data.msg && data.msg.imageUrl) {
+          setPreviewUrl(data.msg.imageUrl);
         }
       } catch (error) {
         console.error("Error fetching course data:", error);
@@ -175,7 +176,7 @@ export default function UpdateCourse() {
       
       // Append file if exists
       if (file) {
-        formPayload.append('courseImage', file);
+        formPayload.append('imageUrl', file);
       }
       
       // Log the payload for debugging (optional)
@@ -198,10 +199,11 @@ export default function UpdateCourse() {
       
       // If image was updated successfully, reset the image changed flag
       setImageChanged(false);
+      fetchEducatorData(); 
       router.push(`/course/${courseId}`)
       // If the backend returns the new image URL, update the preview
-      if (successData.courseImage) {
-        setPreviewUrl(successData.courseImage);
+      if (successData.imageUrl) {
+        setPreviewUrl(successData.imageUrl);
       }
       
     } catch (error) {
@@ -212,7 +214,7 @@ export default function UpdateCourse() {
     }
   };
 
-  const category = ["Programming", "Data Science", "Language", "Communication", "AI", "Machine Learning"];
+  const category = ["Programming", "Data Science", "Language", "Communication", "AI", "Machine Learning", "design"];
   
   if (isFetching) {
     return (
@@ -265,7 +267,7 @@ export default function UpdateCourse() {
                       </div>
                     )}
                   </div>
-                  <label className="ml-4 cursor-pointer">
+                  <label className="ml-4 cursor-pointer mx-5">
                     <div className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm flex items-center">
                       <FiPlus className="mr-2" />
                       <span>Change Image</span>
@@ -608,6 +610,7 @@ export default function UpdateCourse() {
                   )}
                 </button>
               </div>
+                {isLoading && <PleaseWait message={"Updating Course"}/> }
             </form>
           </div>
         </div>

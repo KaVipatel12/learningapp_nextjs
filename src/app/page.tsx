@@ -6,17 +6,18 @@ import Card from '@/components/Card';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Course, useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
+import { useEducator } from '@/context/educatorContext';
 
-interface Category {
+export interface Category {
   id: string;
   name: string;
 }
 
-interface WishList {
+export interface WishList {
   id: string;
 }
 
-interface Feature {
+export interface Feature {
   title: string;
   description: string;
   image: string;
@@ -26,6 +27,7 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const { user, userLoading, purchasedCoursesIds, purchasedCourses } = useUser(); 
   const [purchasedCourse, setPurchasedCourse] = useState<Course[]>([]);
+  const { educator } = useEducator(); 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
   const coursesContainerRef = useRef<HTMLDivElement>(null);
@@ -85,10 +87,13 @@ const HomePage = () => {
       const userWishlist = user.wishlist.map(id => id);
       setUserWishList(userWishlist); 
     }
-  }, [user, userLoading, purchasedCourses]);
+
+    if(educator) return router.push("/unauthorized/educator")
+
+  }, [user, userLoading, purchasedCourses, educator, router]);
 
   // Fetch courses by category with pagination (for interest section)
-  const fetchCourseByCategory = async (page = 1, initialLoad = false) => {
+  const fetchCourseByCategory = useCallback(async (page = 1, initialLoad = false) => {
     if (initialLoad) setCourseCategoryLoading(true);
     
     try {
@@ -101,7 +106,7 @@ const HomePage = () => {
       if (Array.isArray(data.msg)) {
         const formattedCourses = data.msg.map((course: Course) => ({
           id: course._id,
-          imageUrl: course.courseImg,
+          imageUrl: course.imageUrl,
           title: course.title,
           instructor: course.educatorName || 'Unknown Instructor',
           price: course.price,
@@ -122,7 +127,7 @@ const HomePage = () => {
       setCourseCategoryLoading(false);
       setLoadMore(false);
     }
-  };
+  }, [user]);
 
   // Fetch all courses with pagination
   const fetchCourses = useCallback(async (page = 1, initialLoad = false) => {
@@ -168,7 +173,7 @@ const HomePage = () => {
   useEffect(() => {
     fetchCourseByCategory(1, true);
     fetchCourses(1, true);
-  }, [fetchCourses]);
+  }, [fetchCourses , fetchCourseByCategory]);
 
   // Improved scroll handlers for infinite loading
   const handleInterestScroll = useCallback(() => {
@@ -179,7 +184,7 @@ const HomePage = () => {
       setInterestPage(prev => prev + 1);
       fetchCourseByCategory(interestPage + 1);
     }
-  }, [courseCategoryLoading, hasMoreInterest, interestPage]);
+  }, [courseCategoryLoading, hasMoreInterest, interestPage, fetchCourseByCategory]);
 
   const handleCoursesScroll = useCallback(() => {
     if (!coursesContainerRef.current || courseLoading || !hasMoreAllCourses) return;

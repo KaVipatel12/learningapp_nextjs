@@ -1,5 +1,5 @@
 import { connect } from '@/db/dbConfig';
-import { AuthContext, authEducatorMiddleware } from '@/middleware/authEducatorMiddleware';
+import { AuthContext, authEducatorMiddleware } from '@/app/middleware/authEducatorMiddleware';
 import {Course} from '@/models/models';
 import {Educator} from '@/models/models';
 import { uploadFile } from '@/utils/cloudinary/cloudinary';
@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
     const completionMessage = formData.get('completionMessage') as string;
 
     // Handle file upload
-    const file = formData.get('courseImage') as File | null;
-    let courseImage = undefined;
+    const file = formData.get('imageUrl') as File | null;
+    let imageUrl = undefined;
     if (file) {
       const cloudinaryResult = await uploadFile(file, 'courses');
-      courseImage = cloudinaryResult.secure_url;
+      imageUrl = cloudinaryResult.secure_url;
     }
 
     // Create course with exact frontend fields
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       totalQuizzes,
       welcomeMessage,
       completionMessage,
-      courseImage,
+      imageUrl,
       educator: educatorId,
       educatorName: educator?.username // Using educator's username as instructor name
     });

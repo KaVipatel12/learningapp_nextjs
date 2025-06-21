@@ -1,18 +1,23 @@
 "use client"
 
 import { FC, useState } from 'react';
-import { Button, Modal, Spin } from 'antd';
+import { Button, Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
+import { useNotification } from '@/components/NotificationContext';
+import { useEducator } from "@/context/educatorContext";
+import PleaseWait from '@/components/PleaseWait';
 
 interface DeleteCourseButtonProps {
-    courseId: string; // ✅ Proper type
+    courseId: string; 
   }
   
   const DeleteCourseButton: FC<DeleteCourseButtonProps> = ({ courseId }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const { showNotification } = useNotification()
+  const { fetchEducatorData } = useEducator()
 
   const showDeleteConfirm = () => {
     setIsModalOpen(true);
@@ -31,20 +36,18 @@ interface DeleteCourseButtonProps {
       });
       
       if (response.ok) {
-        // Wait a moment to show the loading state to the user
-        setTimeout(() => {
           setIsDeleting(false);
           setIsModalOpen(false);
-          router.push('/educator/profile');
-        }, 500);
+          fetchEducatorData(); 
+          return router.push('/educator/profile');
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete course');
+        showNotification(errorData.message || 'Failed to delete course', "error");
       }
     } catch (error) {
       console.error('Error deleting course:', error);
       setIsDeleting(false);
-      alert(`An error occurred: ${error}`);
+      showNotification(`An error occurred`, "error");
     }
   };
 
@@ -98,32 +101,7 @@ interface DeleteCourseButtonProps {
 
       {/* Global loading overlay */}
       {isDeleting && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '24px',
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px'
-          }}>
-            <Spin size="large" />
-            <div>Deleting course and all associated resources...</div>
-            <div>Please wait</div>
-          </div>
-        </div>
+        <PleaseWait message="Deleting course and all associated resources..."/>
       )}
     </>
   );

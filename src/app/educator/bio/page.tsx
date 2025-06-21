@@ -5,11 +5,17 @@ import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
 import { useNotification } from '@/components/NotificationContext';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const EducatorBioPage = () => {
   const { educator, educatorLoading } = useEducator();
   const { showNotification } = useNotification(); 
   const router = useRouter(); 
+      
+    useEffect(() => {  
+        if(!educator && !educatorLoading) return router.push("/unauthorized/educator")
+      }, [ educator, educatorLoading , router]);
+
   if (educatorLoading) {
     return <PageLoading />;
   }
@@ -29,7 +35,7 @@ const EducatorBioPage = () => {
     }
     
     showNotification('Bio Updated successfully', "success");
-    return router.push("/educator/profile")
+    return router.push("/educator/teachingfocus")
   };
 
   return (

@@ -63,10 +63,10 @@ export default function RegisterPage() {
         resetForm();
         
         if(userData.role === "educator"){
-         return router.push('/educator/teachingfocus');
+         return router.push('/educator/bio');
         }
         else{
-         return router.push('/category');
+         return router.push('/user/bio');
         }
 
       } else {

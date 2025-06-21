@@ -1,6 +1,6 @@
 import { connect } from '@/db/dbConfig';
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthContext, authEducatorMiddleware } from '@/middleware/authEducatorMiddleware';
+import { AuthContext, authEducatorMiddleware } from '@/app/middleware/authEducatorMiddleware';
 import { Educator } from '@/models/models';
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';

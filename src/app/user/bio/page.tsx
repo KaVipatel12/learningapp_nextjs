@@ -5,11 +5,17 @@ import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
 import { useNotification } from '@/components/NotificationContext';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const UserBioPage = () => {
   const { user, userLoading } = useUser();
   const { showNotification } = useNotification(); 
-  const router  = useRouter(); 
+  const router  = useRouter();
+
+  useEffect(() => {  
+    if(!userLoading && !user) return router.push("/unauthorized/user")
+  }, [ userLoading , user , router]);
+
   if (userLoading) {
     return <PageLoading />;
   }
@@ -30,7 +36,7 @@ const UserBioPage = () => {
     }
     
     showNotification('Bio Updated successfully', "success");
-    return router.push("/user/profile")
+    return router.push("/category")
   };
 
 

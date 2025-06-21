@@ -61,7 +61,7 @@ export default function EducatorProfile() {
       },
       courses: educatorData?.courses || [],
       coverImage: '/cover-placeholder.jpg',
-      avatar: '/avatar-placeholder.jpg',
+      avatar: '/profilepic.png',
       role: educatorData?.role || 'Educator',
       bio: educatorData?.bio || '',
     };
@@ -182,7 +182,7 @@ export default function EducatorProfile() {
                 <Card
                   key={course._id}
                   id={course._id}
-                  imageUrl={course.courseImage || '/course-placeholder.jpg'}
+                  imageUrl={course.imageUrl || '/course-placeholder.jpg'}
                   title={course.title}
                   instructor={formattedEducator.name}
                   rating={4.5}

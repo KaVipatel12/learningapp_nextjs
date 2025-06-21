@@ -30,8 +30,8 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-  const { showNotification } = useNotification();
-
+  const { showNotification } = useNotification();    
+  
   // Initialize with user's current categories
   useEffect(() => {
     setPageLoading(userLoading); 
@@ -39,15 +39,19 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
       setSelections({ selectedCategories: [...user.category] });
     }
   }, [user, userLoading]);
+  
+    useEffect(() => {  
+    if(!user && !userLoading) return router.push("/unauthorized/user")
+  }, [ user , userLoading , router]);
 
   const categories: Category[] = [
-    { id: "Programming", name: 'Programming', icon: '💻' },
+      { id: "Programming", name: 'Programming', icon: '💻' },
     { id: "Design", name: 'Design', icon: '🎨' },
     { id: "Business", name: 'Business', icon: '📈' },
     { id: "Marketing", name: 'Marketing', icon: '📢' },
     { id: "Photography", name: 'Photography', icon: '📷' },
-    { id: "Music", name: 'Music', icon: '🎵' },
-    { id: "Health", name: 'Health', icon: '❤️' },
+    { id: "Ai", name: 'Ai', icon: '💻' },
+    { id: "Data Science", name: 'Data Science', icon: '📈' },
     { id: "Language", name: 'Language', icon: '🗣️' },
   ];
 
@@ -95,8 +99,8 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
       }
 
       showNotification("Categories updated successfully!", "success");
-      router.push("/user/bio");
       fetchUserData(); 
+      router.push("/user/profile");
     } catch (error) {
       let errorMessage = "An unknown error occurred";
       

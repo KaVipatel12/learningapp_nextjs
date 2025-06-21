@@ -1,5 +1,5 @@
 import { connect } from "@/db/dbConfig";
-import { CourseAccessContext, courseAccessMiddleware } from "@/middleware/courseAccessMiddleware";
+import { CourseAccessContext, courseAccessMiddleware } from "@/app/middleware/courseAccessMiddleware";
 import { Comment, Educator, User } from "@/models/models";
 import mongoose, { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";

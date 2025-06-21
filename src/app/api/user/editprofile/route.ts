@@ -1,5 +1,5 @@
 import { connect } from '@/db/dbConfig';
-import { AuthContext, authUserMiddleware } from '@/middleware/authUserMiddleware';
+import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
 import { User } from '@/models/models';
 import { NextRequest, NextResponse } from 'next/server';
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/db/dbConfig";
-import { AuthContext, authEducatorMiddleware } from "@/middleware/authEducatorMiddleware";
+import { AuthContext, authEducatorMiddleware } from "@/app/middleware/authEducatorMiddleware";
 import {Educator} from "@/models/models";
 
 export async function GET(req: NextRequest) {

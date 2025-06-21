@@ -212,10 +212,10 @@ const ChaptersPage = () => {
                       {(!isOwner && !isCoursePurchased) && <Lock className="w-5 h-5 text-pink-600" />}
                       {chapter.title}
                     </h2>
-                    <p className="text-pink-800 mt-2">{chapter.description}</p>
+                    <p className="text-pink-800 mt-2">{chapter.description.substring(0, 150)}...</p>
                   </div>
                   <span className="text-sm bg-gradient-to-r from-pink-200 to-rose-200 text-pink-800 px-3 py-1 rounded-full shadow-pink-inner">
-                    {totalDuration} min
+                    {totalDuration}min
                   </span>
                 </div>
               </div>

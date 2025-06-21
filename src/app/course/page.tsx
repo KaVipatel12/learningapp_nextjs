@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Card from "@/components/Card";
 import { FilterBar } from "@/components/CourseSearchPage/FilterBar";
 import { SearchSection } from "@/components/CourseSearchPage/SearchSection";
-import { useUser } from "@/context/userContext";
-import { Course, WishList } from "../page";
+import { Course, useUser } from "@/context/userContext";
+import { useEducator } from "@/context/educatorContext";
+import { WishList } from "../page";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function CoursesPage() {
   const [filters, setFilters] = useState({
@@ -21,7 +23,9 @@ export default function CoursesPage() {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
+  const { educator } = useEducator(); 
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -33,7 +37,7 @@ export default function CoursesPage() {
   const fetchCourses = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const query = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
@@ -91,6 +95,11 @@ export default function CoursesPage() {
       setLoading(false);
     }
   }, [filters]);
+  
+
+    useEffect(() => {  
+    if(educator) return router.push("/unauthorized/educator")
+  }, [educator , router]);
 
   useEffect(() => {
     fetchCourses();
@@ -186,8 +195,8 @@ export default function CoursesPage() {
                     title={course.title}
                     instructor={course.instructor}
                     price={course.price}
-                    rating={course.rating}
-                    totalRatings={course.totalRatings}
+                    rating={course.rating || 0}
+                    totalRatings={course.totalRatings || 0}
                     discountedPrice={course.discountedPrice}
                     isWishlisted={isWishlisted(course.id)}
                     isPurchased={isPurchased(course.id)}

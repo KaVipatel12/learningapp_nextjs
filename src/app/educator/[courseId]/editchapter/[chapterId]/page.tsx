@@ -5,9 +5,10 @@ import { useRouter, useParams } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
 import { useEducator } from '@/context/educatorContext';
+import PleaseWait from '@/components/PleaseWait';
 
 // Constants
-const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_MB = 50;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 // Type definitions
@@ -94,7 +95,7 @@ export default function EditChapterPage() {
     const ownsCourse = educator?.courses?.some(course => course._id?.toString() === courseId);
   
     if (!ownsCourse) {
-      router.back();
+      router.push('/unauthorized/user');
     }
   
     setPageLoading(false)
@@ -418,7 +419,7 @@ export default function EditChapterPage() {
         <div className="flex justify-end pt-4">
           <button
             type="button"
-            onClick={() => router.push(`/educator/courses/${courseId}`)}
+            onClick={() => router.back()}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 mr-3"
           >
             Cancel
@@ -434,6 +435,8 @@ export default function EditChapterPage() {
             {isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
+
+          {isSubmitting && <PleaseWait message={"Updating Chapter"}/> }
       </form>
     </div>
   );
