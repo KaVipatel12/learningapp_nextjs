@@ -4,6 +4,7 @@ import { Comment, Educator, User } from "@/models/models";
 import mongoose, { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
+// Type for input comment data
 export interface ICommentInput {
   comment: string;
   userId?: Types.ObjectId | string;
@@ -15,14 +16,22 @@ export interface ICommentInput {
   updatedAt: Date;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { chapterId: string , courseId : string } }) {
+// Define context type for dynamic route params
+type RouteContext = {
+  params: {
+    chapterId: string;
+    courseId: string;
+  };
+};
+
+export async function PUT(req: NextRequest, context: RouteContext): Promise<NextResponse> {
   await connect();
 
   try {
-    const { chapterId, courseId } = params;
+    const { chapterId, courseId } = context.params;
     const { comment: commentText } = await req.json();
 
-    // Check course access
+    // Auth check using custom middleware
     const authResult = await courseAccessMiddleware(req, courseId);
     if (authResult instanceof NextResponse) {
       return authResult;
@@ -34,54 +43,45 @@ export async function PUT(req: NextRequest, { params }: { params: { chapterId: s
       return NextResponse.json({ success: false, msg: "Authentication failed" }, { status: 401 });
     }
 
-    // Prepare comment data based on user role
-
-    const objectChapterId = new mongoose.Types.ObjectId(chapterId); 
+    // Prepare comment data
+    const objectChapterId = new mongoose.Types.ObjectId(chapterId);
     const objectCourseId = new mongoose.Types.ObjectId(courseId);
 
-    const commentData : ICommentInput = {
+    const commentData: ICommentInput = {
       comment: commentText,
-      chapterId : objectChapterId,
-      courseId : objectCourseId,
+      chapterId: objectChapterId,
+      courseId: objectCourseId,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
-    if (user.role === 'student') {
+    if (user.role === "student") {
       commentData.userId = user._id;
-    } else if (user.role === 'educator') {
+    } else if (user.role === "educator") {
       commentData.educatorId = user._id;
     }
 
     const newComment = await Comment.create(commentData);
-    
-    if(!newComment){
-      return NextResponse.json(
-        { msg: "Something went wrong" },
-        { status: 400 }
+
+    if (!newComment) {
+      return NextResponse.json({ msg: "Something went wrong" }, { status: 400 });
+    }
+
+    // Add comment ID to user's or educator's comment list
+    if (user.role === "student") {
+      await User.findByIdAndUpdate(
+        user._id,
+        { $push: { comment: newComment._id } },
+        { new: true }
+      );
+    } else if (user.role === "educator") {
+      await Educator.findByIdAndUpdate(
+        user._id,
+        { $push: { comment: newComment._id } },
+        { new: true }
       );
     }
 
-    if(user.role === "student"){
-      const userId = user._id; 
-      await User.findByIdAndUpdate(userId , {
-        $push : {
-          comment : newComment._id
-        }
-      },
-      {new : true}
-    )
-  }else if(user.role === "educator"){
-    const educatorId = user._id; 
-   await Educator.findByIdAndUpdate(educatorId , {
-      $push : {
-        comment : newComment._id
-      }
-    },
-    {new : true}
-  )
-
-  }
     return NextResponse.json(
       { msg: "Comment added successfully", comment: newComment },
       { status: 201 }
