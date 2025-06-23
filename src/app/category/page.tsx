@@ -18,13 +18,11 @@ interface UserSelections {
   selectedCategories: string[];
 }
 
-interface CategoryUpdateProps {
-  maxSelections?: number;
-}
+// interface CategoryUpdateProps {
+//   maxSelections?: number;
+// }
 
-const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
-  maxSelections = 3
-}) => {
+const CategoryUpdatePage = () => {
   const { user, userLoading , fetchUserData } = useUser();
   const [selections, setSelections] = useState<UserSelections>({ selectedCategories: [] });
   const [pageLoading, setPageLoading] = useState<boolean>(true);
@@ -54,7 +52,8 @@ const CategoryUpdatePage: React.FC<CategoryUpdateProps> = ({
     { id: "Data Science", name: 'Data Science', icon: '📈' },
     { id: "Language", name: 'Language', icon: '🗣️' },
   ];
-
+  
+  const maxSelections = 3
   const handleCategoryToggle = (categoryId: string): void => {
     const currentIndex = selections.selectedCategories.indexOf(categoryId);
     const newSelectedCategories = [...selections.selectedCategories];

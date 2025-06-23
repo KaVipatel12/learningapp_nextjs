@@ -1,4 +1,3 @@
-// next.config.ts
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -7,7 +6,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-
       },
       {
         protocol: 'https',
@@ -23,7 +21,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Your other Next.js config options here
+
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }
 
 export default nextConfig

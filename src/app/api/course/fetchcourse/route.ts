@@ -1,46 +1,76 @@
 import { connect } from "@/db/dbConfig";
 import { Course, Review } from "@/models/models";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
-export async function GET(req: Request) {
+interface QueryParams {
+  page: number;
+  limit: number;
+  courseName?: string;
+  educatorName?: string;
+  category?: string;
+  price?: "free" | "paid";
+}
+
+// Define the Course document shape (extend as needed)
+interface CourseType {
+  _id: mongoose.Types.ObjectId;
+  title: string;
+  educatorName: string;
+  category: string;
+  price: number;
+  totalEnrollment: number;
+  __v?: number;
+  // Add other fields here if present in your schema
+}
+
+// Define shape with ratings
+interface CourseWithRatings extends CourseType {
+  averageRating: number;
+  totalRatings: number;
+  score: number;
+}
+
+export async function GET(req: NextRequest) {
   await connect();
 
   try {
     const { searchParams } = new URL(req.url);
 
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "6");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "6", 10);
     const skip = (page - 1) * limit;
 
-    // Extract filters
-    const courseName = searchParams.get("courseName");
-    const educatorName = searchParams.get("educatorName");
-    const category = searchParams.get("category");
-    const price = searchParams.get("price");
+    const queryParams: QueryParams = {
+      page,
+      limit,
+      courseName: searchParams.get("courseName") || undefined,
+      educatorName: searchParams.get("educatorName") || undefined,
+      category: searchParams.get("category") || undefined,
+      price: searchParams.get("price") as "free" | "paid" | null ?? undefined,
+    };
 
-    // Build MongoDB query object
-    
     const query: Record<string, unknown> = {};
 
-    if (courseName) {
-      query.title = { $regex: courseName, $options: "i" };
+    if (queryParams.courseName) {
+      query.title = { $regex: queryParams.courseName, $options: "i" };
     }
 
-    if (educatorName) {
-      query.educatorName = { $regex: educatorName, $options: "i" };
+    if (queryParams.educatorName) {
+      query.educatorName = { $regex: queryParams.educatorName, $options: "i" };
     }
 
-    if (category) {
-      query.category = { $regex: category, $options: "i" };
+    if (queryParams.category) {
+      query.category = { $regex: queryParams.category, $options: "i" };
     }
 
-    if (price === "free") {
+    if (queryParams.price === "free") {
       query.price = 0;
-    } else if (price === "paid") {
+    } else if (queryParams.price === "paid") {
       query.price = { $gt: 0 };
     }
 
-    // Get review stats
+    // Aggregate review stats
     const reviewStats = await Review.aggregate([
       {
         $group: {
@@ -51,7 +81,12 @@ export async function GET(req: Request) {
       },
     ]);
 
-    const reviewStatsMap = new Map<string, { averageRating: number; totalRatings: number }>();
+    // Build a map for fast lookup
+    const reviewStatsMap = new Map<
+      string,
+      { averageRating: number; totalRatings: number }
+    >();
+
     reviewStats.forEach((stat) => {
       reviewStatsMap.set(stat._id.toString(), {
         averageRating: stat.averageRating,
@@ -59,18 +94,18 @@ export async function GET(req: Request) {
       });
     });
 
-    // Get filtered courses
-    const courses = await Course.find(query)
-      .sort({ totalEnrollment: -1 }) // primary sort
+    // Fetch courses
+    const rawCourses = (await Course.find(query)
+      .sort({ totalEnrollment: -1 })
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean()) as CourseType[];
 
-    // Add ratings
-    const coursesWithRatings = courses.map((course) => {
-      const stats = reviewStatsMap.get(course._id!.toString());
+    // Add rating data
+    const coursesWithRatings: CourseWithRatings[] = rawCourses.map((course) => {
+      const stats = reviewStatsMap.get(course._id.toString());
       const averageRating = stats ? Number(stats.averageRating.toFixed(1)) : 0;
-      const totalRatings = stats?.totalRatings || 0;
+      const totalRatings = stats?.totalRatings ?? 0;
       const score = averageRating * Math.log(totalRatings + 1);
 
       return {
@@ -81,7 +116,7 @@ export async function GET(req: Request) {
       };
     });
 
-    // Secondary sort by rating score
+    // Sort by rating score secondarily
     coursesWithRatings.sort((a, b) => {
       if (b.totalEnrollment !== a.totalEnrollment) {
         return b.totalEnrollment - a.totalEnrollment;
@@ -89,7 +124,6 @@ export async function GET(req: Request) {
       return b.score - a.score;
     });
 
-    // Count total (with filters)
     const totalCourses = await Course.countDocuments(query);
 
     return NextResponse.json(
@@ -103,6 +137,9 @@ export async function GET(req: Request) {
     );
   } catch (error) {
     console.error("Error fetching filtered courses:", error);
-    return NextResponse.json({ error: "Failed to fetch courses" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch courses" },
+      { status: 500 }
+    );
   }
 }
