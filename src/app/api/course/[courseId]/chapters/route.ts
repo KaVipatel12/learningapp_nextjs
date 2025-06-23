@@ -3,12 +3,13 @@
   import { Chapter } from '@/models/models';
   
   
-  export async function GET(req : NextRequest, {params} : {params : {courseId: string}}){
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ courseId: string }> }
+) {
+  const { courseId } = await props.params;
   
     await connect(); 
-
-    console.log("Reached")
-    const {courseId} = await params; 
     console.log(courseId)
 
     if(!courseId){

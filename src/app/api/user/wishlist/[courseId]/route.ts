@@ -3,7 +3,7 @@ import { User } from '@/models/models';
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 
-export async function PUT(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function PUT(req: NextRequest, props : { params: Promise<{ courseId: string }> }) {
   const authResult = await authUserMiddleware(req);
   
   try {
@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest, { params }: { params: { courseId: st
     }
     
     // Properly access the courseId from params (no need for await)
-    const { courseId } = params;
+    const { courseId } = await props.params;
     console.log("Working with courseId:", courseId);
 
     if (!courseId) {

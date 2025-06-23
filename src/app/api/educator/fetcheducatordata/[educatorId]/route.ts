@@ -3,11 +3,11 @@ import { connect } from '@/db/dbConfig';
 import { Educator } from '@/models/models';
 
 
-export async function GET(req : NextRequest, {params} : {params : {educatorId: string}}){
+export async function GET(req : NextRequest, props : {params : Promise<{educatorId: string}>}){
 
   await connect(); 
 
-  const { educatorId } = await params; 
+  const { educatorId } = await props.params; 
 
   if(!educatorId){
     return NextResponse.json({msg : "No educator found", isParams : false}, {status : 404})

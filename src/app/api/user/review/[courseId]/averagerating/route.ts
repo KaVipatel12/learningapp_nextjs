@@ -5,12 +5,12 @@ import mongoose from "mongoose";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { courseId: string } }
+  props : { params: Promise<{ courseId: string }> }
 ) {
   await connect();
 
   try {
-    const { courseId } = await params;
+    const { courseId } = await props.params;
 
     // Convert string courseId to ObjectId
     const courseObjectId = new mongoose.Types.ObjectId(courseId);

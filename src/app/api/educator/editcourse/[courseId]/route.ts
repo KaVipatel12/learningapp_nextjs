@@ -28,11 +28,13 @@ interface CourseInput {
   completionMessage?: string;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function PUT(
+  req: NextRequest,
+  props: { params: Promise<{ courseId: string }> }
+) {
   await connect();
   
-  const { courseId } = await params;
-  
+  const { courseId} = await props.params;
   const modifyResult = await courseModifyMiddleware(req, courseId);
   if (modifyResult instanceof NextResponse) {
     return modifyResult;

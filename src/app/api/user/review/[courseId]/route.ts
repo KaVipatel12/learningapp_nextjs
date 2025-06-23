@@ -3,11 +3,11 @@ import { CourseAccessContext, courseAccessMiddleware } from "@/app/middleware/co
 import { Review } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function PUT(req: NextRequest, props : { params: Promise<{ courseId: string }> }) {
   await connect();
 
   try {
-    const { courseId } = await params;
+    const { courseId } = await props.params;
     const { rating } = await req.json();
 
     // Validate rating

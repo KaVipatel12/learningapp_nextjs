@@ -3,12 +3,13 @@ import { connect } from '@/db/dbConfig';
 import { Course } from '@/models/models';
 
 
-export async function GET(req : NextRequest, {params} : {params : {courseId: string}}){
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ courseId: string }> }
+) {
+  const { courseId } = await props.params;
 
   await connect(); 
-
-  const {courseId} = await params; 
-
   console.log(courseId)
   if(!courseId){
     return NextResponse.json({msg : "Wrong url", isParams : false}, {status : 404})

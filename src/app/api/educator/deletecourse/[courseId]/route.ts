@@ -5,13 +5,16 @@ import { Chapter, Course, Educator } from '@/models/models';
 import cloudinary from '@/utils/cloudinary/cloudinary';
 import mongoose from 'mongoose';
 
-export async function DELETE(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  props: { params: Promise<{ courseId: string }> }
+) {
   await connect();
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const { courseId } = await params;
+    const { courseId } = await props.params;
     
     // 1. Verify course ownership
     const modifyResult = await courseModifyMiddleware(req, courseId);

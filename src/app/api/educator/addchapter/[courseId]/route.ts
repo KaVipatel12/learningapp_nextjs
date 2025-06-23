@@ -45,10 +45,14 @@ interface ChapterInput {
   videos: VideoInput[];
 }
 
-export async function POST(req: NextRequest, { params }: { params: { courseId: string } }) {
-  await connect();
+export async function POST(
+  req: NextRequest,
+  props: { params: Promise<{ courseId: string }> }
+) {
   
-  const {courseId} = await params
+  await connect();
+  const { courseId } = await props.params;
+  
   // Correctly pass just the courseId to the middleware
   const modifyResult = await courseModifyMiddleware(req, courseId);
   if (modifyResult instanceof NextResponse) {

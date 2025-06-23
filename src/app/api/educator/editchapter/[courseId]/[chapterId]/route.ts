@@ -33,11 +33,13 @@ interface CloudinaryUploadResult {
   resource_type: string;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { courseId: string, chapterId: string } }) {
+export async function PUT(
+  req: NextRequest,
+  props: { params: Promise<{ courseId: string; chapterId: string }> }
+) {
   await connect();
   
-  const { courseId, chapterId } = await params;
-  
+  const { courseId, chapterId } = await props.params;
   // Verify course ownership
   const modifyResult = await courseModifyMiddleware(req, courseId);
   if (modifyResult instanceof NextResponse) {

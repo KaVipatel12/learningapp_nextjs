@@ -3,12 +3,15 @@ import { connect } from '@/db/dbConfig';
 import { Chapter } from '@/models/models';
 import { CourseAccessContext, courseAccessMiddleware } from '@/app/middleware/courseAccessMiddleware';
 
-export async function GET(req : NextRequest, {params} : {params : {chapterId: string , courseId : string}}){
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ chapterId: string; courseId: string }> }
+) {
 
   await connect(); 
 
   console.log("Reached")
-  const {chapterId, courseId} = await params; 
+  const {chapterId, courseId} = await props.params; 
   const accessCourse = await courseAccessMiddleware(req, courseId);
 
     if (accessCourse instanceof NextResponse) {
