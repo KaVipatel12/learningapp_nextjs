@@ -3,11 +3,11 @@ import { Comment } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 
 
-export async function GET(req: NextRequest, { params }: { params: { chapterId: string , courseId : string } }) {
+export async function GET(req: NextRequest, props : { params: Promise<{ chapterId: string , courseId : string }> }) {
   await connect();
 
   try {
-    const { chapterId, courseId } = await params;
+    const { chapterId, courseId } = await props.params;
 
     const comments = await Comment.find({ chapterId , courseId }).populate({
         "path" : "userId",

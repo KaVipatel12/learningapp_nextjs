@@ -66,11 +66,11 @@ export async function PUT(req: NextRequest, props : { params: Promise<{ courseId
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function GET(req: NextRequest,  props : { params: Promise<{ courseId: string }> }) {
   await connect();
 
   try {
-    const { courseId } = await params;
+    const { courseId } = await props.params;
 
     const authResult = await courseAccessMiddleware(req, courseId);
     if (authResult instanceof NextResponse) {
