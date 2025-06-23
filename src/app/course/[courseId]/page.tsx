@@ -83,26 +83,26 @@ const CourseDetailPage = () => {
   }, [courseId]);
 
   // Check permissions to delete and update page
-  useEffect(() => {
-    if (user && user.purchaseCourse) {
-      const purchased = user.purchaseCourse.some((purchase) => {
-        const purchaseCourseId =
-          typeof purchase.courseId === "object"
-            ? purchase.courseId._id
-            : purchase.courseId;
-        return purchaseCourseId === courseId;
-      });
-      setIsCoursePurchased(purchased);
-    }
+useEffect(() => {
+  if (user && user.purchaseCourse) {
+    const purchased = user.purchaseCourse.some((purchase) => {
+      const purchaseCourseId =
+        typeof purchase.courseId === "object"
+          ? purchase.courseId._id
+          : purchase.courseId;
+      return purchaseCourseId === courseId;
+    });
+    setIsCoursePurchased(purchased);
+  }
 
-    if (educator && educator.courses) {
-      const owned = educator.courses.some(
-        (course) => course && course._id?.toString() === courseId
-      );
-      setIsOwner(owned);
-    }
+  if (educator && educator.courses) {
+    const owned = educator.courses.some(
+      (course) => course && course._id && course._id.toString() === courseId
+    );
+    setIsOwner(owned);
+  }
 
-  }, [user, educator, courseId]);
+}, [user, educator, courseId]);
 
   const handleEnroll = async () => {
     try {
