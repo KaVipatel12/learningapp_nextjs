@@ -95,14 +95,17 @@ useEffect(() => {
     setIsCoursePurchased(purchased);
   }
 
-  if (educator && educator.courses) {
-    const owned = educator.courses.some(
-      (course) => course && course._id && course._id.toString() === courseId
-    );
-    setIsOwner(owned);
-  }
+}, [user, courseId]);
 
-}, [user, educator, courseId]);
+
+useEffect(() => {
+  if (educator && educator.courses) {
+  const owned = educator.courses.some(
+    (course) => course && course._id && course._id.toString() === courseId
+  );
+  setIsOwner(owned);
+}
+}, [educator, courseId]);
 
   const handleEnroll = async () => {
     try {
