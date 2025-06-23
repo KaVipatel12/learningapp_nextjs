@@ -4,11 +4,11 @@ import { Comment } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 
 
-export async function PATCH(req: NextRequest, { params }: { params: { commentId : string}}) {
+export async function PATCH(req: NextRequest, props : { params: Promise<{ commentId : string}>}) {
   await connect();
 
   try {
-    const { commentId } = params;
+    const { commentId } = await props.params;
     const { comment } = await req.json();
 
     // Check course access
