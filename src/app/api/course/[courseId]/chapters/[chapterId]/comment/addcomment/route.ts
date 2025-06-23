@@ -15,14 +15,15 @@ export interface ICommentInput {
   updatedAt: Date;
 }
 
+// Alternative 1: Using Promise params (Next.js 15+)
 export async function PUT(
   req: NextRequest,
-  context: { params: { chapterId: string; courseId: string } }
+  props: { params: Promise<{ chapterId: string; courseId: string }> }
 ): Promise<NextResponse> {
   await connect();
 
   try {
-    const { chapterId, courseId } = context.params;
+    const { chapterId, courseId } = await props.params;
     const { comment: commentText } = await req.json();
 
     const authResult = await courseAccessMiddleware(req, courseId);
@@ -85,3 +86,82 @@ export async function PUT(
     );
   }
 }
+
+// Alternative 2: Extract from URL (version-agnostic)
+/*
+export async function PUT(req: NextRequest): Promise<NextResponse> {
+  await connect();
+
+  try {
+    // Extract params from the URL
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split('/');
+    const courseIdIndex = pathSegments.findIndex(segment => segment === 'course') + 1;
+    const chapterIdIndex = pathSegments.findIndex(segment => segment === 'chapters') + 1;
+    
+    const courseId = pathSegments[courseIdIndex];
+    const chapterId = pathSegments[chapterIdIndex];
+
+    const { comment: commentText } = await req.json();
+
+    const authResult = await courseAccessMiddleware(req, courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const { user } = authResult as CourseAccessContext;
+
+    if (!user) {
+      return NextResponse.json({ success: false, msg: "Authentication failed" }, { status: 401 });
+    }
+
+    const objectChapterId = new mongoose.Types.ObjectId(chapterId);
+    const objectCourseId = new mongoose.Types.ObjectId(courseId);
+
+    const commentData: ICommentInput = {
+      comment: commentText,
+      chapterId: objectChapterId,
+      courseId: objectCourseId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    if (user.role === "student") {
+      commentData.userId = user._id;
+    } else if (user.role === "educator") {
+      commentData.educatorId = user._id;
+    }
+
+    const newComment = await Comment.create(commentData);
+
+    if (!newComment) {
+      return NextResponse.json({ msg: "Something went wrong" }, { status: 400 });
+    }
+
+    if (user.role === "student") {
+      await User.findByIdAndUpdate(
+        user._id,
+        { $push: { comment: newComment._id } },
+        { new: true }
+      );
+    } else if (user.role === "educator") {
+      await Educator.findByIdAndUpdate(
+        user._id,
+        { $push: { comment: newComment._id } },
+        { new: true }
+      );
+    }
+
+    return NextResponse.json(
+      { msg: "Comment added successfully", comment: newComment },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error submitting comment:", error);
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
+*/
