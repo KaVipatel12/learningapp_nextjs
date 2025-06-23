@@ -57,22 +57,48 @@ const ChaptersPage = () => {
     fetchChapters();
   }, [fetchChapters]);
 
-  useEffect(() => {
-    if (user && user.purchaseCourse) {
-      const purchased = user.purchaseCourse.some(purchase => {
-        const purchaseCourseId = typeof purchase.courseId === 'object' 
-          ? purchase.courseId._id 
-          : purchase.courseId;
-        return purchaseCourseId === courseId;
-      });
-      setIsCoursePurchased(purchased);
-    }
+useEffect(() => {
+  // Reset states first
+  setIsCoursePurchased(false);
+  setIsOwner(false);
+
+  if (user && user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
+    const purchased = user.purchaseCourse.some((purchase) => {
+      // Check if purchase object exists and has courseId
+      if (!purchase || !purchase.courseId) return false;
       
-    if (educator && educator.courses) {
-      const owned = educator?.courses?.some(id => id?._id.toString() === courseId);
-      setIsOwner(owned);
-    }
-  }, [user, educator, courseId]);
+      let purchaseCourseId;
+      if (typeof purchase.courseId === "object") {
+        // courseId is populated (Course object), get its _id
+        purchaseCourseId = purchase.courseId._id;
+      } else {
+        // courseId is just the ObjectId string
+        purchaseCourseId = purchase.courseId;
+      }
+      
+      return purchaseCourseId && purchaseCourseId.toString() === courseId;
+    });
+    setIsCoursePurchased(purchased);
+  }
+
+  // Only check for ownership if user is actually an educator
+  if (educator && educator.courses && Array.isArray(educator.courses)) {
+    const owned = educator.courses.some(
+      (course) => {
+        // More robust null checking
+        if (!course || !course._id) return false;
+        
+        const courseIdStr = typeof course._id === 'object' 
+          ? course._id.toString() 
+          : String(course._id);
+        
+        return courseIdStr === courseId;
+      }
+    );
+    setIsOwner(owned);
+  }
+
+}, [user, educator, courseId]);
 
   const toggleChapterSelection = (chapterId: string) => {
     setSelectedChapters(prev => 
