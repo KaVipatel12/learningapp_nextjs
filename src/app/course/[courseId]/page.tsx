@@ -82,30 +82,50 @@ const CourseDetailPage = () => {
     }
   }, [courseId]);
 
+
   // Check permissions to delete and update page
 useEffect(() => {
-  if (user && user.purchaseCourse) {
+  // Reset states first
+  setIsCoursePurchased(false);
+  setIsOwner(false);
+
+  if (user && user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
     const purchased = user.purchaseCourse.some((purchase) => {
-      const purchaseCourseId =
-        typeof purchase.courseId === "object"
-          ? purchase.courseId._id
-          : purchase.courseId;
-      return purchaseCourseId === courseId;
+      // Check if purchase object exists and has courseId
+      if (!purchase || !purchase.courseId) return false;
+      
+      let purchaseCourseId;
+      if (typeof purchase.courseId === "object") {
+        // courseId is populated (Course object), get its _id
+        purchaseCourseId = purchase.courseId._id;
+      } else {
+        // courseId is just the ObjectId string
+        purchaseCourseId = purchase.courseId;
+      }
+      
+      return purchaseCourseId && purchaseCourseId.toString() === courseId;
     });
     setIsCoursePurchased(purchased);
   }
 
-}, [user, courseId]);
+  // Only check for ownership if user is actually an educator
+  if (educator && educator.courses && Array.isArray(educator.courses)) {
+    const owned = educator.courses.some(
+      (course) => {
+        // More robust null checking
+        if (!course || !course._id) return false;
+        
+        const courseIdStr = typeof course._id === 'object' 
+          ? course._id.toString() 
+          : String(course._id);
+        
+        return courseIdStr === courseId;
+      }
+    );
+    setIsOwner(owned);
+  }
 
-
-useEffect(() => {
-  if (educator && educator.courses) {
-  const owned = educator.courses.some(
-    (course) => course && course._id && course._id.toString() === courseId
-  );
-  setIsOwner(owned);
-}
-}, [educator, courseId]);
+}, [user, educator, courseId]);
 
   const handleEnroll = async () => {
     try {
