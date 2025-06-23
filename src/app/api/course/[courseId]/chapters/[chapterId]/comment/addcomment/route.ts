@@ -17,12 +17,12 @@ export interface ICommentInput {
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { chapterId: string; courseId: string } }
+  context: { params: { chapterId: string; courseId: string } }
 ): Promise<NextResponse> {
   await connect();
 
   try {
-    const { chapterId, courseId } = params;
+    const { chapterId, courseId } = context.params;
     const { comment: commentText } = await req.json();
 
     const authResult = await courseAccessMiddleware(req, courseId);
