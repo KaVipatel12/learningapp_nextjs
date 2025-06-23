@@ -120,7 +120,7 @@ export default function WishlistPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 pb-20 place-items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 pb-20 place-items-center">
               {courses.map((course) => (
                 <Card
                   key={course._id}

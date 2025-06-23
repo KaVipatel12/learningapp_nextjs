@@ -97,10 +97,11 @@ const CourseDetailPage = () => {
 
     if (educator && educator.courses) {
       const owned = educator.courses.some(
-        (course) => course._id?.toString() === courseId
+        (course) => course && course._id?.toString() === courseId
       );
       setIsOwner(owned);
     }
+
   }, [user, educator, courseId]);
 
   const handleEnroll = async () => {
