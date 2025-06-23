@@ -7,13 +7,11 @@ import ReviewsSection from '@/components/course/ReviewSection';
 import ChatBox from '@/components/course/ChatBox';
 import CourseDescription from '@/components/course/CourseDescription';
 import { PageLoading } from '@/components/PageLoading';
-import {Button } from "@/components/course/ChapterPageFuncs";
 import { chapterActions } from '@/utils/ChapterFunctionality';
 import Link from 'next/link';
 import { useNotification } from '@/components/NotificationContext';
 import MoreVideos from '@/components/course/MoreVideos';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import Modal from '@/components/Modal';
 import PleaseWait from '@/components/PleaseWait';
 
 // Types

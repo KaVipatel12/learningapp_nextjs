@@ -40,7 +40,7 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
   const { user } = useUser();
   const { educator } = useEducator();
 
-  const transformCommentToMessage = useCallback((comment: any): Message => {
+  const transformCommentToMessage = useCallback((comment) : Message => {
     const isCurrentUser = 
       (user && comment.userId && comment.userId._id === user._id) || 
       (educator && comment.educatorId && comment.educatorId._id === educator._id);

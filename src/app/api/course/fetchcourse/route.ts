@@ -19,7 +19,8 @@ export async function GET(req: Request) {
     const price = searchParams.get("price");
 
     // Build MongoDB query object
-    const query: any = {};
+    
+    const query: Record<string, unknown> = {};
 
     if (courseName) {
       query.title = { $regex: courseName, $options: "i" };
@@ -66,8 +67,8 @@ export async function GET(req: Request) {
       .lean();
 
     // Add ratings
-    const coursesWithRatings = courses.map((course: any) => {
-      const stats = reviewStatsMap.get(course._id.toString());
+    const coursesWithRatings = courses.map((course) => {
+      const stats = reviewStatsMap.get(course._id!.toString());
       const averageRating = stats ? Number(stats.averageRating.toFixed(1)) : 0;
       const totalRatings = stats?.totalRatings || 0;
       const score = averageRating * Math.log(totalRatings + 1);

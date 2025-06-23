@@ -65,7 +65,6 @@ interface UserContextType {
 export interface Course {
   id: string;
   _id?: string;
-  imageUrl: string;
   title: string;
   instructor: string;
   price: number;

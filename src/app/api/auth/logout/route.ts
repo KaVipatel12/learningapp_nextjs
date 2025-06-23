@@ -11,6 +11,7 @@ export async function POST(request) {
                   request.headers.get('authorization')?.replace('Bearer ', '');
 
 
+                  console.log(token)
     // Create response
     const response = NextResponse.json(
       { 
