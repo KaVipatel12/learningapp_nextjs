@@ -4,7 +4,6 @@ import { Comment, Educator, User } from "@/models/models";
 import mongoose, { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
-// Type for input comment data
 export interface ICommentInput {
   comment: string;
   userId?: Types.ObjectId | string;
@@ -16,22 +15,16 @@ export interface ICommentInput {
   updatedAt: Date;
 }
 
-// Define context type for dynamic route params
-type RouteContext = {
-  params: {
-    chapterId: string;
-    courseId: string;
-  };
-};
-
-export async function PUT(req: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { chapterId: string; courseId: string } }
+): Promise<NextResponse> {
   await connect();
 
   try {
-    const { chapterId, courseId } = context.params;
+    const { chapterId, courseId } = params;
     const { comment: commentText } = await req.json();
 
-    // Auth check using custom middleware
     const authResult = await courseAccessMiddleware(req, courseId);
     if (authResult instanceof NextResponse) {
       return authResult;
@@ -43,7 +36,6 @@ export async function PUT(req: NextRequest, context: RouteContext): Promise<Next
       return NextResponse.json({ success: false, msg: "Authentication failed" }, { status: 401 });
     }
 
-    // Prepare comment data
     const objectChapterId = new mongoose.Types.ObjectId(chapterId);
     const objectCourseId = new mongoose.Types.ObjectId(courseId);
 
@@ -67,7 +59,6 @@ export async function PUT(req: NextRequest, context: RouteContext): Promise<Next
       return NextResponse.json({ msg: "Something went wrong" }, { status: 400 });
     }
 
-    // Add comment ID to user's or educator's comment list
     if (user.role === "student") {
       await User.findByIdAndUpdate(
         user._id,
