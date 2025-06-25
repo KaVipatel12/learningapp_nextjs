@@ -56,7 +56,8 @@ export default function LoginPage() {
         if(data.role === "educator"){
          console.log("this is educator")
          await fetchEducatorData();
-         return router.push('/profile/educator');
+        //  return router.push('/profile/educator');
+         window.location.href = '/educator/profile'  // There were glitch in loading educator data so i am using it
         }
         
         fetchUserData();
