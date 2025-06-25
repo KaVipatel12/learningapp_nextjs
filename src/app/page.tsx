@@ -146,7 +146,7 @@ const HomePage = () => {
       if (Array.isArray(data.msg)) {
         const formattedCourses = data.msg.map((course: Course) => ({
           id: course._id,
-          imageUrl: '/default-course.jpg',
+          imageUrl: course.imageUrl,
           title: course.title,
           instructor: course.educatorName || 'Unknown Instructor',
           price: course.price,
