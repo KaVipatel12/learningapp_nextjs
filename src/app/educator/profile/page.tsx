@@ -13,15 +13,14 @@ export default function EducatorProfile() {
   const { educator, educatorLoading } = useEducator();
   const [pageLoading, setPageLoading] = useState(false);
   const router = useRouter(); 
-    
-    
   
   useEffect(() => {
     setPageLoading(educatorLoading);
-  }, [educatorLoading, educator]);
+  }, [educatorLoading]);
   
   useEffect(() => {  
-  if(!educator && !educatorLoading) return router.push("/unauthorized/user")
+  if(educatorLoading) return;   
+  else if(!educator && !educatorLoading) return router.push("/unauthorized/user")
 }, [router , educator , educatorLoading]);
 
   const formattedEducator = useMemo(() => {

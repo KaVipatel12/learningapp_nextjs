@@ -28,7 +28,16 @@ export default function AppNavbar() {
     setIsOpen(false);
   }, []);
 
+  // Function to close mobile menu
+  const closeMobileMenu = () => {
+    setIsOpen(false);
+  };
+
   const logOut = async () => {
+    const confirmation = confirm("Do you really want to logout?")
+    if(!confirmation){
+      return; 
+    }
     if (loggingOut) return; // Prevent multiple clicks
     
     setLoggingOut(true);
@@ -43,17 +52,17 @@ export default function AppNavbar() {
         credentials: 'include', // Important: include cookies in request
       });
 
-      const result = await response.json();
       
       if (response.ok) {
-        console.log('Logout successful:', result.message);
+        console.log('Logout successful ');
+        router.push("/login")
       } else {
-        console.error('Logout API error:', result.message);
+        console.error('Logout error ');
         // Continue with logout process even if API fails
       }
       
-    } catch (error) {
-      console.error('Logout request failed:', error);
+    } catch {
+      console.error('Logout request failed ');
       // Continue with logout process even if request fails
     }
     
@@ -78,7 +87,10 @@ export default function AppNavbar() {
 
   const LogoutButton = ({ isMobile = false }) => (
     <button 
-      onClick={logOut} 
+      onClick={() => {
+        logOut();
+        if (isMobile) closeMobileMenu();
+      }} 
       disabled={loggingOut}
       className={`text-rose-700 hover:text-rose-900 transition flex items-center ${
         loggingOut ? 'opacity-50 cursor-not-allowed' : ''
@@ -187,18 +199,21 @@ export default function AppNavbar() {
         <>
           <Link 
             href="/user/wishlist" 
+            onClick={closeMobileMenu}
             className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
           >
             <Heart className="mr-2 h-5 w-5" /> Wishlist
           </Link>
           <Link 
             href="/courses" 
+            onClick={closeMobileMenu}
             className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
           >
             <Video className="mr-2 h-5 w-5" /> Courses
           </Link>
           <Link 
             href="/user/profile" 
+            onClick={closeMobileMenu}
             className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
           >
             <User className="mr-2 h-5 w-5" /> Profile
@@ -213,12 +228,14 @@ export default function AppNavbar() {
         <>
           <Link 
             href="/educator/addcourse" 
+            onClick={closeMobileMenu}
             className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
           >
             <Plus className="mr-2 h-5 w-5" /> Add Course
           </Link>
           <Link 
             href="/educator/profile" 
+            onClick={closeMobileMenu}
             className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
           >
             <GraduationCap className="mr-2 h-5 w-5" /> Profile
@@ -233,18 +250,21 @@ export default function AppNavbar() {
       <>
         <Link 
           href="/course" 
+          onClick={closeMobileMenu}
           className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
         >
           <Video className="mr-2 h-5 w-5" /> Browse Courses
         </Link>
         <Link 
           href="/login" 
+          onClick={closeMobileMenu}
           className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
         >
           <LogIn className="mr-2 h-5 w-5" /> Login
         </Link>
         <Link 
           href="/register" 
+          onClick={closeMobileMenu}
           className="px-3 py-2 rounded-md text-base font-medium text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:to-rose-600 transition flex items-center justify-center"
         >
           <UserPlus className="mr-2 h-5 w-5" /> Register
@@ -290,6 +310,7 @@ export default function AppNavbar() {
           <div className="pt-2 pb-3 space-y-1 px-4">
             <Link 
               href="/" 
+              onClick={closeMobileMenu}
               className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
             >
               <Home className="mr-2 h-5 w-5" /> Home

@@ -54,7 +54,7 @@ export default function LoginPage() {
         showNotification('Login successful!', 'success'); 
 
         if(data.role === "educator"){
-        console.log("this is educator")
+         console.log("this is educator")
          await fetchEducatorData();
          return router.push('/profile/educator');
         }
