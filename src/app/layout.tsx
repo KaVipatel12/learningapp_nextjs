@@ -13,6 +13,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Learnify - Your Smart Learning Platform',
   description: 'An engaging platform for students and educators to grow and learn together.',
+  icons : {
+    icon : '/favicon.ico'
+  }
 };
 
 export default function RootLayout({
