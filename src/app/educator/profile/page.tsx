@@ -142,7 +142,7 @@ export default function EducatorProfile() {
           </div>
 
           {/* Contact Info */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 place-items-center">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-rose-100">
               <h3 className="font-medium text-rose-900 mb-3 flex items-center gap-2">
                 <Mail size={16} className="text-rose-500" />
