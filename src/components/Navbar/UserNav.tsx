@@ -71,13 +71,9 @@ export default function AppNavbar() {
       await fetchUserData();
       
       // Navigate to home page
-      router.push("/");
+      router.push("/login");
       
-      // Force a page refresh to clear any cached data
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-      
+  
     } catch (error) {
       console.error('Error during logout cleanup:', error);
     } finally {

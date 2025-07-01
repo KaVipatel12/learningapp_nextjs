@@ -5,7 +5,6 @@ import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
 import { useNotification } from '@/components/NotificationContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 const UserBioPage = () => {
   const { user, userLoading } = useUser();
