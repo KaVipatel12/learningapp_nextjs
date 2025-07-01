@@ -4,12 +4,10 @@ import { useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
 import { useNotification } from '@/components/NotificationContext';
-import { useRouter } from 'next/navigation';
 
 const UserBioPage = () => {
   const { user, userLoading } = useUser();
   const { showNotification } = useNotification(); 
-  const router  = useRouter();
 
   if (userLoading) {
     return <PageLoading />;
@@ -29,9 +27,6 @@ const UserBioPage = () => {
     if (!response.ok) {
       return showNotification(data.msg || 'Failed to update bio', "error");
     }
-    
-    showNotification('Bio Updated successfully', "success");
-    return router.push("/category")
   };
 
 
@@ -39,7 +34,7 @@ const UserBioPage = () => {
     <BioInput
       initialBio={user?.bio || ''}
       handleSubmit={handleSubmit}
-      redirectPath="/user/profile"
+      redirectPath="/category"
       title="Your Profile Bio"
       description="Tell others about your interests and background"
     />

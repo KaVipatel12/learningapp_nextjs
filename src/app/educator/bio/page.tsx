@@ -4,12 +4,10 @@ import { useEducator } from '@/context/educatorContext';
 import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
 import { useNotification } from '@/components/NotificationContext';
-import { useRouter } from 'next/navigation';
 
 const EducatorBioPage = () => {
   const { educator, educatorLoading } = useEducator();
   const { showNotification } = useNotification(); 
-  const router = useRouter(); 
 
   if (educatorLoading) {
     return <PageLoading />;
@@ -29,15 +27,13 @@ const EducatorBioPage = () => {
       return showNotification(data.msg || 'Failed to update bio', "error");
     }
     
-    showNotification('Bio Updated successfully', "success");
-    return router.push("/educator/teachingfocus")
   };
 
   return (
     <BioInput
       initialBio={educator?.bio || ''}
       handleSubmit={handleSubmit}
-      redirectPath="/educator/profile"
+      redirectPath="/educator/teachingfocus"
       title="Educator Profile Bio"
       description="Tell students about your teaching experience and approach"
     />

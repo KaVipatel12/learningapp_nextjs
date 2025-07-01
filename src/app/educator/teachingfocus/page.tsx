@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Check, Plus, X } from 'lucide-react';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
-import { useRouter } from 'next/navigation';
 import { useEducator } from '@/context/educatorContext';
 
 // All available focus areas
@@ -39,7 +38,6 @@ const TeachingFocusPage = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const { showNotification } = useNotification();
   const { fetchEducatorData } = useEducator()
-  const router = useRouter()
   // Fetch teaching focus from API
   const fetchTeachingFocus = useCallback(async () => {
     try {
@@ -87,7 +85,7 @@ const TeachingFocusPage = () => {
       
       showNotification("Saved Successfully", "success");
       fetchEducatorData(); 
-      router.push("/educator/profile")
+      window.location.href = '/educator/profile'  // There were glitch in loading educator data so i am using it
     } catch {
       showNotification("There is some error", "error");
     }finally{

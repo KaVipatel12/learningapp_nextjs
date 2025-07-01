@@ -95,7 +95,7 @@ const CategoryUpdatePage = () => {
 
       showNotification("Categories updated successfully!", "success");
       fetchUserData(); 
-      router.push("/user/profile");
+      window.location.href = '/user/profile'  // There were glitch in loading educator data so i am using it
     } catch (error) {
       let errorMessage = "An unknown error occurred";
       
