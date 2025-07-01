@@ -11,10 +11,6 @@ const EducatorBioPage = () => {
   const { educator, educatorLoading } = useEducator();
   const { showNotification } = useNotification(); 
   const router = useRouter(); 
-      
-    useEffect(() => {  
-        if(!educator && !educatorLoading) return router.push("/unauthorized/educator")
-      }, [ educator, educatorLoading , router]);
 
   if (educatorLoading) {
     return <PageLoading />;

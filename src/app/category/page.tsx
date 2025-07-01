@@ -37,10 +37,6 @@ const CategoryUpdatePage = () => {
       setSelections({ selectedCategories: [...user.category] });
     }
   }, [user, userLoading]);
-  
-    useEffect(() => {  
-    if(!user && !userLoading) return router.push("/unauthorized/user")
-  }, [ user , userLoading , router]);
 
   const categories: Category[] = [
       { id: "Programming", name: 'Programming', icon: '💻' },

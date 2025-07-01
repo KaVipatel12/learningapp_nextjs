@@ -12,10 +12,6 @@ const UserBioPage = () => {
   const { showNotification } = useNotification(); 
   const router  = useRouter();
 
-  useEffect(() => {  
-    if(!userLoading && !user) return router.push("/unauthorized/user")
-  }, [ userLoading , user , router]);
-
   if (userLoading) {
     return <PageLoading />;
   }
