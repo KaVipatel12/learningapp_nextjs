@@ -11,6 +11,9 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendOTPEmail(email: string, otp: string) {
+
+  console.log("Email user" ,process.env.EMAIL_USER )
+  console.log("Email pass" ,process.env.EMAIL_PASS )
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
