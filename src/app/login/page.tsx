@@ -170,6 +170,11 @@ export default function LoginPage() {
                     Register
                   </Link>
                 </p>
+                <p className="text-center text-sm text-rose-700/80">
+                  <Link href="/password/forgetpassword" className="text-rose-600 font-medium hover:underline">
+                    Forget Password
+                  </Link>
+                </p>
               </Form>
             )}
           </Formik>

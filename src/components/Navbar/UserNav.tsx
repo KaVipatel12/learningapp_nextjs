@@ -55,7 +55,8 @@ export default function AppNavbar() {
       
       if (response.ok) {
         console.log('Logout successful ');
-        router.push("/login")
+        fetchUserData()
+        window.location.href = '/login'
       } else {
         console.error('Logout error ');
         // Continue with logout process even if API fails

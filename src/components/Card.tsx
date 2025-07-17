@@ -72,7 +72,7 @@ export default function Card({
           return showNotification(data.msg, "error"); 
         }
         showNotification(data.msg, "success"); 
-        fetchUserData();
+        await fetchUserData();
       }
     } catch {
       showNotification('Wishlist update failed', "error");

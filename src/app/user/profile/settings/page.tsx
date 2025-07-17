@@ -266,9 +266,9 @@ function PasswordSection() {
             </button>
 
             <div className="text-center">
-              <button className="text-purple-600 hover:text-purple-800 font-medium flex items-center justify-center mx-auto">
+              <Link href="/password/forgetpassword" className="text-purple-600 hover:text-purple-800 font-medium flex items-center justify-center mx-auto">
                 Forgot Password? <FiArrowRight className="ml-1" />
-              </button>
+              </Link>
             </div>
           </div>
         ) : (
