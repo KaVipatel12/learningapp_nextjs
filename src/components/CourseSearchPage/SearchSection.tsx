@@ -28,7 +28,7 @@ export function SearchSection({ onSearch }: SearchProps) {
     debouncedSearch();
     // Cleanup debounce on unmount
     return () => debouncedSearch.cancel();
-  }, [courseSearch, educatorSearch]);
+  }, [courseSearch, educatorSearch, debouncedSearch]);
 
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-4">
