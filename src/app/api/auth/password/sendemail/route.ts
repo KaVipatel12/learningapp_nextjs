@@ -1,6 +1,5 @@
 import { connect } from "@/db/dbConfig";
 import { User } from "@/models/models";
-import { Educator } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import mongoose from "mongoose";
@@ -34,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user exists
-    const userExists = await User.findOne({ email }) || await Educator.findOne({ email });
+    const userExists = await User.findOne({ email });
     
     if (!userExists) {
       return NextResponse.json(
