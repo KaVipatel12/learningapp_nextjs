@@ -162,7 +162,6 @@ const ChatBox = ({ isOwner = false, courseOwnerId }: ChatBoxProps) => {
         throw new Error('Failed to update comment');
       }
 
-      const data = await response.json();
       setMessages(prev => prev.map(msg => 
         msg.id === editingId ? { 
           ...msg, 

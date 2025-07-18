@@ -4,7 +4,6 @@ import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
 import { useUser } from '@/context/userContext';
 
@@ -23,7 +22,6 @@ const LoginSchema = Yup.object().shape({
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
   const { showNotification } = useNotification();
 
   const { fetchUserData } = useUser();

@@ -17,7 +17,6 @@ export default function CombinedProfile() {
   const [pageLoading, setPageLoading] = useState(true);
 
   const isEducator = user?.role === 'educator';
-  const isStudent = !isEducator && user;
 
   useEffect(() => {
     setPageLoading(userLoading);

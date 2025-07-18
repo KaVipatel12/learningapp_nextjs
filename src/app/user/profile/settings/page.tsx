@@ -84,8 +84,7 @@ export default function SettingsPage() {
 
 function ProfileSection({
   userData,
-  setUserData,
-  isEducator
+  setUserData
 }: {
   userData: UserData;
   setUserData: React.Dispatch<React.SetStateAction<UserData | null>>;
@@ -194,7 +193,7 @@ function ProfileSection({
   );
 }
 
-function PasswordSection({ isEducator }: { isEducator: boolean }) {
+function PasswordSection() {
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const {showNotification} = useNotification(); 
