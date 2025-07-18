@@ -70,7 +70,7 @@ export default function UpdateCourse() {
     if (userLoading) return
 
     else if (user && user.courses) {
-      const owned = user?.courses?.some(id => id?.toString() === courseId);
+      const owned = user?.courses?.some(id => id._id?.toString() === courseId);
       if(!owned){
         router.push('/unauthorized/user')
       }
