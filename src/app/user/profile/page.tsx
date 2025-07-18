@@ -35,11 +35,11 @@ export default function CombinedProfile() {
         stats: {
           coursesCreated: user.courses?.length || 0,
           studentsEnrolled: user.courses?.reduce(
-            (acc: number, course: any) => acc + (course.totalEnrollment || 0), 
+            (acc: number, course) => acc + (course.totalEnrollment || 0), 
             0
           ) || 0,
           certificatesIssued: user.courses?.filter(
-            (course: any) => course.certification
+            (course) => course.certification
           ).length || 0
         },
         courses: user.courses || [],
@@ -214,7 +214,7 @@ export default function CombinedProfile() {
             
             {profileData?.courses?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 place-items-center">
-                {profileData?.courses?.map((course: any , key : number) => (
+                {profileData?.courses?.map((course) => (
                   <Card
                     key={course._id}
                     id={course._id}
@@ -258,7 +258,7 @@ export default function CombinedProfile() {
           
           {profileData?.purchasedCourses?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 place-items-center">
-              {profileData.purchasedCourses.slice(0, 6).map((course: any , key : number) => (
+              {profileData.purchasedCourses.slice(0, 6).map((course) => (
                 <Card
                   key={course.id}
                   id={course.id}
