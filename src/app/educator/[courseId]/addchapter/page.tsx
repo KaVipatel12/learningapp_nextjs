@@ -48,7 +48,7 @@ export default function AddChaptersPage() {
 
 useEffect(() => {
   if (userLoading) return setPageLoading(true)
-  const ownsCourse = user?.courses?.some(course => course.toString() === courseId.toString());
+  const ownsCourse = user?.courses?.some(course => course._id.toString() === courseId.toString());
 
   console.log(ownsCourse)
   if (!ownsCourse) {

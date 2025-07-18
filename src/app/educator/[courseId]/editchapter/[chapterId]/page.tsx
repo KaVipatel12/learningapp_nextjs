@@ -92,7 +92,7 @@ export default function EditChapterPage() {
   useEffect(() => {
     if (userLoading) return setPageLoading(true)
   
-    const ownsCourse = user?.courses?.some(course => course?.toString() === courseId);
+    const ownsCourse = user?.courses?.some(course => course._id?.toString() === courseId);
   
     if (!ownsCourse) {
       router.push('/unauthorized/user');

@@ -42,7 +42,7 @@ export async function courseAccessMiddleware(
     // Educator: can access & modify course if they created it
     if (user.role === "educator") {
       const isOwner = user.courses?.some(
-        (course: Types.ObjectId) => course.toString() === courseId
+        (course: Types.ObjectId) => course._id.toString() === courseId
       );
       if (isOwner) {
         return {

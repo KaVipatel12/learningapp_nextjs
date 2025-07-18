@@ -78,10 +78,10 @@ const ChaptersPage = () => {
     if (user && user.courses && Array.isArray(user.courses)) {
       const owned = user.courses.some(
         (course) => {
-          if (!course) return false;
-          const courseIdStr = typeof course === 'object' 
-            ? course.toString() 
-            : String(course);
+          if (!course._id) return false;
+          const courseIdStr = typeof course._id === 'object' 
+            ? course._id 
+            : String(course._id);
           return courseIdStr === courseId;
         }
       );

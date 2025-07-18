@@ -111,11 +111,11 @@ useEffect(() => {
     const owned = user.courses.some(
       (course) => {
         // More robust null checking
-        if (!course) return false;
+        if (!course._id) return false;
         
-        const courseIdStr = typeof course === 'object' 
-          ? course.toString() 
-          : String(course);
+        const courseIdStr = typeof course._id === 'object' 
+          ? course._id 
+          : String(course._id);
         
         return courseIdStr === courseId;
       }
