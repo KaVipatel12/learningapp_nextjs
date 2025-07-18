@@ -2,16 +2,34 @@ import { connect } from "@/db/dbConfig";
 import { AuthContext, authUserMiddleware } from "@/app/middleware/authUserMiddleware";
 import { Comment } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
-
-export async function PATCH(req: NextRequest, props : { params: Promise<{ commentId : string}>}) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { commentId: string } }
+): Promise<NextResponse> {
   await connect();
 
   try {
-    const { commentId } = await props.params;
-    const { comment } = await req.json();
+    const { commentId } = await params;
+    const { comment: newCommentText } = await req.json();
 
-    // Check course access
+    // Validate input
+    if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
+      return NextResponse.json(
+        { success: false, msg: "Invalid comment ID" },
+        { status: 400 }
+      );
+    }
+
+    if (!newCommentText || typeof newCommentText !== 'string') {
+      return NextResponse.json(
+        { success: false, msg: "Valid comment text is required" },
+        { status: 400 }
+      );
+    }
+
+    // Authenticate user
     const authResult = await authUserMiddleware(req);
     if (authResult instanceof NextResponse) {
       return authResult;
@@ -19,41 +37,58 @@ export async function PATCH(req: NextRequest, props : { params: Promise<{ commen
 
     const { user } = authResult as AuthContext;
 
-    if (!user) {
-      return NextResponse.json({ success: false, msg: "Authentication failed" }, { status: 401 });
+    // Find the comment
+    const existingComment = await Comment.findById(commentId);
+    if (!existingComment) {
+      return NextResponse.json(
+        { success: false, msg: "Comment not found" },
+        { status: 404 }
+      );
     }
 
-    const isUpdatable = user.comment.some(commentIds => commentIds.toString() === commentId)
-
-    if(!isUpdatable){
-        return NextResponse.json({msg : "You can't edit this comment"}, {status : 402})
+    // Check if user is the author or admin
+    const isAuthor = user?._id.toString() === existingComment.userId?.toString();
+    const isAdmin = user?.role === 'admin';
+    
+    if (!isAuthor && !isAdmin) {
+      return NextResponse.json(
+        { success: false, msg: "Unauthorized to edit this comment" },
+        { status: 403 }
+      );
     }
-   const updateComment = await Comment.findByIdAndUpdate(
-      commentId, 
+
+    // Update the comment
+    const updatedComment = await Comment.findByIdAndUpdate(
+      commentId,
       { 
-        comment,
-        updatedAt: new Date() // Explicitly set updatedAt
+        comment: newCommentText,
+        updatedAt: new Date()
       },
-      { new: true, runValidators: true } // Return updated doc and validate
-    ).exec();
+      { new: true, runValidators: true }
+    ).populate('userId', 'username email');
 
-    if(!updateComment){
-        return NextResponse.json({msg : "Something went wrong"}, {status : 400})
+    if (!updatedComment) {
+      return NextResponse.json(
+        { success: false, msg: "Failed to update comment" },
+        { status: 400 }
+      );
     }
 
-    console.log("comment text" + comment)
-    console.log("isUpdatable" + isUpdatable)
-    console.log("commentId" + commentId)
-
-    console.log(updateComment)
     return NextResponse.json(
-      { msg: "Comment updated successfully"},
-      { status: 201 }
+      { 
+        success: true,
+        msg: "Comment updated successfully",
+        comment: updatedComment
+      },
+      { status: 200 }
     );
   } catch (error) {
-    console.error("Error submitting comment:", error);
+    console.error("Error updating comment:", error);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { 
+        success: false,
+        error: "Internal server error" 
+      },
       { status: 500 }
     );
   }

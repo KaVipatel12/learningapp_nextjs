@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useNotification } from "@/components/NotificationContext";
 import { PageLoading } from "@/components/PageLoading";
 import { useUser } from "@/context/userContext"; 
-import { useEducator } from "@/context/educatorContext"; 
 import { chapterActions } from "@/utils/ChapterFunctionality";
 
 interface IVideo {
@@ -32,7 +31,6 @@ const ChaptersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error] = useState<string | null>(null);
   const { user } = useUser(); 
-  const { educator } = useEducator(); 
   const [isOwner, setIsOwner] = useState(false); 
   const [isCoursePurchased, setIsCoursePurchased] = useState(false);
   const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
@@ -57,48 +55,39 @@ const ChaptersPage = () => {
     fetchChapters();
   }, [fetchChapters]);
 
-useEffect(() => {
-  // Reset states first
-  setIsCoursePurchased(false);
-  setIsOwner(false);
+  useEffect(() => {
+    setIsCoursePurchased(false);
+    setIsOwner(false);
 
-  if (user && user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
-    const purchased = user.purchaseCourse.some((purchase) => {
-      // Check if purchase object exists and has courseId
-      if (!purchase || !purchase.courseId) return false;
-      
-      let purchaseCourseId;
-      if (typeof purchase.courseId === "object") {
-        // courseId is populated (Course object), get its _id
-        purchaseCourseId = purchase.courseId._id;
-      } else {
-        // courseId is just the ObjectId string
-        purchaseCourseId = purchase.courseId;
-      }
-      
-      return purchaseCourseId && purchaseCourseId.toString() === courseId;
-    });
-    setIsCoursePurchased(purchased);
-  }
-
-  // Only check for ownership if user is actually an educator
-  if (educator && educator.courses && Array.isArray(educator.courses)) {
-    const owned = educator.courses.some(
-      (course) => {
-        // More robust null checking
-        if (!course || !course._id) return false;
+    if (user && user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
+      const purchased = user.purchaseCourse.some((purchase) => {
+        if (!purchase || !purchase.courseId) return false;
         
-        const courseIdStr = typeof course._id === 'object' 
-          ? course._id.toString() 
-          : String(course._id);
+        let purchaseCourseId;
+        if (typeof purchase.courseId === "object") {
+          purchaseCourseId = purchase.courseId._id;
+        } else {
+          purchaseCourseId = purchase.courseId;
+        }
         
-        return courseIdStr === courseId;
-      }
-    );
-    setIsOwner(owned);
-  }
+        return purchaseCourseId && purchaseCourseId.toString() === courseId;
+      });
+      setIsCoursePurchased(purchased);
+    }
 
-}, [user, educator, courseId]);
+    if (user && user.courses && Array.isArray(user.courses)) {
+      const owned = user.courses.some(
+        (course) => {
+          if (!course) return false;
+          const courseIdStr = typeof course === 'object' 
+            ? course.toString() 
+            : String(course);
+          return courseIdStr === courseId;
+        }
+      );
+      setIsOwner(owned);
+    }
+  }, [user, courseId]);
 
   const toggleChapterSelection = (chapterId: string) => {
     setSelectedChapters(prev => 
@@ -156,60 +145,61 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen">      
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="flex justify-between items-center mb-8 my-9">
-          <h1 className="text-3xl font-bold text-pink-800 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Header section with responsive layout */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8 mt-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-pink-800 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text">
             Course Chapters
           </h1>
           
           {isOwner && (
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => router.push(`/educator/${courseId}/addchapter`)}
-                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all flex items-center gap-2 shadow-pink hover:shadow-pink-md"
-              >
-                <Plus size={16} />
-                Add Chapter
-              </button>
-              
-              {isSelectMode ? (
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={handleDeleteSelected}
-                    disabled={selectedChapters.length === 0}
-                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
-                      selectedChapters.length > 0 
-                        ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-pink hover:shadow-pink-md hover:from-rose-600 hover:to-pink-700' 
-                        : 'bg-pink-100 text-pink-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <Trash2 size={16} />
-                    Delete {selectedChapters.length > 0 ? `(${selectedChapters.length})` : ''}
-                  </button>
-                  
-                  <button 
-                    onClick={() => {
-                      setSelectedChapters([]);
-                      setIsSelectMode(false);
-                    }}
-                    className="px-4 py-2 bg-white text-pink-700 rounded-xl hover:bg-pink-50 transition-all border border-pink-200 shadow-sm hover:shadow-pink-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
+           <div className="flex flex-row items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2">
+            <button 
+              onClick={() => router.push(`/educator/${courseId}/addchapter`)}
+              className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all flex items-center gap-2 shadow-pink hover:shadow-pink-md text-sm sm:text-base"
+            >
+              <Plus size={16} />
+              <span>Add Chapter</span>
+            </button>
+            
+            {isSelectMode ? (
+              <>
                 <button 
-                  onClick={() => setIsSelectMode(true)}
-                  className="px-4 py-2 bg-white text-pink-700 rounded-xl hover:bg-pink-50 transition-all border border-pink-200 shadow-sm hover:shadow-pink-sm"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedChapters.length === 0}
+                  className={`flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all flex items-center gap-2 text-sm sm:text-base ${
+                    selectedChapters.length > 0 
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-pink hover:shadow-pink-md hover:from-rose-600 hover:to-pink-700' 
+                      : 'bg-pink-100 text-pink-400 cursor-not-allowed'
+                  }`}
                 >
-                  Select Chapters
+                  <Trash2 size={16} />
+                  <span>Delete {selectedChapters.length > 0 ? `(${selectedChapters.length})` : ''}</span>
                 </button>
-              )}
-            </div>
+                <button 
+                  onClick={() => {
+                    setSelectedChapters([]);
+                    setIsSelectMode(false);
+                  }}
+                  className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-pink-700 rounded-xl hover:bg-pink-50 transition-all border border-pink-200 shadow-sm hover:shadow-pink-sm text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => setIsSelectMode(true)}
+                className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-pink-700 rounded-xl hover:bg-pink-50 transition-all border border-pink-200 shadow-sm hover:shadow-pink-sm text-sm sm:text-base"
+              >
+                Select Chapters
+              </button>
+            )}
+          </div>
           )}
         </div>
 
-        <div className="grid gap-4">
+        {/* Chapters list */}
+        <div className="grid gap-3 sm:gap-4">
           {chapters.map((chapter) => {
             const totalDuration = chapter.videos.reduce((total, video) => total + video.duration, 0);
             const isSelected = selectedChapters.includes(chapter._id);
@@ -218,7 +208,7 @@ useEffect(() => {
               <div
                 key={chapter._id}
                 onClick={() => handleChapterClick(chapter)}
-                className={`p-6 rounded-xl border transition-all relative ${
+                className={`p-4 sm:p-6 rounded-xl border transition-all relative ${
                   isSelectMode && isSelected
                     ? "border-pink-500 bg-gradient-to-r from-pink-100 to-rose-100 shadow-pink-md"
                     : (isOwner || isCoursePurchased)
@@ -227,20 +217,22 @@ useEffect(() => {
                 }`}
               >
                 {isSelectMode && (
-                  <div className={`absolute -left-2 -top-2 w-5 h-5 rounded-full border-2 ${
+                  <div className={`absolute -left-2 -top-2 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 ${
                     isSelected ? "bg-pink-500 border-pink-500 shadow-pink-sm" : "bg-white border-pink-300"
                   }`}></div>
                 )}
                 
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-semibold text-pink-900 flex items-center gap-2">
-                      {(!isOwner && !isCoursePurchased) && <Lock className="w-5 h-5 text-pink-600" />}
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
+                  <div className="flex-1">
+                    <h2 className="text-lg sm:text-xl font-semibold text-pink-900 flex items-center gap-2">
+                      {(!isOwner && !isCoursePurchased) && <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />}
                       {chapter.title}
                     </h2>
-                    <p className="text-pink-800 mt-2">{chapter.description.substring(0, 150)}...</p>
+                    <p className="text-pink-800 mt-1 sm:mt-2 text-sm sm:text-base">
+                      {chapter.description.substring(0, 120)}...
+                    </p>
                   </div>
-                  <span className="text-sm bg-gradient-to-r from-pink-200 to-rose-200 text-pink-800 px-3 py-1 rounded-full shadow-pink-inner">
+                  <span className="text-xs sm:text-sm bg-gradient-to-r from-pink-200 to-rose-200 text-pink-800 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-pink-inner">
                     {totalDuration}min
                   </span>
                 </div>

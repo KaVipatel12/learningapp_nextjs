@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { FiPlus, FiTrash2, FiVideo, FiSave, FiAlertCircle } from 'react-icons/fi';
 import { useRouter, useParams } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
-import { useEducator } from '@/context/educatorContext';
+import { useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import PleaseWait from '@/components/PleaseWait';
 
@@ -30,7 +30,7 @@ export default function AddChaptersPage() {
   const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
-  const {educator , educatorLoading} = useEducator(); 
+  const {user , userLoading} = useUser(); 
   const [pageLoading, setPageLoading] = useState(true)
 
   const [chapters, setChapters] = useState<ChapterInput[]>([
@@ -47,15 +47,17 @@ export default function AddChaptersPage() {
   }, [chapters]);
 
 useEffect(() => {
-  if (educatorLoading) return setPageLoading(true)
-  const ownsCourse = educator?.courses?.some(course => course._id?.toString() === courseId);
+  if (userLoading) return setPageLoading(true)
+  const ownsCourse = user?.courses?.some(course => course.toString() === courseId.toString());
 
+  console.log(ownsCourse)
   if (!ownsCourse) {
     router.push('/unauthorized/user');
+
   }
 
   setPageLoading(false)
-}, [educator, courseId, educatorLoading, router]);
+}, [courseId, user , userLoading, router]);
 
 
   // Validate file size

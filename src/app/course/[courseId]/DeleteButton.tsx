@@ -5,7 +5,7 @@ import { Button, Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
-import { useEducator } from "@/context/educatorContext";
+import { useUser } from "@/context/userContext";
 import PleaseWait from '@/components/PleaseWait';
 
 interface DeleteCourseButtonProps {
@@ -17,7 +17,7 @@ interface DeleteCourseButtonProps {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { showNotification } = useNotification()
-  const { fetchEducatorData } = useEducator()
+  const { fetchUserData } = useUser()
 
   const showDeleteConfirm = () => {
     setIsModalOpen(true);
@@ -38,8 +38,8 @@ interface DeleteCourseButtonProps {
       if (response.ok) {
           setIsDeleting(false);
           setIsModalOpen(false);
-          fetchEducatorData(); 
-          return router.push('/educator/profile');
+          fetchUserData(); 
+          return router.push('/user/profile');
       } else {
         const errorData = await response.json();
         showNotification(errorData.message || 'Failed to delete course', "error");

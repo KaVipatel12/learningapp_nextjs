@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connect } from '@/db/dbConfig';
-import { AuthContext, authEducatorMiddleware } from '@/app/middleware/authEducatorMiddleware';
-import { Educator } from '@/models/models';
+import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
+import { User } from '@/models/models';
 
 export async function POST(req: NextRequest) {
   await connect();
   
   try {
-        const authResult = await authEducatorMiddleware(req);
+        const authResult = await authUserMiddleware(req);
           
         if (authResult instanceof NextResponse) {
         return authResult;
         }
         
-        const { educator } = authResult as AuthContext;
+        const { user } = authResult as AuthContext;
         
-        if (!educator) {
+        if (!user) {
         return NextResponse.json(
             { msg: "Authentication failed" },
             { status: 401 }
@@ -29,8 +29,12 @@ export async function POST(req: NextRequest) {
       throw new Error('Invalid teaching focus format');
     }
     
-    const save = await Educator.findByIdAndUpdate(
-       educator._id,{
+    if(user.role === "student"){
+      return NextResponse.json( { msg: "Authentication failed" },
+            { status: 401 })
+    }
+    const save = await User.findByIdAndUpdate(
+       user._id,{
       $set : { 
         teachingFocus 
        }}, 
@@ -56,25 +60,25 @@ export async function GET(req : NextRequest) {
   
     try {  
 
-        const authResult = await authEducatorMiddleware(req);
+        const authResult = await authUserMiddleware(req);
           
         if (authResult instanceof NextResponse) {
         return authResult;
         }
         
-        const { educator } = authResult as AuthContext;
+        const { user } = authResult as AuthContext;
         
-        if (!educator) {
+        if (!user) {
         return NextResponse.json(
             { msg: "Authentication failed" },
             { status: 401 }
         );
         }
   
-      console.log(educator.teachingFocus)
+      console.log(user.teachingFocus)
     return NextResponse.json({
       success: true,
-      teachingFocus: educator?.teachingFocus || []
+      teachingFocus: user?.teachingFocus || []
     });
   } catch {
     return NextResponse.json(

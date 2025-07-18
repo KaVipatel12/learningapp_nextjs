@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connect } from '@/db/dbConfig';
-import { Educator } from '@/models/models';
+import { User } from '@/models/models';
 
 
 export async function GET(req : NextRequest, props : {params : Promise<{educatorId: string}>}){
@@ -13,7 +13,7 @@ export async function GET(req : NextRequest, props : {params : Promise<{educator
     return NextResponse.json({msg : "No educator found", isParams : false}, {status : 404})
   }
   try {      
-    const educatorData = await Educator.findById(educatorId).populate('courses');
+    const educatorData = await User.findById(educatorId).populate('courses');
     if (!educatorData){
       return NextResponse.json({ msg: "No educator found" }, {status : 404});
     }

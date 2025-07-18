@@ -3,10 +3,8 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
-import { useEducator } from '@/context/educatorContext';
 import { UserData, useUser } from '@/context/userContext';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FiUser, FiLock, FiBook, FiArrowRight } from 'react-icons/fi';
 
@@ -16,13 +14,11 @@ type PasswordData = {
   confirm: string;
 };
 
-export default function UserSettingsPage() {
+export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'goals'>('profile');
   const { user, userLoading } = useUser();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-  const { educator } = useEducator(); 
-  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -33,13 +29,11 @@ export default function UserSettingsPage() {
     }
   }, [user, userLoading]);
 
-  useEffect(() => {  
-    if(educator) return router.push("/unauthorized/educator")
-  }, [ educator , router]);
-
   if (loading) {
     return <PageLoading />;
   }
+
+  const isEducator = userData?.role === 'educator';
 
   return (
     <div className="min-h-screen p-4 md:p-6">
@@ -69,17 +63,17 @@ export default function UserSettingsPage() {
                   onClick={() => setActiveTab('goals')}
                   className={`flex items-center w-full p-3 rounded-lg font-medium transition ${activeTab === 'goals' ? 'text-purple-700 bg-purple-50' : 'text-gray-600 hover:text-purple-700 hover:bg-purple-50'}`}
                 >
-                  <FiBook className="mr-3" /> Learning Goals
+                  <FiBook className="mr-3" /> {isEducator ? 'Teaching' : 'Learning'} Goals
                 </button>
               </nav>
             </div>
 
             <div className="md:col-span-3 p-6 md:p-8">
               {activeTab === 'profile' && (
-                <ProfileSection userData={userData!} setUserData={setUserData} />
+                <ProfileSection userData={userData!} setUserData={setUserData} isEducator={isEducator} />
               )}
-              {activeTab === 'password' && <PasswordSection />}
-              {activeTab === 'goals' && <GoalsSection />}
+              {activeTab === 'password' && <PasswordSection isEducator={isEducator} />}
+              {activeTab === 'goals' && <GoalsSection isEducator={isEducator} />}
             </div>
           </div>
         </div>
@@ -90,10 +84,12 @@ export default function UserSettingsPage() {
 
 function ProfileSection({
   userData,
-  setUserData
+  setUserData,
+  isEducator
 }: {
   userData: UserData;
   setUserData: React.Dispatch<React.SetStateAction<UserData | null>>;
+  isEducator: boolean;
 }) {
   const [formData, setFormData] = useState({
     username: userData?.username || '',
@@ -113,7 +109,8 @@ function ProfileSection({
     setSubmitLoading(true);
     
     try {
-      const response = await fetch(`/api/user/editprofile`, {
+      const endpoint ='/api/user/editprofile';
+      const response = await fetch(endpoint, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
@@ -197,7 +194,7 @@ function ProfileSection({
   );
 }
 
-function PasswordSection() {
+function PasswordSection({ isEducator }: { isEducator: boolean }) {
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const {showNotification} = useNotification(); 
@@ -224,7 +221,9 @@ function PasswordSection() {
     setSubmitLoading(true);
     
     try {
-      const response = await fetch(`/api/user/editprofile/editpassword`, {
+      const endpoint = '/api/user/editprofile/editpassword';
+        
+      const response = await fetch(endpoint, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json"
@@ -354,32 +353,37 @@ function PasswordSection() {
   );
 }
 
-function GoalsSection() {
+function GoalsSection({ isEducator }: { isEducator: boolean }) {
   const { user, userLoading } = useUser(); 
   const [loading, setLoading] = useState(false);
-  const [learningGoals, setLearningGoals] = useState<string[] | undefined | null>(null);
+  const [goals, setGoals] = useState<string[] | undefined | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (isEducator && user) {
+      setLoading(userLoading);
+      if (!userLoading && user.role === "educator") {
+        setGoals(user.teachingFocus);
+      }
+    } else if (user) {
       setLoading(userLoading);
       if (!userLoading && user) {
-        setLearningGoals(user.category);
+        setGoals(user.category);
       }
     }
-  }, [user, userLoading]);
+  }, [user, userLoading, isEducator]);
 
   return (
     <>
       <div className="max-w-lg mx-auto">
         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-          <FiBook className="mr-2 text-purple-600" /> Learning Goals
+          <FiBook className="mr-2 text-purple-600" /> {isEducator ? 'Teaching' : 'Learning'} Goals
         </h2>
 
         <div className="space-y-4 mb-8">
           {loading ? (
             <LoadingSpinner height='h-6' />
           ) : (
-            learningGoals?.map((goal, index) => (
+            goals?.map((goal, index) => (
               <div key={index} className="flex items-start">
                 <div className="flex items-center justify-center h-6 w-6 rounded-full bg-purple-100 text-purple-600 mr-3 mt-0.5 flex-shrink-0">
                   {index + 1}
@@ -391,7 +395,7 @@ function GoalsSection() {
 
           {!loading && (
             <Link
-              href="/category"
+              href={isEducator ? "/educator/teachingfocus" : "/category"}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition-all shadow-md hover:shadow-lg font-medium"
             >
               Update Goals <FiArrowRight className="ml-2" />

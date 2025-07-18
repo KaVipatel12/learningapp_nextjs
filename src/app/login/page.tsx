@@ -6,7 +6,6 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
-import { useEducator } from '@/context/educatorContext';
 import { useUser } from '@/context/userContext';
 
 interface LoginValues {
@@ -27,7 +26,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { showNotification } = useNotification();
 
-  const { fetchEducatorData } = useEducator();
   const { fetchUserData } = useUser();
 
   const handleLogin = async (
@@ -53,15 +51,9 @@ export default function LoginPage() {
         console.log("this")
         showNotification('Login successful!', 'success'); 
 
-        if(data.role === "educator"){
-         console.log("this is educator")
-         await fetchEducatorData();
-        //  return router.push('/profile/educator');
-         window.location.href = '/educator/profile'  // There were glitch in loading educator data so i am using it
-        }
+         await fetchUserData();
+         window.location.href = '/user/profile'  // There were glitch in loading educator data so i am using it
         
-        fetchUserData();
-        return router.push('/');
       } else {
         showNotification('Invalid credentials', 'error');
       }

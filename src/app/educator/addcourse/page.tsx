@@ -5,7 +5,6 @@ import { FiUpload, FiPlus, FiLoader, FiX } from 'react-icons/fi';
 import Image from 'next/image';
 import { useNotification } from '@/components/NotificationContext';
 import { useUser } from '@/context/userContext';
-import { useEducator } from '@/context/educatorContext';
 import PleaseWait from '@/components/PleaseWait';
 
 export default function AddCourse() {
@@ -36,8 +35,7 @@ export default function AddCourse() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { user } = useUser(); 
-  const { educator , educatorLoading, fetchEducatorData } = useEducator(); 
+  const { user, userLoading , fetchUserData } = useUser(); 
       
   
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -53,8 +51,8 @@ export default function AddCourse() {
   };
   
     useEffect(() => {  
-      if(user && !educator && !educatorLoading) return router.push("/unauthorized/educator")
-    }, [ user , router, educator , educatorLoading]);
+      if(user && user.role !== "educator"  && !userLoading) return router.push("/unauthorized/educator")
+    }, [ user , router , userLoading]);
   
   // function to add photo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +123,7 @@ export default function AddCourse() {
       }
 
       const data = await response.json();
-      fetchEducatorData(); 
+      fetchUserData(); 
       return router.push(`/educator/${data.course._id}/addchapter`);
     } catch (error){
       showNotification('Submission error', "error");

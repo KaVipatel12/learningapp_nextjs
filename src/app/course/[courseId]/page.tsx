@@ -6,7 +6,6 @@ import Image from "next/image";
 import { PageLoading } from "@/components/PageLoading";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@/context/userContext";
-import { useEducator } from "@/context/educatorContext";
 import DeleteCourseButton from "./DeleteButton";
 import { useNotification } from "@/components/NotificationContext";
 import ErrorPage from "@/components/ErrorPage";
@@ -49,7 +48,6 @@ const CourseDetailPage = () => {
   const { showNotification } = useNotification();
 
   const { user, fetchUserData } = useUser();
-  const { educator } = useEducator();
   const params = useParams();
   const router = useRouter();
 
@@ -109,15 +107,15 @@ useEffect(() => {
   }
 
   // Only check for ownership if user is actually an educator
-  if (educator && educator.courses && Array.isArray(educator.courses)) {
-    const owned = educator.courses.some(
+  if (user && user.courses && Array.isArray(user.courses)) {
+    const owned = user.courses.some(
       (course) => {
         // More robust null checking
-        if (!course || !course._id) return false;
+        if (!course) return false;
         
-        const courseIdStr = typeof course._id === 'object' 
-          ? course._id.toString() 
-          : String(course._id);
+        const courseIdStr = typeof course === 'object' 
+          ? course.toString() 
+          : String(course);
         
         return courseIdStr === courseId;
       }
@@ -125,7 +123,7 @@ useEffect(() => {
     setIsOwner(owned);
   }
 
-}, [user, educator, courseId]);
+}, [user, courseId]);
 
   const handleEnroll = async () => {
     try {
@@ -362,7 +360,7 @@ useEffect(() => {
                             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
                               {course?.prerequisites?.split(".").map(
                                 (pre, sr) =>
-                                  pre.length > 0 && (
+                                  pre.trim("").length > 0 && (
                                     <>
                                       <Paragraph
                                         className="!text-gray-700 !text-lg !leading-relaxed !mb-0"

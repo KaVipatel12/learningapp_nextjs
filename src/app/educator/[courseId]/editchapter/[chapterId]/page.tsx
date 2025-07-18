@@ -4,7 +4,7 @@ import { FiTrash2, FiVideo, FiSave, FiAlertCircle } from 'react-icons/fi';
 import { useRouter, useParams } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
-import { useEducator } from '@/context/educatorContext';
+import { useUser } from '@/context/userContext';
 import PleaseWait from '@/components/PleaseWait';
 
 // Constants
@@ -45,7 +45,7 @@ export default function EditChapterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const {educator , educatorLoading} = useEducator(); 
+  const {user , userLoading} = useUser(); 
   const [pageLoading , setPageLoading] = useState(true); 
 
   // Fetch chapter data on mount
@@ -90,16 +90,16 @@ export default function EditChapterPage() {
 
   
   useEffect(() => {
-    if (educatorLoading) return setPageLoading(true)
+    if (userLoading) return setPageLoading(true)
   
-    const ownsCourse = educator?.courses?.some(course => course._id?.toString() === courseId);
+    const ownsCourse = user?.courses?.some(course => course?.toString() === courseId);
   
     if (!ownsCourse) {
       router.push('/unauthorized/user');
     }
   
     setPageLoading(false)
-  }, [educator, courseId, educatorLoading, router]);
+  }, [user, courseId, userLoading, router]);
 
   // Validate file size
   const validateFile = (file: File): boolean => {

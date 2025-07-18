@@ -6,7 +6,6 @@ import Card from '@/components/Card';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Course, useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
-import { useEducator } from '@/context/educatorContext';
 
 export interface Category {
   id: string;
@@ -27,7 +26,6 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const { user, userLoading, purchasedCoursesIds, purchasedCourses } = useUser(); 
   const [purchasedCourse, setPurchasedCourse] = useState<Course[]>([]);
-  const { educator } = useEducator(); 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
   const coursesContainerRef = useRef<HTMLDivElement>(null);
@@ -88,9 +86,7 @@ const HomePage = () => {
       setUserWishList(userWishlist); 
     }
 
-    if(educator) return router.push("/unauthorized/educator")
-
-  }, [user, userLoading, purchasedCourses, educator, router]);
+  }, [user, userLoading, purchasedCourses, router]);
 
   // Fetch courses by category with pagination (for interest section)
   const fetchCourseByCategory = useCallback(async (page = 1, initialLoad = false) => {
@@ -325,20 +321,12 @@ const HomePage = () => {
       )}
 
       {/* Courses of Interest */}
+      { categoryCourses.length > 0 && 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-lg border border-pink-100">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
             Courses of your Interest 
           </h2>
-          
-          {!user && !courseCategoryLoading && (
-            <div className="mb-4 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-pink-200">
-              <p className="text-pink-700 text-center">
-                <span className="font-medium">Login to get your favorite categories!</span> 
-                <span className="ml-2">Meanwhile, check out other courses.</span>
-              </p>
-            </div>
-          )}
           
           {!courseCategoryLoading ? (
             categoryCourses.length > 0 ? (
@@ -352,14 +340,14 @@ const HomePage = () => {
                 <button 
                   onClick={() => scrollRight(interestContainerRef)}
                   className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full p-2 shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-110 transition-all duration-200"
-                >
+                  >
                   <ChevronRight className="w-6 h-6" />
                 </button>
                 
                 <div 
                   ref={interestContainerRef}
                   className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
-                >
+                  >
                   {categoryCourses.map((course) => (
                     <div key={course.id} className="flex-shrink-0 w-50">
                       <Card
@@ -374,7 +362,7 @@ const HomePage = () => {
                         isWishlisted={isWishlisted(course.id)}
                         onWishlistToggle={() => {}}
                         isPurchased={isPurchased(course?.id)}
-                      />
+                        />
                     </div>
                   ))}
                   {courseCategoryLoading && hasMoreInterest && (
@@ -396,6 +384,7 @@ const HomePage = () => {
           )}
         </div>
       </div>
+    }
 
       {/* All Courses Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

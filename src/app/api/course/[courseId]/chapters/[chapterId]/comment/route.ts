@@ -2,31 +2,51 @@ import { connect } from "@/db/dbConfig";
 import { Comment } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 
-
-export async function GET(req: NextRequest, props : { params: Promise<{ chapterId: string , courseId : string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { chapterId: string; courseId: string } }
+): Promise<NextResponse> {
   await connect();
 
   try {
-    const { chapterId, courseId } = await props.params;
+    const { chapterId, courseId } = await params;
 
-    const comments = await Comment.find({ chapterId , courseId }).populate({
-        "path" : "userId",
-        "select" : "username email", 
-        "model" : "User"
-    }).populate({
-        "path" : "educatorId",
-        "select" : "educatorName email", 
-        "model" : "Educator"
-    })
-    
+    // Validate parameters
+    if (!chapterId || !courseId) {
+      return NextResponse.json(
+        { error: "Chapter ID and Course ID are required" },
+        { status: 400 }
+      );
+    }
+
+    const comments = await Comment.find({ chapterId, courseId })
+      .populate({
+        path: "userId",
+        select: "username email role",
+        model: "User"
+      })
+      .populate({
+        path: "educatorId",
+        select: "username email",
+        model: "User"
+      })
+      .sort({ createdAt: 1 }); // Sort by creation date
+
     return NextResponse.json(
-      { message: comments },
-      { status: 201 }
+      { 
+        success: true,
+        message: "Comments fetched successfully",
+        comments 
+      },
+      { status: 200 }
     );
   } catch (error) {
-    console.error("Error submitting comment:", error);
+    console.error("Error fetching comments:", error);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { 
+        success: false,
+        error: "Internal server error" 
+      },
       { status: 500 }
     );
   }

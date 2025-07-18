@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User }  from "@/models/models";
-import {Educator} from "@/models/models";  // assuming you have this model
 import { connect } from "@/db/dbConfig";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -24,10 +23,7 @@ export async function POST(req: NextRequest) {
     // Check if student exists
     const studentExist = await User.findOne({ email });
 
-    // Check if Educator exists (if student does not exist)
-    const EducatorExist = !studentExist ? await Educator.findOne({ email }) : null;
-
-    if (!studentExist && !EducatorExist) {
+    if (!studentExist) {
       return NextResponse.json({ msg: "Invalid Email" }, { status: 400 });
     }
 
@@ -37,9 +33,6 @@ export async function POST(req: NextRequest) {
     if (studentExist) {
       isPasswordValid = await bcrypt.compare(password, studentExist.password);
       userData = studentExist;
-    } else if (EducatorExist) {
-      isPasswordValid = await bcrypt.compare(password, EducatorExist.password);
-      userData = EducatorExist;
     }
 
     if (!isPasswordValid!) {

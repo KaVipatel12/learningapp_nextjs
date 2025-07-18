@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { Educator } from "@/models/models";
+import { User } from "@/models/models";
 import { connect } from "@/db/dbConfig";
 import { Types } from "mongoose";
 
@@ -13,7 +13,7 @@ export interface CustomJwtPayload extends JwtPayload {
 
 // Define context type for course modification
 export interface CourseModifyContext {
-  Educator?: InstanceType<typeof Educator>;
+  Educator?: InstanceType<typeof User>;
   isCourseModify: boolean;
 }
 
@@ -56,7 +56,7 @@ export async function courseModifyMiddleware(
         );
       }
 
-      const EducatorData = await Educator.findOne({ email: decoded.email });
+      const EducatorData = await User.findOne({ email: decoded.email });
 
       if (!EducatorData) {
         console.log("educator not found")

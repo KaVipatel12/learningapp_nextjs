@@ -1,19 +1,16 @@
-// context/UserContext.tsx
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-// Define PopulatedCourse interface since it's imported
 interface PopulatedCourse {
   _id: string;
   title: string;
   category: string;
-  educatorName : string; 
-  averageRating : number; 
-  totalRatings : number; 
-  imageUrl : string; 
-  price : number;
-  // Add other properties as needed
+  educatorName: string;
+  averageRating: number;
+  totalRatings: number;
+  imageUrl: string;
+  price: number;
 }
 
 interface PurchaseCourse {
@@ -30,37 +27,62 @@ interface WishList {
 }
 
 export interface UserData {
-  _id ? : string;
+  _id?: string;
   username: string;
   email: string;
-  avatar ? : string;
-  coverImage ? : string;
+  avatar?: string;
+  coverImage?: string;
   role: string;
-  bio ? : string;
-  mobile : string;
+  bio?: string;
+  mobile: string;
   date: string | Date;
   category: string[];
   purchaseCourse: PurchaseCourse[];
-  stats ? : {
+  stats?: {
     coursesCompleted: number;
     hoursLearned: number;
     certificates: number;
   };
-  comment ? : {
-    comment : string
+  comment?: {
+    comment: string;
   };
-  wishlist ? : WishList[];
-}
+  wishlist?: WishList[];
 
-interface UserContextType {
-  user: UserData | null;
-  userLoading: boolean;
-  error: string | null;
-  fetchUserData: () => Promise<void>;
-  purchasedCoursesIds: string[];
-  purchasedCourses : Course[];
+  // Educator-specific fields
+  teachingFocus?: string[];
+  courses?: Array<{
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+    discount?: number;
+    imageUrl?: string;
+    category: string;
+    level: string;
+    language?: string;
+    duration: number;
+    totalSections: number;
+    totalLectures: number;
+    totalQuizzes?: number;
+    educator: string;
+    educatorName?: string;
+    isPublished: boolean;
+    totalEnrollment: number;
+    certification?: boolean;
+    learningOutcomes?: string;
+    prerequisites?: string;
+    welcomeMessage?: string;
+    completionMessage?: string;
+    startDate?: string;
+    endDate?: string;
+    createdAt: string;
+    updatedAt: string;
+    date?: string;
+  }>;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
-
 
 export interface Course {
   id: string;
@@ -69,15 +91,24 @@ export interface Course {
   instructor: string;
   price: number;
   category?: string;
-  imageUrl ? : string;
+  imageUrl?: string;
   progress?: number;
   discountedPrice?: number;
   rating?: number;
-  averageRating? : number;
+  averageRating?: number;
   totalRatings?: number;
   educatorName: string;
 }
 
+interface UserContextType {
+  user: UserData | null;
+  userLoading: boolean;
+  error: string | null;
+  fetchUserData: () => Promise<void>;
+  purchasedCoursesIds: string[];
+  purchasedCourses: Course[];
+  isEducator: boolean;
+}
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -92,13 +123,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const response = await fetch('/api/user/fetchuserdata');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
       }
 
       const data = await response.json();
       console.log(data);
+
       if (data.msg) {
         setUser(data.msg);
       } else {
@@ -116,92 +148,74 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (userLoading) return;
-  
-    if (!userLoading && user && Array.isArray(user.purchaseCourse)) {
-      const purchasedIds: string[] = [];
-        user.purchaseCourse.forEach(item => {
-        if (!item || !item.courseId) return;
-        
-        let courseId: string;
-        
-        if (typeof item.courseId === 'object' && item.courseId !== null) {
-          const course = item.courseId as PopulatedCourse;
-          courseId = course._id;
-        }
-        else {
-          courseId = item.courseId as string;
-        }
-        purchasedIds.push(courseId);
-      });
+    if (userLoading || !user) return;
 
-      console.log("Purchased IDs")
-      console.log(purchasedIds)
-      setPurchasedCoursesIds(purchasedIds);
-    }
+    // Extract purchased course IDs
+    const purchasedIds: string[] = [];
+    user.purchaseCourse?.forEach(item => {
+      if (!item || !item.courseId) return;
+      if (typeof item.courseId === 'object') {
+        purchasedIds.push(item.courseId._id);
+      } else {
+        purchasedIds.push(item.courseId);
+      }
+    });
+    setPurchasedCoursesIds(purchasedIds);
   }, [user, userLoading]);
 
   useEffect(() => {
-    if (userLoading) return;
-  
-    if (!userLoading && user && Array.isArray(user.purchaseCourse)) {
-      // Transform the data from the API format to the Course format
-      const formattedPurchasedCourses: Course[] = [];
-      user.purchaseCourse.forEach(item => {
-        if (!item || !item.courseId) return;
-  
-        let courseData: Course;
-  
-        // Handle case when courseId is an object (populated)
-        if (typeof item.courseId === 'object' && item.courseId !== null) {
-          const course = item.courseId as PopulatedCourse;
-          courseData = {
-            id: course._id,
-            imageUrl: course.imageUrl || '/default-course.jpg',
-            title: course.title || item.title,
-            instructor: course.educatorName || 'Unknown Instructor',
-            price: course.price || 0,
-            progress: 0,
-            educatorName: course.educatorName || '',
-            rating : course.averageRating ,
-            category: course.category || item.category,
-          };
-        } 
-        // Handle case when courseId is a string (not populated)
-        else {
-          courseData = {
-            id: item.courseId as string,
-            imageUrl: '/default-course.jpg',
-            title: item.title,
-            instructor: 'Unknown Instructor',
-            price: 0,
-            progress: 0,
-            educatorName: '',
-            category: item.category,
-          };
-        }
-  
-        formattedPurchasedCourses.push(courseData);
-      });
-  
-      setPurchasedCourses(formattedPurchasedCourses);
-    }
-  
-    // if (user?.wishlist) {
-    //   const userWishlist = user.wishlist.map(id => id);
-    //   setUserWishList(userWishlist); 
-    // }
+    if (userLoading || !user) return;
+
+    const formattedPurchasedCourses: Course[] = [];
+    user.purchaseCourse?.forEach(item => {
+      if (!item || !item.courseId) return;
+
+      let courseData: Course;
+
+      if (typeof item.courseId === 'object') {
+        const course = item.courseId as PopulatedCourse;
+        courseData = {
+          id: course._id,
+          imageUrl: course.imageUrl || '/default-course.jpg',
+          title: course.title || item.title,
+          instructor: course.educatorName || 'Unknown Instructor',
+          price: course.price || 0,
+          progress: 0,
+          educatorName: course.educatorName || '',
+          rating: course.averageRating,
+          category: course.category || item.category,
+        };
+      } else {
+        courseData = {
+          id: item.courseId,
+          imageUrl: '/default-course.jpg',
+          title: item.title || '',
+          instructor: 'Unknown Instructor',
+          price: 0,
+          progress: 0,
+          educatorName: '',
+          category: item.category,
+        };
+      }
+
+      formattedPurchasedCourses.push(courseData);
+    });
+
+    setPurchasedCourses(formattedPurchasedCourses);
   }, [user, userLoading]);
 
+  const isEducator = user?.role === 'educator';
+
   return (
-    <UserContext.Provider 
+    <UserContext.Provider
       value={{
         user,
         userLoading,
         error,
         fetchUserData,
-        purchasedCoursesIds, 
-        purchasedCourses
+        purchasedCoursesIds,
+        purchasedCourses,
+        isEducator,
       }}
     >
       {children}
@@ -211,7 +225,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
 export function useUser() {
   const context = useContext(UserContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useUser must be used within a UserProvider');
   }
   return context;

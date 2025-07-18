@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { FiUpload, FiPlus, FiLoader, FiX, FiSave } from 'react-icons/fi';
 import Image from 'next/image';
 import { useNotification } from '@/components/NotificationContext';
-import { useEducator } from '@/context/educatorContext';
+import { useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import PleaseWait from '@/components/PleaseWait';
 
@@ -31,7 +31,7 @@ interface CourseData {
 }
 
 export default function UpdateCourse() {
-  const { educator , educatorLoading , fetchEducatorData } = useEducator(); 
+  const { user , userLoading , fetchUserData } = useUser(); 
   const router = useRouter()
   const [formData, setFormData] = useState<CourseData>({
     title: '',
@@ -67,16 +67,16 @@ export default function UpdateCourse() {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   useEffect(() => {
-    if (educatorLoading) return
+    if (userLoading) return
 
-    else if (educator && educator.courses) {
-      const owned = educator?.courses?.some(id => id._id?.toString() === courseId);
+    else if (user && user.courses) {
+      const owned = user?.courses?.some(id => id?.toString() === courseId);
       if(!owned){
         router.push('/unauthorized/user')
       }
     }else{
       router.push('/unauthorized/user')
-  }}, [educator, courseId , router, educatorLoading]);
+  }}, [user, courseId , router, userLoading]);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -199,7 +199,7 @@ export default function UpdateCourse() {
       
       // If image was updated successfully, reset the image changed flag
       setImageChanged(false);
-      fetchEducatorData(); 
+      fetchUserData(); 
       router.push(`/course/${courseId}`)
       // If the backend returns the new image URL, update the preview
       if (successData.imageUrl) {

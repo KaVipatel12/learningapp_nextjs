@@ -1,7 +1,7 @@
 import { connect } from '@/db/dbConfig';
-import { AuthContext, authEducatorMiddleware } from '@/app/middleware/authEducatorMiddleware';
+import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
 import {Course} from '@/models/models';
-import {Educator} from '@/models/models';
+import {User} from '@/models/models';
 import { uploadFile } from '@/utils/cloudinary/cloudinary';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -9,12 +9,12 @@ export async function POST(req: NextRequest) {
   await connect();
 
   // Authenticate educator
-  const authResult = await authEducatorMiddleware(req);
+  const authResult = await authUserMiddleware(req);
   if (authResult instanceof NextResponse) {
     return authResult;
   }
-  const { educator } = authResult as AuthContext;
-  const educatorId = educator?._id;
+  const { user } = authResult as AuthContext;
+  const educatorId = user?._id;
 
   try {
     const formData = await req.formData();
@@ -69,11 +69,11 @@ export async function POST(req: NextRequest) {
       completionMessage,
       imageUrl,
       educator: educatorId,
-      educatorName: educator?.username // Using educator's username as instructor name
+      educatorName: user?.username // Using educator's username as instructor name
     });
 
     // Update educator's courses
-    await Educator.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       educatorId,
       { $push: { courses: newCourse._id } }
     );

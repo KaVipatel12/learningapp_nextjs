@@ -1,20 +1,20 @@
 "use client";
 
-import { useEducator } from '@/context/educatorContext';
+import { useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import BioInput from '@/components/bioPage/BioInput';
 import { useNotification } from '@/components/NotificationContext';
 
 const EducatorBioPage = () => {
-  const { educator, educatorLoading } = useEducator();
+  const { user, userLoading } = useUser();
   const { showNotification } = useNotification(); 
 
-  if (educatorLoading) {
+  if (userLoading) {
     return <PageLoading />;
   }
 
   const handleSubmit = async (bio: string) => {
-    const response = await fetch('/api/educator/bio', {
+    const response = await fetch('/api/user/bio', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ const EducatorBioPage = () => {
 
   return (
     <BioInput
-      initialBio={educator?.bio || ''}
+      initialBio={user?.bio || ''}
       handleSubmit={handleSubmit}
       redirectPath="/educator/teachingfocus"
       title="Educator Profile Bio"

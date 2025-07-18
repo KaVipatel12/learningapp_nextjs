@@ -6,25 +6,25 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { PageLoading } from '@/components/PageLoading';
 import { useParams, useRouter } from 'next/navigation';
 import FormattedDate from '@/components/FormattedDate';
-import { EducatorData, useEducator } from '@/context/educatorContext';
+import { UserData, useUser } from '@/context/userContext';
 
 export default function EducatorProfile() {
-  const [educatorData, setEducator] = useState<EducatorData>();
+  const [educatorData, setEducator] = useState<UserData>();
   const { id } = useParams();
-  const { educator, educatorLoading } = useEducator(); 
+  const { user, userLoading } = useUser(); 
   const [pageLoading, setPageLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if(educator && !educatorLoading){
-      if(educator._id === id) return router.push(`/profile/educator`)
+    if(user && !userLoading){
+      if(user._id === id) return router.push(`/profile/educator`)
     }
-  }, [educator, educatorLoading, router, id])
+  }, [user, userLoading, router, id])
 
   const fetchEducator = useCallback(async () => {
     try {
       setPageLoading(true);
-      const response = await fetch(`/api/educator/fetcheducatordata/${id}`);
+      const response = await fetch(`/api/user/fetchuserdata/${id}`);
       const data = await response.json();
 
       if (!response.ok) {

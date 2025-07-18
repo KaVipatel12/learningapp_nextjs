@@ -4,12 +4,10 @@ import Image from 'next/image';
 import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/userContext';
-import { useEducator } from '@/context/educatorContext';
 import { useRouter } from 'next/navigation';
 
 export default function AppNavbar() {
   const { user, userLoading } = useUser();
-  const { educator, educatorLoading } = useEducator();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -105,7 +103,7 @@ export default function AppNavbar() {
   );
 
   const renderAuthButtons = () => {
-    if (!isClient || userLoading || educatorLoading) {
+    if (!isClient || userLoading) {
       return (
         <div className="flex items-center space-x-4">
           <div className="h-8 w-16 bg-pink-200 rounded animate-pulse"></div>
@@ -115,53 +113,56 @@ export default function AppNavbar() {
     }
 
     if (user) {
-      return (
-        <div className="flex items-center space-x-6">
-          <Link href="/user/wishlist" className="text-rose-700 hover:text-rose-900 transition flex items-center">
-            <Heart className="mr-1 h-5 w-5" />
-            <span className="hidden md:inline">Wishlist</span>
-          </Link>
-          <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
-            <Video className="mr-1 h-5 w-5" /> Courses
-          </Link>
-          <Link href="/user/profile" className="flex items-center">
-            {user.avatar ? (
-              <Image
-                src={user.avatar}
-                alt={user.username}
-                width={32}
-                height={32}
-                className="rounded-full"
-                priority
-              />
-            ) : (
+      if (user.role === "educator") {
+        return (
+          <div className="flex items-center space-x-6">
+            <Link href="/educator/addcourse" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+              <Plus className="mr-1 h-5 w-5" />
+              <span className="hidden md:inline">Add Course</span>
+            </Link>
+            <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+              <Video className="mr-1 h-5 w-5" /> Courses
+            </Link>
+            <Link href="/user/profile" className="flex items-center">
               <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
-                <User className="h-4 w-4 text-pink-600" />
+                <GraduationCap className="h-4 w-4 text-pink-600" />
               </div>
-            )}
-            <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
-          </Link>
-          <LogoutButton />
-        </div>
-      );
-    }
-
-    if (educator) {
-      return (
-        <div className="flex items-center space-x-6">
-          <Link href="/educator/addcourse" className="text-rose-800 hover:text-rose-600 transition flex items-center">
-            <Plus className="mr-1 h-5 w-5" />
-            <span className="hidden md:inline">Add Course</span>
-          </Link>
-          <Link href="/educator/profile" className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
-              <GraduationCap className="h-4 w-4 text-pink-600" />
-            </div>
-            <span className="ml-2 text-rose-800">{educator.username?.split(' ')[0]}</span>
-          </Link>
-          <LogoutButton />
-        </div>
-      );
+              <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
+            </Link>
+            <LogoutButton />
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex items-center space-x-6">
+            <Link href="/user/wishlist" className="text-rose-700 hover:text-rose-900 transition flex items-center">
+              <Heart className="mr-1 h-5 w-5" />
+              <span className="hidden md:inline">Wishlist</span>
+            </Link>
+            <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+              <Video className="mr-1 h-5 w-5" /> Courses
+            </Link>
+            <Link href="/user/profile" className="flex items-center">
+              {user.avatar ? (
+                <Image
+                  src={user.avatar}
+                  alt={user.username}
+                  width={32}
+                  height={32}
+                  className="rounded-full"
+                  priority
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
+                  <User className="h-4 w-4 text-pink-600" />
+                </div>
+              )}
+              <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
+            </Link>
+            <LogoutButton />
+          </div>
+        );
+      }
     }
 
     // Default navigation for unauthenticated users
@@ -187,59 +188,66 @@ export default function AppNavbar() {
   };
 
   const renderMobileAuthButtons = () => {
-    if (!isClient || userLoading || educatorLoading) {
+    if (!isClient || userLoading) {
       return null;
     }
 
     if (user) {
-      return (
-        <>
-          <Link 
-            href="/user/wishlist" 
-            onClick={closeMobileMenu}
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <Heart className="mr-2 h-5 w-5" /> Wishlist
-          </Link>
-          <Link 
-            href="/courses" 
-            onClick={closeMobileMenu}
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <Video className="mr-2 h-5 w-5" /> Courses
-          </Link>
-          <Link 
-            href="/user/profile" 
-            onClick={closeMobileMenu}
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <User className="mr-2 h-5 w-5" /> Profile
-          </Link>
-          <LogoutButton isMobile={true} />
-        </>
-      );
-    }
-
-    if (educator) {
-      return (
-        <>
-          <Link 
-            href="/educator/addcourse" 
-            onClick={closeMobileMenu}
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <Plus className="mr-2 h-5 w-5" /> Add Course
-          </Link>
-          <Link 
-            href="/educator/profile" 
-            onClick={closeMobileMenu}
-            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-          >
-            <GraduationCap className="mr-2 h-5 w-5" /> Profile
-          </Link>
-          <LogoutButton isMobile={true} />
-        </>
-      );
+      if (user.role === "educator") {
+        return (
+          <>
+            <Link 
+              href="/educator/addcourse" 
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <Plus className="mr-2 h-5 w-5" /> Add Course
+            </Link>
+            <Link 
+              href="/course" 
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <Video className="mr-2 h-5 w-5" /> Courses
+            </Link>
+            <Link 
+              href="/user/profile" 
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <GraduationCap className="mr-2 h-5 w-5" /> Profile
+            </Link>
+            <LogoutButton isMobile={true} />
+          </>
+        );
+      } else {
+        return (
+          <>
+            <Link 
+              href="/user/wishlist" 
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <Heart className="mr-2 h-5 w-5" /> Wishlist
+            </Link>
+            <Link 
+              href="/course" 
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <Video className="mr-2 h-5 w-5" /> Courses
+            </Link>
+            <Link 
+              href="/user/profile" 
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <User className="mr-2 h-5 w-5" /> Profile
+            </Link>
+            <LogoutButton isMobile={true} />
+          </>
+        );
+      }
     }
 
     // Default mobile navigation for unauthenticated users
@@ -275,14 +283,14 @@ export default function AppNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href={educator ? "/educator/profile" : "/"} className="flex items-center">
+          <Link href={"/"} className="flex items-center">
             <Book className="h-8 w-8 text-rose-600" />
             <span className="ml-2 text-xl font-bold text-rose-900">EduPlatform</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href={educator ? `/educator/profile` : "/"} className="text-rose-800 hover:text-rose-600 transition flex items-center">
+            <Link href={"/"} className="text-rose-800 hover:text-rose-600 transition flex items-center">
               <Home className="mr-1 h-5 w-5" /> Home
             </Link>            
             {renderAuthButtons()}

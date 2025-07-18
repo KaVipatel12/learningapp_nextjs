@@ -5,7 +5,6 @@ import Card from "@/components/Card";
 import { FilterBar } from "@/components/CourseSearchPage/FilterBar";
 import { SearchSection } from "@/components/CourseSearchPage/SearchSection";
 import { Course, useUser } from "@/context/userContext";
-import { useEducator } from "@/context/educatorContext";
 import { WishList } from "../page";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -23,7 +22,7 @@ export default function CoursesPage() {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
-  const { educator } = useEducator(); 
+  const { user } = useUser(); 
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [pagination, setPagination] = useState({
@@ -96,11 +95,6 @@ export default function CoursesPage() {
     }
   }, [filters]);
   
-
-    useEffect(() => {  
-    if(educator) return router.push("/unauthorized/educator")
-  }, [educator , router]);
-
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);

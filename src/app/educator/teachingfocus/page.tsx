@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Check, Plus, X } from 'lucide-react';
 import { useNotification } from '@/components/NotificationContext';
 import { PageLoading } from '@/components/PageLoading';
-import { useEducator } from '@/context/educatorContext';
+import { useUser } from '@/context/userContext';
 
 // All available focus areas
 const allFocusAreas = [
@@ -37,7 +37,7 @@ const TeachingFocusPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const { showNotification } = useNotification();
-  const { fetchEducatorData } = useEducator()
+  const { fetchUserData } = useUser()
   // Fetch teaching focus from API
   const fetchTeachingFocus = useCallback(async () => {
     try {
@@ -84,8 +84,8 @@ const TeachingFocusPage = () => {
       }
       
       showNotification("Saved Successfully", "success");
-      fetchEducatorData(); 
-      window.location.href = '/educator/profile'  // There were glitch in loading educator data so i am using it
+      fetchUserData(); 
+      window.location.href = '/user/profile'  // There were glitch in loading educator data so i am using it
     } catch {
       showNotification("There is some error", "error");
     }finally{

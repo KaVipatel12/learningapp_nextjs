@@ -5,7 +5,6 @@ import { Send, MessageSquare, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useNotification } from '../NotificationContext';
 import { useUser } from '@/context/userContext';
-import { useEducator } from '@/context/educatorContext';
 import LoadingSpinner from '../LoadingSpinner';
 
 interface Message {
@@ -17,16 +16,17 @@ interface Message {
   time: string;
   updatedAt?: string;
   userId?: string;
-  educatorId?: string;
+  courseId?: string;
   isOwner?: boolean;
   isEducator?: boolean;
 }
 
 interface ChatBoxProps {
   isOwner?: boolean;
+  courseOwnerId?: string;
 }
 
-const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
+const ChatBox = ({ isOwner = false, courseOwnerId }: ChatBoxProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,52 +35,50 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { showNotification } = useNotification();
-  const [commentLoading , setCommentLoading] = useState(true)
+  const [commentLoading, setCommentLoading] = useState(true);
   const { courseId, chapterId } = useParams(); 
   const { user } = useUser();
-  const { educator } = useEducator();
 
-  const transformCommentToMessage = useCallback((comment) : Message => {
-    const isCurrentUser = 
-      (user && comment.userId && comment.userId._id === user._id) || 
-      (educator && comment.educatorId && comment.educatorId._id === educator._id);
+  const transformCommentToMessage = useCallback((comment: any): Message => {
+    const isCurrentUser = user && comment.userId && comment.userId._id === user._id;
+    const isCommenterEducator = comment.userId?.role === 'educator';
+    const isCourseOwner = user?._id === courseOwnerId;
       
     return {
       id: comment._id,
       _id: comment._id,
-      user: isCurrentUser ? "You" : comment.userId ? comment.userId.username : comment.educatorId?.email || 'Educator',
-      username: comment.userId?.username || comment.educatorId?.email,
+      user: isCurrentUser ? "You" : comment.userId?.username || 'Educator',
+      username: comment.userId?.username,
       text: comment.comment,
       time: new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       updatedAt: comment.updatedAt 
         ? new Date(comment.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : undefined,
       userId: comment.userId?._id,
-      educatorId: comment.educatorId?._id,
-      isEducator: !!comment.educatorId
+      courseId: comment.courseId?._id,
+      isOwner: isCourseOwner,
+      isEducator: isCommenterEducator
     };
-  }, [user, educator]);
+  }, [user, courseOwnerId]);
 
   const fetchComments = useCallback(async () => {
-
-    setCommentLoading(true)
+    setCommentLoading(true);
     try {
       const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}/comment`);
-      const data = await response.json();
+      if (!response.ok) throw new Error('Failed to fetch comments');
       
-      if (response.ok && data.message) {
-        const transformedMessages = data.message.map(transformCommentToMessage);
+      const data = await response.json();
+      if (data.comments) {
+        const transformedMessages = data.comments.map(transformCommentToMessage);
         setMessages(transformedMessages);
-      } else {
-        alert(data.msg || 'Failed to fetch comments');
       }
     } catch (error) {
       console.error("Error fetching comments:", error);
-      alert("Failed to fetch comments");
-    }finally{
-      setCommentLoading(false)
+      showNotification("Failed to fetch comments", "error");
+    } finally {
+      setCommentLoading(false);
     }
-  }, [courseId, chapterId, transformCommentToMessage]);
+  }, [courseId, chapterId, transformCommentToMessage, showNotification]);
 
   useEffect(() => {
     fetchComments();
@@ -99,8 +97,7 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
         text: newMessage,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         userId: user?._id,
-        educatorId: educator?._id,
-        isEducator: !!educator
+        isEducator: user?.role === 'educator'
       };
       
       setMessages(prev => [...prev, optimisticMessage]);
@@ -116,25 +113,11 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
         }),
       });
 
-      if (!response) {
-        throw new Error('No response from server');
-      }
-
-      const text = await response.text();
-      let data;
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch (parseError) {
-        console.error("Failed to parse JSON:", parseError);
-        throw new Error('Invalid server response');
-      }
-
       if (!response.ok) {
-        setMessages(prev => prev.filter(msg => msg.id !== tempId));
-        showNotification(data.error || data.msg || 'Failed to submit comment', "error");
-        return;
+        throw new Error('Failed to submit comment');
       }
 
+      const data = await response.json();
       if (data.comment) {
         setMessages(prev => [
           ...prev.filter(msg => msg.id !== tempId),
@@ -142,8 +125,7 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
         ]);
       }
 
-      showNotification("Your comment has been submitted", "success");
-      fetchComments();
+      showNotification("Comment submitted successfully", "success");
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages(prev => prev.filter(msg => msg.id !== tempId));
@@ -176,13 +158,11 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
         }),
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        showNotification(data.msg || 'Failed to update comment', "error");
-        return;
+        throw new Error('Failed to update comment');
       }
 
+      const data = await response.json();
       setMessages(prev => prev.map(msg => 
         msg.id === editingId ? { 
           ...msg, 
@@ -201,18 +181,14 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
   };
 
   const handleDeleteMessage = async (messageId: string | number) => {
-
-   setIsDeleting(true)
+    setIsDeleting(true);
     try {
       const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}/comment/deletecomment/${messageId}`, {
         method: 'DELETE',
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        showNotification( data.msg || 'Failed to delete comment', "error");
-        return;
+        throw new Error('Failed to delete comment');
       }
 
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
@@ -220,20 +196,19 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
     } catch (error) {
       console.error("Error deleting message:", error);
       showNotification("Failed to delete comment", "error");
-    }finally{
-    setIsDeleting(false)
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const canEdit = (message: Message) => {
-    return (user && message.userId === user._id) || 
-           (educator && message.educatorId === educator._id);
+    return user && message.userId === user._id;
   };
   
   const canDelete = (message: Message) => {
     return isOwner || 
            (user && message.userId === user._id) || 
-           (educator && message.educatorId === educator._id);
+           user?.role === 'admin';
   };
 
   return (
@@ -244,148 +219,157 @@ const ChatBox = ({ isOwner = false }: ChatBoxProps) => {
           <h3 className="font-semibold">Course Chat</h3>
         </div>
         <button 
-          className="px-4 py-1 text-white bg-pink-600 rounded flex items-center gap-1 hover:bg-pink-700 transition-colors" 
+          className="px-4 py-1 text-white bg-pink-600 rounded flex items-center gap-1 hover:bg-pink-700 transition-colors disabled:opacity-50" 
           onClick={fetchComments}
+          disabled={commentLoading}
         >
-          <RefreshCw className="h-4 w-4" /> Refresh
+          <RefreshCw className={`h-4 w-4 ${commentLoading ? 'animate-spin' : ''}`} /> 
+          Refresh
         </button>
       </div>
 
-{ commentLoading && <LoadingSpinner height={"h-[400px]"}/> }      
-{      
-  (
-  !commentLoading &&
-  <>
-  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length > 0 ? (
-          messages.map(message => (
-            <div key={message.id} className={`flex ${message.user === "You" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-xs rounded-lg px-4 py-2 relative group ${
-                message.user === "You" 
-                  ? "bg-purple-100 text-purple-900" 
-                  : message.isEducator 
-                    ? "bg-blue-50 border border-blue-200 text-blue-900" 
-                    : "bg-gray-100 text-gray-800"
-              }`}>
-                { message.user !== "You" && (
-                  <p className="font-medium text-sm">
-                    {message.user}
-                    {message.isEducator && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                        Educator
-                      </span>
-                    )}
-                  </p>
-                )}
-                
-                {editingId === message.id ? (
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="text"
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      className="border border-gray-300 rounded-md px-2 py-1 w-full"
-                      disabled={isUpdating}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button 
-                        onClick={() => setEditingId(null)}
-                        className="text-xs text-gray-500 hover:text-gray-700"
-                        disabled={isUpdating}
-                      >
-                        Cancel
-                      </button>
-                      <button 
-                        onClick={handleUpdateMessage}
-                        className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 flex items-center gap-1"
-                        disabled={isUpdating}
-                      >
-                        {isUpdating ? (
-                          <>
-                            <RefreshCw className="h-3 w-3 animate-spin" />
-                            Updating...
-                          </>
-                        ) : 'Update'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="pr-12">
-                      <p>{message.text}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                        <span>{message.time}</span>
-                        {message.updatedAt && message.updatedAt !== message.time && (
-                          <>
-                            <span>•</span>
-                            <span className="italic">edited {message.updatedAt}</span>
-                          </>
+      {commentLoading ? (
+        <LoadingSpinner height={"h-[400px]"} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.length > 0 ? (
+              messages.map(message => (
+                <div key={message.id} className={`flex ${message.user === "You" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-xs rounded-lg px-4 py-2 relative group ${
+                    message.user === "You" 
+                      ? "bg-purple-100 text-purple-900" 
+                      : message.isEducator 
+                        ? "bg-blue-50 border border-blue-200 text-blue-900" 
+                        : "bg-gray-100 text-gray-800"
+                  }`}>
+                    {message.user !== "You" && (
+                      <p className="font-medium text-sm">
+                        {message.user}
+                        {message.isEducator && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                            Educator
+                          </span>
                         )}
+                        {message.isOwner && (
+                          <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                            Owner
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    
+                    {editingId === message.id ? (
+                      <div className="flex flex-col gap-2">
+                        <input
+                          type="text"
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                          disabled={isUpdating}
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button 
+                            onClick={() => setEditingId(null)}
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                            disabled={isUpdating}
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            onClick={handleUpdateMessage}
+                            className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 flex items-center gap-1 disabled:opacity-50"
+                            disabled={isUpdating || !editText.trim()}
+                          >
+                            {isUpdating ? (
+                              <>
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                Updating...
+                              </>
+                            ) : 'Update'}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div className="pr-12">
+                          <p>{message.text}</p>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                            <span>{message.time}</span>
+                            {message.updatedAt && message.updatedAt !== message.time && (
+                              <>
+                                <span>•</span>
+                                <span className="italic">edited {message.updatedAt}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
 
-                    <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 flex gap-1 transition-opacity">
-                      {canEdit(message) && (
-                        <button 
-                          onClick={() => handleEditMessage(message)}
-                          className="text-gray-500 hover:text-purple-600 p-1 bg-white bg-opacity-70 rounded"
-                          title="Edit"
-                        >
-                          <Edit className="h-3 w-3" />
-                        </button>
-                      )}
-                      {canDelete(message) && !isDeleting && (
-                        <button 
-                          onClick={() => handleDeleteMessage(message.id)}
-                          className="text-gray-500 hover:text-red-600 p-1 bg-white bg-opacity-70 rounded"
-                          disabled={isDeleting}
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No comments yet. Be the first to comment!
-          </div>
-        )}
-      </div>
-      
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Type your message..."
-            className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            disabled={isSubmitting}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={isSubmitting || !newMessage.trim()}
-            className={`bg-purple-600 text-white rounded-md p-2 transition-colors ${
-              isSubmitting || !newMessage.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'
-            }`}
-          >
-            {isSubmitting ? (
-              <RefreshCw className="h-5 w-5 animate-spin" />
+                        <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 flex gap-1 transition-opacity">
+                          {canEdit(message) && (
+                            <button 
+                              onClick={() => handleEditMessage(message)}
+                              className="text-gray-500 hover:text-purple-600 p-1 bg-white bg-opacity-70 rounded"
+                              title="Edit"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </button>
+                          )}
+                          {canDelete(message) && (
+                            <button 
+                              onClick={() => handleDeleteMessage(message.id)}
+                              className="text-gray-500 hover:text-red-600 p-1 bg-white bg-opacity-70 rounded disabled:opacity-50"
+                              disabled={isDeleting}
+                              title="Delete"
+                            >
+                              {isDeleting ? (
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3 w-3" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))
             ) : (
-              <Send className="h-5 w-5" />
+              <div className="flex items-center justify-center h-full text-gray-400">
+                No comments yet. Be the first to comment!
+              </div>
             )}
-          </button>
-        </div>
-      </div>
-      </> 
-      )
-      }
+          </div>
+          
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type your message..."
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                disabled={isSubmitting}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={isSubmitting || !newMessage.trim()}
+                className={`bg-purple-600 text-white rounded-md p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  !isSubmitting && newMessage.trim() ? 'hover:bg-purple-700' : ''
+                }`}
+              >
+                {isSubmitting ? (
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </> 
+      )}
     </div>
   );
 };

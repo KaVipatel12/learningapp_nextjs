@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { Educator, User } from "@/models/models";
+import { IPurchaseCourse, User } from "@/models/models";
 import { connect } from "@/db/dbConfig";
 import { Types } from "mongoose";
 
@@ -11,7 +11,7 @@ interface CustomJwtPayload extends JwtPayload {
 }
 
 export interface CourseAccessContext {
-  user?: InstanceType<typeof Educator> | InstanceType<typeof User>;
+  user?: InstanceType<typeof User>;
   courseAccess: boolean;
   courseModify: boolean;
 }
@@ -22,67 +22,55 @@ export async function courseAccessMiddleware(
 ): Promise<CourseAccessContext | NextResponse> {
   try {
     await connect();
-    
-    const token = req.cookies.get('token')?.value;
-    if (!token) {
-      return unauthorizedResponse("Token not provided");
-    }
 
-    const jwtToken = token.replace('Bearer', "").trim();
-    const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET as string) as CustomJwtPayload;
+    // Extract token
+    const token = req.cookies.get("token")?.value;
+    if (!token) return unauthorizedResponse("Token not provided");
 
-    if (!decoded.email) {
-      return unauthorizedResponse("Invalid token payload");
-    }
+    // Verify token
+    const decoded = jwt.verify(
+      token.replace("Bearer", "").trim(),
+      process.env.JWT_SECRET!
+    ) as CustomJwtPayload;
 
-    const [educatorData, userData] = await Promise.all([
-      Educator.findOne({ email: decoded.email }),
-      User.findOne({ email: decoded.email })
-    ]);
+    if (!decoded?.email) return unauthorizedResponse("Invalid token payload");
 
-    if (!educatorData && !userData) {
-      return unauthorizedResponse("User not found");
-    }
+    // Get user from DB
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) return unauthorizedResponse("User not found");
 
-    // Check educator access
-    if (educatorData && educatorData.role === "educator") {
-      const hasAccess = educatorData.courses.some((course: Types.ObjectId) => 
-        course.toString() === courseId
+    // Educator: can access & modify course if they created it
+    if (user.role === "educator") {
+      const isOwner = user.courses?.some(
+        (course: Types.ObjectId) => course.toString() === courseId
       );
-      
-      if (hasAccess) {
+      if (isOwner) {
         return {
-          user: educatorData,
+          user,
           courseAccess: true,
-          courseModify: true
+          courseModify: true,
         };
       }
-      return unauthorizedResponse("Unauthorized educator access");
     }
 
-    // Check user access
-    if (userData) {
-      const hasPurchased = userData.purchaseCourse.some(
-        (purchase: { courseId: Types.ObjectId | string }) => {
-          const purchaseCourseId = purchase.courseId instanceof Types.ObjectId 
-            ? purchase.courseId.toString() 
-            : purchase.courseId;
-          return purchaseCourseId === courseId;
-        }
-      );
-      
-      if (hasPurchased) {
-        return {
-          user: userData,
-          courseAccess: true,
-          courseModify: false
-        };
-      }
-      return unauthorizedResponse("Course not purchased");
+    // Student: check if course is purchased
+    const hasPurchased = user.purchaseCourse?.some((purchase: IPurchaseCourse) => {
+      const purchasedId =
+        purchase.courseId instanceof Types.ObjectId
+          ? purchase.courseId.toString()
+          : purchase.courseId;
+      return purchasedId === courseId;
+    });
+
+    if (hasPurchased) {
+      return {
+        user,
+        courseAccess: true,
+        courseModify: false,
+      };
     }
 
-    return unauthorizedResponse("Unauthorized access");
-
+    return unauthorizedResponse("Course not purchased");
   } catch (error) {
     console.error("Error in courseAccessMiddleware:", error);
     if (error instanceof jwt.JsonWebTokenError) {
@@ -92,12 +80,9 @@ export async function courseAccessMiddleware(
   }
 }
 
-// Helper functions
+// Helpers
 function unauthorizedResponse(message: string): NextResponse {
-  return NextResponse.json(
-    { message, courseAccess: false },
-    { status: 401 }
-  );
+  return NextResponse.json({ message, courseAccess: false }, { status: 401 });
 }
 
 function serverErrorResponse(): NextResponse {

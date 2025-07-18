@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/db/dbConfig";
 import { User }  from "@/models/models";
-import {Educator} from "@/models/models";  
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,9 +28,8 @@ export async function POST(req: NextRequest) {
 
     // Check for duplicate email
     const studentExist = await User.findOne({ email });
-    const educatorExist = await Educator.findOne({ email });
 
-    if (studentExist || educatorExist) {
+    if (studentExist) {
       return NextResponse.json(
         { success: false, msg: "Email already exists" },
         { status: 400 }
@@ -43,10 +41,8 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcryptjs.hash(password, salt);
 
     // Create user
-    const userData = { username, email, password: hashedPassword, mobile };
-    const newUser = role === "student" 
-      ? await User.create(userData)
-      : await Educator.create(userData);
+    const userData = { username, email, password: hashedPassword, mobile , role : role };
+    const newUser = await User.create(userData)
 
     if (!newUser) {
       return NextResponse.json(

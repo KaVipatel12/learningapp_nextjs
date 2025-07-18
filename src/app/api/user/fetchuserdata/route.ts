@@ -35,6 +35,10 @@ export async function GET(req: NextRequest) {
       .populate({
         path: "purchaseCourse.courseId",
         model: "Course"
+      })
+      .populate({
+        path: "courses",
+        model: "Course"
       });
 
       

@@ -1,48 +1,69 @@
 import { connect } from "@/db/dbConfig";
+import { CourseAccessContext, courseAccessMiddleware } from "@/app/middleware/courseAccessMiddleware";
 import { Comment, User } from "@/models/models";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   req: NextRequest,
-  props: { params: Promise<{ commentId: string }> }
+  { params }: { params: { commentId: string } }
 ): Promise<NextResponse> {
   await connect();
 
   try {
-    const { commentId } = await props.params;
+    const { commentId } = params;
 
-    const findUser = await Comment.findById(commentId); 
-    if (!findUser) {
-      return NextResponse.json({ msg: "Something went wrong" }, { status: 400 });
+    // Find the comment with course and user references
+    const comment = await Comment.findById(commentId)
+      .populate('courseId', 'educator')
+      .populate('userId', '_id');
+
+    if (!comment) {
+      return NextResponse.json(
+        { msg: "Comment not found" }, 
+        { status: 404 }
+      );
     }
 
-    const userId = findUser.userId?.toString(); 
-
-    if (!userId) {
-      return NextResponse.json({ msg: "Something went wrong" }, { status: 400 });
+    // Verify course access
+    const authResult = await courseAccessMiddleware(req, comment.courseId._id.toString());
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
-    const pullCommentId = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { comment: commentId } },
-      { new: true }
-    );
+    const { user } = authResult as CourseAccessContext;
 
-    console.log("User after pulling comment:", pullCommentId);
+    // Check permissions
+    const isCommentAuthor = user._id.toString() === comment.userId?._id.toString();
+    const isCourseOwner = user._id.toString() === comment.courseId.educator.toString();
+    const isAdmin = user.role === 'admin';
 
-    const deleteComment = await Comment.findByIdAndDelete(commentId);
-    if (!deleteComment) {
-      return NextResponse.json({ msg: "Something went wrong" }, { status: 400 });
+    if (!isCommentAuthor && !isCourseOwner && !isAdmin) {
+      return NextResponse.json(
+        { msg: "Unauthorized to delete this comment" }, 
+        { status: 403 }
+      );
     }
+
+    // Remove comment from user's comments array if exists
+    if (comment.userId) {
+      await User.findByIdAndUpdate(
+        comment.userId._id,
+        { $pull: { comment: commentId } },
+        { new: true }
+      );
+    }
+
+    // Delete the comment
+    await Comment.findByIdAndDelete(commentId);
 
     return NextResponse.json(
       { msg: "Comment deleted successfully" },
-      { status: 201 }
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error deleting comment:", error);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

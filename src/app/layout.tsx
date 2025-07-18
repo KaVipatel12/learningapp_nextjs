@@ -5,7 +5,6 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import NotificationComponent from '@/components/NotificationComponent';
 import Footer from '@/components/Footer';
 import { UserProvider } from '@/context/userContext';
-import { EducatorProvider } from '@/context/educatorContext';
 import UserNav from '@/components/Navbar/UserNav';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -44,13 +43,11 @@ export default function RootLayout({
         <NotificationProvider>
           <NotificationComponent />
           <UserProvider>
-            <EducatorProvider>
               <main>
                 <UserNav />
                 {children}
                 <Footer />
               </main>
-            </EducatorProvider>
           </UserProvider>
         </NotificationProvider>
       </body>
