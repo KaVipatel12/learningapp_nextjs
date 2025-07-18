@@ -8,7 +8,6 @@ import { Course, useUser } from "@/context/userContext";
 import { WishList } from "../page";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export default function CoursesPage() {
   const [filters, setFilters] = useState({
@@ -22,9 +21,7 @@ export default function CoursesPage() {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useUser(); 
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
