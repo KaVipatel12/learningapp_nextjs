@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Card from "@/components/Card";
 import { FilterBar } from "@/components/CourseSearchPage/FilterBar";
 import { SearchSection } from "@/components/CourseSearchPage/SearchSection";
@@ -28,7 +28,6 @@ export default function CoursesPage() {
   });
   const [userWishlist, setUserWishList] = useState<WishList[]>([]);
   const { purchasedCoursesIds, user, userLoading } = useUser();
-  const coursesContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchCourses = useCallback(async () => {
     setLoading(true);
@@ -37,7 +36,7 @@ export default function CoursesPage() {
     try {
       const query = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) query.set(key, value);
+        if (value && value.trim()) query.set(key, value);
       });
 
       const res = await fetch(`/api/course/fetchcourse?${query.toString()}`);
@@ -60,12 +59,8 @@ export default function CoursesPage() {
           discountedPrice: course.discountedPrice || course.price,
         }));
 
-        // Update courses based on current page
-        if (parseInt(filters.page) === 1) {
-          setCourses(formatted);
-        } else {
-          setCourses(prev => [...prev, ...formatted]);
-        }
+        // Always replace courses for pagination (no more infinite scroll)
+        setCourses(formatted);
 
         // Update pagination from backend response
         setPagination({
@@ -103,27 +98,6 @@ export default function CoursesPage() {
     }
   }, [user, userLoading]);
 
-  // Infinite scroll handler
-  const handleScroll = useCallback(() => {
-    if (!coursesContainerRef.current || loading) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = coursesContainerRef.current;
-    if (scrollTop + clientHeight >= scrollHeight - 100) {
-      if (pagination.currentPage < pagination.totalPages) {
-        setFilters(prev => ({
-          ...prev,
-          page: (pagination.currentPage + 1).toString(),
-        }));
-      }
-    }
-  }, [loading, pagination]);
-
-  useEffect(() => {
-    const container = coursesContainerRef.current;
-    container?.addEventListener('scroll', handleScroll);
-    return () => container?.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
-
   const isPurchased = (courseId: string) => {
     return purchasedCoursesIds.some(id => id.toString() === courseId);
   };
@@ -134,10 +108,48 @@ export default function CoursesPage() {
 
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page: page.toString() }));
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+  const handleFilterChange = useCallback((newFilters: Partial<typeof filters>) => {
     setFilters(prev => ({ ...prev, ...newFilters, page: "1" }));
+  }, []);
+
+  const renderPaginationButtons = () => {
+    const { currentPage, totalPages } = pagination;
+    const buttons = [];
+    
+    // Always show first page
+    if (totalPages > 1) {
+      buttons.push(1);
+    }
+    
+    // Add ellipsis and current page area if needed
+    if (currentPage > 3) {
+      buttons.push('...');
+    }
+    
+    // Add pages around current page
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      if (!buttons.includes(i)) {
+        buttons.push(i);
+      }
+    }
+    
+    // Add ellipsis before last page if needed
+    if (currentPage < totalPages - 2) {
+      if (!buttons.includes('...')) {
+        buttons.push('...');
+      }
+    }
+    
+    // Always show last page if there are multiple pages
+    if (totalPages > 1 && !buttons.includes(totalPages)) {
+      buttons.push(totalPages);
+    }
+    
+    return buttons;
   };
 
   return (
@@ -167,17 +179,14 @@ export default function CoursesPage() {
           )}
 
           {/* Loading Spinner */}
-          {loading && courses.length === 0 ? (
+          {loading ? (
             <div className="flex justify-center items-center h-40">
               <LoadingSpinner height="h-12" />
             </div>
           ) : (
             <>
               {/* Course Grid */}
-              <div 
-                ref={coursesContainerRef}
-                className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 max-h-[800px] overflow-y-auto scrollbar-hide pb-4 place-items-center"
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                 {courses.map((course) => (
                   <Card
                     key={course.id}
@@ -195,12 +204,6 @@ export default function CoursesPage() {
                   />
                 ))}
               </div>
-              {/* Loading more indicator */}
-              {loading && courses.length > 0 && (
-                <div className="flex justify-center mt-4">
-                  <LoadingSpinner height="h-8" />
-                </div>
-              )}
 
               {/* Empty State */}
               {courses.length === 0 && !loading && (
@@ -225,44 +228,82 @@ export default function CoursesPage() {
               )}
 
               {/* Pagination */}
-              {!loading && courses.length > 0 && (
-                <div className="flex justify-center mt-8 space-x-2">
-                  <button
-                    onClick={() => handlePageChange(pagination.currentPage - 1)}
-                    disabled={pagination.currentPage <= 1}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 disabled:opacity-50 flex items-center"
-                  >
-                    <ChevronLeft className="w-5 h-5 mr-1" />
-                    Previous
-                  </button>
-                  
-                  <div className="flex items-center space-x-1 mx-4">
-                    {[...Array(pagination.totalPages)].map((_, index) => {
-                      const pageNum = index + 1;
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => handlePageChange(pageNum)}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            pagination.currentPage === pageNum 
-                              ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg" 
-                              : "bg-gradient-to-r from-pink-50 to-rose-50 text-pink-700"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
+              {!loading && courses.length > 0 && pagination.totalPages > 1 && (
+                <div className="flex flex-col items-center space-y-4">
+                  {/* Page Info */}
+                  <div className="text-sm text-gray-600">
+                    Page {pagination.currentPage} of {pagination.totalPages}
                   </div>
                   
-                  <button
-                    onClick={() => handlePageChange(pagination.currentPage + 1)}
-                    disabled={pagination.currentPage >= pagination.totalPages}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 disabled:opacity-50 flex items-center"
-                  >
-                    Next
-                    <ChevronRight className="w-5 h-5 ml-1" />
-                  </button>
+                  {/* Pagination Controls */}
+                  <div className="flex items-center space-x-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => handlePageChange(pagination.currentPage - 1)}
+                      disabled={pagination.currentPage <= 1}
+                      className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-200 hover:from-pink-200 hover:to-rose-200"
+                    >
+                      <ChevronLeft className="w-5 h-5 mr-1" />
+                      Previous
+                    </button>
+                    
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {renderPaginationButtons().map((page, index) => {
+                        if (page === '...') {
+                          return (
+                            <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
+                              ...
+                            </span>
+                          );
+                        }
+                        
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page as number)}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                              pagination.currentPage === page 
+                                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg transform scale-110" 
+                                : "bg-gradient-to-r from-pink-50 to-rose-50 text-pink-700 hover:from-pink-100 hover:to-rose-100"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Next Button */}
+                    <button
+                      onClick={() => handlePageChange(pagination.currentPage + 1)}
+                      disabled={pagination.currentPage >= pagination.totalPages}
+                      className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-200 hover:from-pink-200 hover:to-rose-200"
+                    >
+                      Next
+                      <ChevronRight className="w-5 h-5 ml-1" />
+                    </button>
+                  </div>
+
+                  {/* Quick Jump to First/Last */}
+                  {pagination.totalPages > 5 && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={pagination.currentPage === 1}
+                        className="px-3 py-1 rounded-md bg-pink-50 text-pink-600 disabled:opacity-50 hover:bg-pink-100 transition-colors duration-200"
+                      >
+                        First
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(pagination.totalPages)}
+                        disabled={pagination.currentPage === pagination.totalPages}
+                        className="px-3 py-1 rounded-md bg-pink-50 text-pink-600 disabled:opacity-50 hover:bg-pink-100 transition-colors duration-200"
+                      >
+                        Last
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </>
