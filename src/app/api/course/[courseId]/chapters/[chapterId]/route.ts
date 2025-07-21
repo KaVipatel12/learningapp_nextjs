@@ -18,7 +18,7 @@ export async function GET(
       return accessCourse;
     }
 
-    const {courseModify , courseAccess } = accessCourse as CourseAccessContext;
+  const {courseModify , courseAccess } = accessCourse as CourseAccessContext;
   console.log(chapterId)
 
   try{

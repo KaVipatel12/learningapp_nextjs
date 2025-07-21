@@ -13,6 +13,7 @@ import { useNotification } from '@/components/NotificationContext';
 import MoreVideos from '@/components/course/MoreVideos';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import PleaseWait from '@/components/PleaseWait';
+import VideoPlayer from '@/components/course/VideoPlayer';
 
 // Types
 interface IVideo {
@@ -88,9 +89,10 @@ const ChapterPage = () => {
       }
 
       const data: IChapterResponse = await response.json();
+      console.log(data)
       
       if (!data.courseAccess) {
-        showNotification("You don't have access to this course", "error");
+        alert("You don't have access to this course");
         router.back();
         return;
       }
@@ -107,12 +109,11 @@ const ChapterPage = () => {
     } catch (error) {
       console.error("Error fetching chapter:", error);
       setError(error instanceof Error ? error.message : "Failed to load chapter");
-      showNotification("Failed to load chapter", "error");
       router.back();
     } finally {
       setLoading(false);
     }
-  }, [chapterId, courseId, router, showNotification]);
+  }, [chapterId, courseId, router]);
 
   // Fetch average rating
   const fetchReview = useCallback(async () => {
@@ -293,18 +294,7 @@ const ChapterPage = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-pink-200/50">
               <div className="bg-black rounded-xl overflow-hidden shadow-inner">
                 {video ? (
-                  <div className="w-full aspect-video flex items-center justify-center">
-                    <video 
-                      src={video.videoUrl} 
-                      controls 
-                      className="w-full h-full"
-                      preload="metadata"
-                    >
-                      <p className="text-white text-center p-4">
-                        Your browser does not support the video element.
-                      </p>
-                    </video>
-                  </div>
+                  <VideoPlayer video={video} chapterId={chapterId} courseId={courseId} ></VideoPlayer>
                 ) : (
                   <div className="w-full aspect-video flex items-center justify-center text-white">
                     <p>No video available for this chapter</p>

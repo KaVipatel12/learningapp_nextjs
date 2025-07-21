@@ -6,6 +6,7 @@ import Card from '@/components/Card';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Course, useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
+import HistorySlider from '@/components/HistoryCard';
 
 export interface Category {
   id: string;
@@ -272,6 +273,9 @@ const HomePage = () => {
         </div>
       </div>
 
+     
+      { /* Watch History*/}
+      <HistorySlider></HistorySlider>
       {/* Purchased Courses */}
       {purchasedCourse.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative">

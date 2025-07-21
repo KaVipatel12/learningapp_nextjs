@@ -10,7 +10,7 @@ interface IVideo {
 }
 
 // Chapter interface and schema
-export interface IChapter extends mongoose.Document {
+export interface IChapter extends Document {
   title: string;
   description: string;
   duration: number;
@@ -87,22 +87,6 @@ export interface IComment extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
-/* export interface IEducator extends Document {
-  _id: string;
-  username: string;
-  bio: string;
-  mobile: string;
-  email: string;
-  password: string;
-  role: string;
-  date?: string;
-  courses: ICourse[];
-  teachingFocus: string[];
-  createdAt: string;
-  updatedAt: string;
-  comment: Types.ObjectId[];
-} */
 
 // Define the Review interface
 export interface IReview extends Document {
@@ -399,6 +383,74 @@ const ReviewSchema = new mongoose.Schema<IReview>({
   },
 });
 
+export interface IHistory extends Document {
+  userId: mongoose.Types.ObjectId;
+  courseId: mongoose.Types.ObjectId;
+  chapterId: mongoose.Types.ObjectId;
+  videoId: string; // video._id OR videoUrl if unique
+  watchedTime: number; // in seconds
+  totalDuration: number; // for percentage calculation
+  lastWatchedAt: Date;
+  completed?: boolean;
+}
+
+const HistorySchema = new mongoose.Schema<IHistory>({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
+  chapterId: { type: mongoose.Schema.Types.ObjectId, ref: "Chapter", required: true },
+  videoId: { type: String, required: true },  
+  watchedTime: { type: Number, required: true },
+  totalDuration: { type: Number, required: true },
+  lastWatchedAt: { type: Date, default: Date.now },
+  completed: { type: Boolean, default: false },
+});
+
+
+const QuestionSchema = new mongoose.Schema({
+  questionText: { type: String, required: true },
+  options: [{ type: String, required: true }],
+  correctOptionIndex: { type: Number, required: true },
+});
+
+const CourseQuizSchema = new mongoose.Schema(
+  {
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+    title: { type: String, required: true },
+    questions: [QuestionSchema],
+  },
+  { timestamps: true }
+);
+
+const UserQuizAttemptSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    quizId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CourseQuiz",
+      required: true,
+    },
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+    score: { type: Number, required: true },
+    total: { type: Number, required: true },
+    submittedAt: { type: Date, default: Date.now },
+  },
+  { timestamps: true }
+);
+
+
+
 ReviewSchema.index({ courseId: 1, userId: 1 }, { unique: true });
 
 // Create and export models using the Next.js pattern to prevent overwrite errors
@@ -408,10 +460,22 @@ export const Chapter =
   mongoose.models.Chapter || mongoose.model<IChapter>("Chapter", ChapterSchema);
 export const Course =
   mongoose.models.Course || mongoose.model<ICourse>("Course", CourseSchema);
-/* export const Educator =
-//  mongoose.models.Educator ||
-//  mongoose.model<IEducator>("Educator", EducatorSchema); */
+  
 export const Review =
   mongoose.models.Review || mongoose.model<IReview>("Review", ReviewSchema);
 export const Comment =
   mongoose.models.Comment || mongoose.model<IComment>("Comment", commentSchema);
+
+// 3. Export
+export const History =
+  mongoose.models.History || mongoose.model<IHistory>("History", HistorySchema);
+
+// For UserQuizAttempt
+export const UserQuizAttempt = 
+  mongoose.models.UserQuizAttempt || 
+  mongoose.model("UserQuizAttempt", UserQuizAttemptSchema);
+
+// For CourseQuiz
+export const CourseQuiz = 
+  mongoose.models.CourseQuiz || 
+  mongoose.model("CourseQuiz", CourseQuizSchema);

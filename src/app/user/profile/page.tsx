@@ -43,6 +43,7 @@ export default function CombinedProfile() {
           ).length || 0
         },
         courses: user.courses || [],
+        purchasedCourses: purchasedCourses || [],
         coverImage: "/cover-placeholder.jpg",
         avatar: "/profilepic.png",
         role: user.role || "Educator",
