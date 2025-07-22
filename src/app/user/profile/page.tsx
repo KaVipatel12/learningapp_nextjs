@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Settings, Mail, Calendar, Heart, Bookmark, Award, User, Plus } from 'lucide-react';
+import { Settings, Mail, Calendar, Heart, Bookmark, Award, User, Plus, HistoryIcon  } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -126,6 +126,12 @@ export default function CombinedProfile() {
                     <Heart size={16} className="fill-white" />
                     Wishlist
                   </button>
+                <button className="flex items-center gap-2 bg-white hover:bg-rose-50 px-4 py-2 rounded-full text-sm font-medium transition text-rose-700 border border-rose-200 shadow-sm">
+                  <HistoryIcon size={16} />
+                  <Link href="/user/quizes">
+                    Quizes
+                  </Link>
+                </button>
               </div>
             </div>
             <p className="mt-3 text-rose-800/80">{profileData?.bio}</p>

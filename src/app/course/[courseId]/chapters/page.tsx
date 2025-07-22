@@ -126,17 +126,18 @@ const CourseContentPage = () => {
         result = await chapterActions.delete(courseId, selectedItems);
       } else {
         // Call quiz delete API
-        const response = await fetch(`/api/course/${courseId}/quizzes/delete`, {
+        const response = await fetch(`/api/quiz/${courseId}/deletequiz`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ quizIds: selectedItems }),
+          body: JSON.stringify({ quizIds: selectedItems , courseId}),
         });
         
         if (!response.ok) {
-          throw new Error('Failed to delete quizzes');
+          showNotification('Failed to delete quizzes', "error");
         }
+        showNotification('Failed to delete quizzes', "error");
         
         result = { success: true };
       }
@@ -187,7 +188,13 @@ const CourseContentPage = () => {
           {isOwner && (
             <div className="flex flex-row items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2">
               <button 
-                onClick={() => router.push(`/educator/${courseId}/add${activeTab === 'chapters' ? 'chapter' : 'quiz'}`)}
+                onClick={() => 
+                  router.push(
+                    activeTab === 'chapters' 
+                      ? `/educator/${courseId}/addchapter` 
+                      : `/course/${courseId}/quiz/addquiz`
+                  )
+                }
                 className="flex-shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all flex items-center gap-2 shadow-pink hover:shadow-pink-md text-sm sm:text-base"
               >
                 <Plus size={16} />

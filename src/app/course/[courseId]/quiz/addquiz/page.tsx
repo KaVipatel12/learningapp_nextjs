@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 const QuizApp = () => {
 
   const {courseId} = useParams(); 
+  const router = useRouter();
   const [quizData, setQuizData] = useState({
     title: "",
     questions: [
@@ -24,19 +25,19 @@ const QuizApp = () => {
     setQuizData({...quizData, title: e.target.value});
   };
 
-  const handleQuestionChange = (index, e) => {
+  const handleQuestionChange = (index : number, e) => {
     const newQuestions = [...quizData.questions];
     newQuestions[index].questionText = e.target.value;
     setQuizData({...quizData, questions: newQuestions});
   };
 
-  const handleOptionChange = (qIndex, oIndex, e) => {
+  const handleOptionChange = (qIndex : number , oIndex : number , e) => {
     const newQuestions = [...quizData.questions];
     newQuestions[qIndex].options[oIndex] = e.target.value;
     setQuizData({...quizData, questions: newQuestions});
   };
 
-  const handleCorrectAnswerChange = (qIndex, e) => {
+  const handleCorrectAnswerChange = (qIndex : number , e) => {
     const newQuestions = [...quizData.questions];
     newQuestions[qIndex].correctOptionIndex = parseInt(e.target.value);
     setQuizData({...quizData, questions: newQuestions});
@@ -56,7 +57,7 @@ const QuizApp = () => {
     });
   };
 
-  const removeQuestion = (index) => {
+  const removeQuestion = (index : number) => {
     const newQuestions = [...quizData.questions];
     newQuestions.splice(index, 1);
     setQuizData({...quizData, questions: newQuestions});
@@ -64,10 +65,12 @@ const QuizApp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const endPoint = `/api/quiz/${courseId}/addquiz`
     try {
       // Replace with your actual backend endpoint
-      const response = await axios.post(`api/quiz/${courseId}/addquiz`, quizData);
+      const response = await axios.post( endPoint, quizData);
       setSubmissionStatus({ success: true, message: "Quiz submitted successfully!" });
+      router.push(`/course/${courseId}/chapters`)
       console.log("Data sent to backend:", response.data);
     } catch (error) {
       setSubmissionStatus({ success: false, message: "Failed to submit quiz. Please try again." });

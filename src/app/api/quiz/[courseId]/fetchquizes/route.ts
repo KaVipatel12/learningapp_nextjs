@@ -14,7 +14,6 @@ export async function GET(
     const quizes = await CourseQuiz.find({
       courseId 
     }, "title");
-
     return NextResponse.json(
       { message: "Quiz fetched successfully", quiz: quizes},
       { status: 201 }
