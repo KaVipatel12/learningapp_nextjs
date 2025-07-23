@@ -3,6 +3,7 @@
 // app/quiz-history/page.tsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 interface QuizAttempt {
   _id: string;
@@ -22,7 +23,7 @@ interface QuizAttempt {
 const QuizHistoryPage = () => {
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter()
   useEffect(() => {
     const fetchQuizHistory = async () => {
       try {
@@ -98,7 +99,7 @@ const QuizHistoryPage = () => {
                 <div className="mt-4 flex justify-end">
                   <button 
                     className="text-pink-600 hover:text-pink-800 font-medium flex items-center"
-                    onClick={() => window.location.href = `/course/${attempt.courseId._id}/quiz/${attempt.quizId}`}
+                    onClick={() => router.push(`/course/${attempt.courseId._id}/quiz/${attempt.quizId}`)}
                   >
                     View Details
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
