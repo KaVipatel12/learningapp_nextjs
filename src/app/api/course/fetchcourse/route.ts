@@ -94,6 +94,7 @@ export async function GET(req: NextRequest) {
       });
     });
 
+    query.status = "live"
     // Fetch courses
     const rawCourses = (await Course.find(query)
       .sort({ totalEnrollment: -1 })

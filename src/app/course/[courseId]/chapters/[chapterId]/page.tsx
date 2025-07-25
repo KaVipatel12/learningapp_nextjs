@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { MoreVertical, Trash2, Edit } from 'lucide-react';
+import { MoreVertical , Trash2, Edit, Flag } from 'lucide-react';
 import ReviewsSection from '@/components/course/ReviewSection';
 import ChatBox from '@/components/course/ChatBox';
 import CourseDescription from '@/components/course/CourseDescription';
@@ -14,6 +14,7 @@ import MoreVideos from '@/components/course/MoreVideos';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import PleaseWait from '@/components/PleaseWait';
 import VideoPlayer from '@/components/course/VideoPlayer';
+import ReportToggle from '@/components/course/ReportButton';
 
 // Types
 interface IVideo {
@@ -104,6 +105,7 @@ const ChapterPage = () => {
       }
 
       setChapter(data.msg);
+      console.log(data.courseModify)
       setIsOwner(data.courseModify);
 
     } catch (error) {
@@ -241,7 +243,7 @@ const ChapterPage = () => {
             </p>
           </div>
           
-          {isOwner && (
+          {isOwner ? (
             <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-pink-200/50 relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -283,6 +285,22 @@ const ChapterPage = () => {
                   aria-hidden="true"
                 />
               )}
+            </div>
+          ) : (
+            /* Simple report button for regular users */
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-pink-200/50">
+              <ReportToggle
+                type="chapter"
+                chapterId={chapterId}
+                courseId={courseId}
+                buttonProps={{
+                  className: "p-3 hover:bg-pink-100/70 text-pink-700 rounded-xl transition-colors duration-200 w-full h-full flex items-center justify-center",
+                  type: "text",
+                  size: "small"
+                }}
+              >
+                <Flag className="h-5 w-5" />
+              </ReportToggle>
             </div>
           )}
         </div>

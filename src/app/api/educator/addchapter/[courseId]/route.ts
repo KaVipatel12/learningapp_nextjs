@@ -22,7 +22,7 @@ interface ChapterWithVideos {
   title?: string;
   description?: string;
   duration?: number;
-  videos?: UploadedVideo[];
+  videos?: UploadedVideo[];           
   courseId?: string;
   createdAt?: Date;
   updatedAt?: Date;

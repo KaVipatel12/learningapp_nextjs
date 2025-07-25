@@ -18,7 +18,16 @@ export interface IChapter extends Document {
   courseId: mongoose.Types.ObjectId;
 }
 
+export interface IReport extends Document {
+  description: string;
+  courseId: mongoose.Types.ObjectId;
+  chapterId: mongoose.Types.ObjectId;
+  commentId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+}
+
 export interface ICourse extends Document {
+   status : string;
   _id: string;
   title: string;
   description: string;
@@ -47,7 +56,6 @@ export interface ICourse extends Document {
   createdAt: string;
   updatedAt: string;
   date?: string;
-  imageUrl?: string;
   imagePublicId: string;
 }
 
@@ -62,6 +70,7 @@ export interface IUser extends Document {
   _id: string;
   username: string;
   mobile: string;
+  status : string;
   bio: string;
   email: string;
   password: string;
@@ -162,6 +171,12 @@ const userSchema: Schema<IUser> = new Schema({
 // Prevent model overwrite in dev with hot reload
 const CourseSchema = new mongoose.Schema<ICourse>(
   {
+
+    status : {
+      type : String, 
+      required : true,
+      default : "pending"    // pending => Not verified by admin , approved => serving live , rejected => restricted by admin , restricted   
+    }, 
     title: {
       type: String,
       required: [true, "Course title is required"],
@@ -449,6 +464,34 @@ const UserQuizAttemptSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const ReportSchema = new mongoose.Schema<IReport>(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    chapterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Chapter",
+    },
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+    commentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+    },
+    description : {
+      type : String,
+      req : true
+    }
+  },
+  { timestamps: true }
+);
+
 
 
 ReviewSchema.index({ courseId: 1, userId: 1 }, { unique: true });
@@ -479,3 +522,7 @@ export const UserQuizAttempt =
 export const CourseQuiz = 
   mongoose.models.CourseQuiz || 
   mongoose.model("CourseQuiz", CourseQuizSchema);
+
+export const Report = 
+mongoose.models.Report || 
+mongoose.model<IReport>("Report", ReportSchema);

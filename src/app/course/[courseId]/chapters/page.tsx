@@ -41,6 +41,7 @@ const CourseContentPage = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useUser(); 
   const [isOwner, setIsOwner] = useState(false); 
+  const [isAdmin, setIsAdmin] = useState(false); 
   const [isCoursePurchased, setIsCoursePurchased] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -79,6 +80,10 @@ const CourseContentPage = () => {
   useEffect(() => {
     setIsCoursePurchased(false);
     setIsOwner(false);
+
+     if (user && user.role === 'admin') {
+        setIsAdmin(true);
+      }
 
     if (user && user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
       const purchased = user.purchaseCourse.some((purchase) => {
@@ -161,7 +166,7 @@ const CourseContentPage = () => {
       return;
     }
 
-    if (!isOwner && !isCoursePurchased) {
+    if (!isOwner && !isCoursePurchased && !isAdmin) {
       showNotification("This content is locked. Please purchase the course to access.", "error");
       return;
     }
@@ -267,7 +272,7 @@ const CourseContentPage = () => {
                   className={`p-4 sm:p-6 rounded-xl border transition-all relative ${
                     isSelectMode && isSelected
                       ? "border-pink-500 bg-gradient-to-r from-pink-100 to-rose-100 shadow-pink-md"
-                      : (isOwner || isCoursePurchased)
+                      : (isOwner || isCoursePurchased || isAdmin)
                         ? "border-pink-200 bg-gradient-to-r from-pink-50 to-rose-50 hover:shadow-pink-lg hover:border-pink-300 cursor-pointer hover:-translate-y-0.5"
                         : "border-pink-100 bg-gradient-to-r from-pink-50 to-pink-100 cursor-not-allowed"
                   }`}
@@ -281,7 +286,7 @@ const CourseContentPage = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
                     <div className="flex-1">
                       <h2 className="text-lg sm:text-xl font-semibold text-pink-900 flex items-center gap-2">
-                        {(!isOwner && !isCoursePurchased) && <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />}
+                        {(!isOwner && !isCoursePurchased && !isAdmin) && <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />}
                         {chapter.title}
                       </h2>
                       <p className="text-pink-800 mt-1 sm:mt-2 text-sm sm:text-base">
@@ -306,7 +311,7 @@ const CourseContentPage = () => {
                   className={`p-4 sm:p-6 rounded-xl border transition-all relative ${
                     isSelectMode && isSelected
                       ? "border-pink-500 bg-gradient-to-r from-pink-100 to-rose-100 shadow-pink-md"
-                      : (isOwner || isCoursePurchased)
+                      : (isOwner || isCoursePurchased || isAdmin)
                         ? "border-pink-200 bg-gradient-to-r from-pink-50 to-rose-50 hover:shadow-pink-lg hover:border-pink-300 cursor-pointer hover:-translate-y-0.5"
                         : "border-pink-100 bg-gradient-to-r from-pink-50 to-pink-100 cursor-not-allowed"
                   }`}
@@ -320,7 +325,7 @@ const CourseContentPage = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
                     <div className="flex-1">
                       <h2 className="text-lg sm:text-xl font-semibold text-pink-900 flex items-center gap-2">
-                        {(!isOwner && !isCoursePurchased) && <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />}
+                        {(!isOwner && !isCoursePurchased && isAdmin) && <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />}
                         {quiz.title}
                       </h2>
                     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Button, Card, Tabs, Typography, Divider, Rate, Row, Col } from "antd";
+import { Button, Card, Tabs, Typography, Divider, Rate, Row, Col, Alert, Modal } from "antd";
 import Image from "next/image";
 import { PageLoading } from "@/components/PageLoading";
 import { useParams, useRouter } from "next/navigation";
@@ -12,6 +12,9 @@ import ErrorPage from "@/components/ErrorPage";
 import Link from "next/link";
 
 const { Title, Text, Paragraph } = Typography;
+// const { confirm } = Modal;
+
+type CourseStatus = 'pending' | 'approved' | 'rejected' | 'restricted';
 
 interface ICourse {
   _id: string;
@@ -29,9 +32,15 @@ interface ICourse {
   isPublished: boolean;
   prerequisites: string;
   learningOutcomes: string;
+  status: CourseStatus;
+  rejectionReason?: string;
   educator: {
     _id: string;
+    name: string;
+    avatar?: string;
   };
+  createdAt: string;
+  updatedAt: string;
 }
 
 const CourseDetailPage = () => {
@@ -41,6 +50,7 @@ const CourseDetailPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isCoursePurchased, setIsCoursePurchased] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
@@ -52,6 +62,33 @@ const CourseDetailPage = () => {
   const router = useRouter();
 
   const courseId = params.courseId as string;
+
+  // Check if user can view the course
+  const canViewCourse = useCallback(() => {
+    if (!course) return false;
+    
+    // Always show to admin and owner
+    if (isAdmin || isOwner) return true;
+    
+    // Only show approved courses to regular users
+    return course.status === 'approved';
+  }, [course, isAdmin, isOwner]);
+
+  // Check if user can purchase the course
+  const canPurchaseCourse = useCallback(() => {
+    if (!course) return false;
+    
+    // Only allow purchase if:
+    // - Course is approved
+    // - User is not owner/admin
+    // - User hasn't already purchased
+    // - User is logged in
+    return course.status === 'approved' && 
+           !isOwner && 
+           !isAdmin && 
+           !isCoursePurchased && 
+           !!user;
+  }, [course, isOwner, isAdmin, isCoursePurchased, user]);
 
   // Fetch course data
   useEffect(() => {
@@ -65,8 +102,8 @@ const CourseDetailPage = () => {
         }
 
         const data = await response.json();
+        console.log(data.msg)
         setCourse(data.msg);
-        console.log(data.msg);
       } catch (err) {
         console.error("Error fetching course:", err);
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -80,54 +117,62 @@ const CourseDetailPage = () => {
     }
   }, [courseId]);
 
+  // Check permissions
 
-  // Check permissions to delete and update page
-useEffect(() => {
-  // Reset states first
-  setIsCoursePurchased(false);
-  setIsOwner(false);
+  useEffect(() => {
+    // Reset states first
+    setIsCoursePurchased(false);
+    setIsOwner(false);
+    setIsAdmin(false);
 
-  if (user && user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
-    const purchased = user.purchaseCourse.some((purchase) => {
-      // Check if purchase object exists and has courseId
-      if (!purchase || !purchase.courseId) return false;
-      
-      let purchaseCourseId;
-      if (typeof purchase.courseId === "object") {
-        // courseId is populated (Course object), get its _id
-        purchaseCourseId = purchase.courseId._id;
-      } else {
-        // courseId is just the ObjectId string
-        purchaseCourseId = purchase.courseId;
+    if (user) {
+      // Check if user is admin
+      if (user.role === 'admin') {
+        setIsAdmin(true);
       }
-      
-      return purchaseCourseId && purchaseCourseId.toString() === courseId;
-    });
-    setIsCoursePurchased(purchased);
-  }
 
-  // Only check for ownership if user is actually an educator
-  if (user && user.courses && Array.isArray(user.courses)) {
-    const owned = user.courses.some(
-      (course) => {
-        // More robust null checking
-        if (!course._id) return false;
-        
-        const courseIdStr = typeof course._id === 'object' 
-          ? course._id 
-          : String(course._id);
-        
-        return courseIdStr === courseId;
+      // Check if user has purchased the course
+      if (user.purchaseCourse && Array.isArray(user.purchaseCourse)) {
+        const purchased = user.purchaseCourse.some((purchase) => {
+          if (!purchase || !purchase.courseId) return false;
+          
+          let purchaseCourseId;
+          if (typeof purchase.courseId === "object") {
+            purchaseCourseId = purchase.courseId?._id;
+          } else {
+            purchaseCourseId = purchase.courseId;
+          }
+          
+          return purchaseCourseId && purchaseCourseId.toString() === courseId;
+        });
+        setIsCoursePurchased(purchased);
       }
-    );
-    setIsOwner(owned);
-  }
 
-}, [user, courseId]);
+      // Check if user owns the course
+      if (user.courses && Array.isArray(user.courses)) {
+        const owned = user.courses.some((course) => {
+          if (!course?._id) return false;
+          
+          const courseIdStr = typeof course?._id === 'object' 
+            ? course?._id 
+            : String(course?._id);
+          
+          return courseIdStr === courseId;
+        });
+        setIsOwner(owned);
+      }
+    }
+  }, [user, courseId]);
 
   const handleEnroll = async () => {
     try {
       setEnrollLoading(true);
+
+      if (!user) {
+        showNotification("Please login to enroll in courses", "error");
+        router.push("/login");
+        return;
+      }
 
       const res = await fetch("/api/user/purchasecourse", {
         method: "PUT",
@@ -142,41 +187,45 @@ useEffect(() => {
       const data = await res.json();
 
       if (!res.ok) {
-        setIsCoursePurchased(false);
-        showNotification(data.msg, "error");
+        showNotification(data.msg || "Enrollment failed", "error");
         return;
       }
+
       setIsCoursePurchased(true);
       setShowEnrollModal(false);
       fetchUserData();
       showNotification("Enrollment successful!", "success");
-    } catch {
-      showNotification("There is some error please try again later", "error");
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      showNotification("There was an error processing your enrollment", "error");
     } finally {
       setEnrollLoading(false);
     }
   };
 
-  // fetching the average review
+  // Fetch the average review
   const fetchReview = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/user/review/${courseId}/averagerating`
       );
       if (!response.ok) {
-        console.log("Failed to submit rating");
+        console.log("Failed to fetch rating");
+        return;
       }
       const data = await response.json();
       setAverageRating(data.averageRating || 0);
       setTotalRatings(data.totalRatings || 0);
-    } catch {
-      console.log("Error in fetching the error");
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
     }
   }, [courseId]);
 
   useEffect(() => {
-    fetchReview();
-  }, [fetchReview]);
+    if (course?.status === 'approved') {
+      fetchReview();
+    }
+  }, [fetchReview, course?.status]);
 
   const handleUpdateCourse = () => {
     router.push(`/educator/editcourse/${courseId}`);
@@ -211,12 +260,49 @@ useEffect(() => {
     );
   };
 
+ const renderStatusBadge = (status: CourseStatus) => {
+  const statusMap = {
+    pending: {
+      text: "Pending Review",
+      color: "bg-yellow-100 text-yellow-800",
+      icon: "⏳",
+    },
+    approved: {
+      text: "Published",
+      color: "bg-green-100 text-green-800",
+      icon: "✅",
+    },
+    rejected: {
+      text: "Rejected",
+      color: "bg-red-100 text-red-800",
+      icon: "❌",
+    },
+    restricted: {
+      text: "Restricted",
+      color: "bg-orange-100 text-orange-800",
+      icon: "🚫",
+    },
+  };
+t
+  // Fallback to pending if status is not recognized
+  const currentStatus = statusMap[status] || statusMap.pending;
+
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-sm font-semibold ${currentStatus.color} flex items-center gap-1`}
+    >
+      {currentStatus.icon} {currentStatus.text}
+    </span>
+  );
+
+};
+
   if (loading) {
     return <PageLoading />;
   }
 
   if (error) {
-    return <ErrorPage error={error}></ErrorPage>;
+    return <ErrorPage error={error} />;
   }
 
   if (!course) {
@@ -228,8 +314,87 @@ useEffect(() => {
             Course not found
           </h2>
           <p className="text-rose-600">
-            The course you are looking for doesn not exist.
+            The course you are looking for doesn't exist.
           </p>
+          <Button 
+            type="primary" 
+            className="mt-4 bg-rose-500 hover:bg-rose-600"
+            onClick={() => router.push("/")}
+          >
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user can view the course
+  if (!canViewCourse()) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200 max-w-md w-full">
+          <div className="text-rose-500 text-6xl mb-4">
+            {course.status === 'rejected' ? '🚫' : '🔒'}
+          </div>
+          <h2 className="text-2xl font-bold text-rose-800 mb-2">
+            {course.status === 'rejected' 
+              ? 'Course Rejected' 
+              : course.status === 'restricted'
+                ? 'Course Restricted'
+                : 'Course Under Review'}
+          </h2>
+          
+          <div className="mb-6">
+            {renderStatusBadge(course.status)}
+          </div>
+
+          {course.status === 'rejected' && course.rejectionReason && (
+            <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 mb-6 text-left">
+              <h4 className="font-semibold text-rose-800 mb-2">Reason:</h4>
+              <p className="text-rose-700">{course.rejectionReason}</p>
+            </div>
+          )}
+
+          <p className="text-rose-600 mb-6">
+            {course.status === 'rejected' 
+              ? 'This course has been rejected by our team and is not available for viewing.'
+              : course.status === 'restricted'
+                ? 'This course has been restricted and is not currently available.'
+                : 'This course is under review and not yet published.'}
+          </p>
+
+          {isOwner && (
+            <div className="space-y-3">
+              <Button 
+                type="primary" 
+                onClick={() => router.push('/educator/mycourses')}
+                className="bg-rose-500 hover:bg-rose-600 w-full"
+                size="large"
+              >
+                Back to My Courses
+              </Button>
+              {course.status === 'rejected' && (
+                <Button 
+                  onClick={handleUpdateCourse}
+                  className="w-full"
+                  size="large"
+                >
+                  ✏️ Edit and Resubmit
+                </Button>
+              )}
+            </div>
+          )}
+
+          {!user && (
+            <Button 
+              type="primary" 
+              onClick={() => router.push('/login')}
+              className="bg-rose-500 hover:bg-rose-600 w-full mt-4"
+              size="large"
+            >
+              Login to View Your Courses
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -237,18 +402,54 @@ useEffect(() => {
 
   return (
     <>
-      <div className="min-h-screen mb-20">
+      <div className="min-h-screen mb-20 ">
+        {/* Status Alert for Admin/Owner */}
+
+        
+        {(isAdmin || isOwner) && course.status !== 'approved' && (
+          <div className="max-w-7xl mx-auto px-6 pt-6">
+          <div className="mt-13">
+            <Alert 
+              message={
+                <div className="flex items-center gap-2">
+                  {renderStatusBadge(course.status)}
+                  {course.status === 'rejected' && course.rejectionReason && (
+                    <span className="text-gray-600">Reason: {course.rejectionReason}</span>
+                  )}
+                </div>
+              }
+              type={
+                course.status === 'rejected' 
+                  ? 'error' 
+                  : course.status === 'restricted' 
+                    ? 'warning' 
+                    : 'info'
+              }
+              showIcon
+              className="mb-6"
+              description={
+                course.status === 'rejected' 
+                  ? 'Only you and admins can see this course. Please update the course and resubmit for review.' 
+                  : course.status === 'restricted' 
+                    ? 'This course is not visible to students until restrictions are removed.' 
+                    : 'Your course is under review and not yet visible to students.'
+              } 
+            />
+            </div>
+          </div>
+        )}
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-pink-600 via-rose-500 to-cherry-600 text-white py-16">
           <div className="absolute inset-0 bg-gradient-to-r from-pink-900/20 via-rose-800/20 to-cherry-900/20"></div>
           <div className="relative max-w-7xl mx-auto px-6 mt-20">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="mb-6">
-                  <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-4 mr-2">
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
                     {course.category}
                   </span>
                   {renderLevelTag(course.level)}
+                  {(isAdmin || isOwner) && renderStatusBadge(course.status)}
                 </div>
 
                 <Title
@@ -258,17 +459,19 @@ useEffect(() => {
                   {course.title}
                 </Title>
 
-                <div className="flex items-center gap-4 mb-6">
-                  <Rate
-                    disabled
-                    value={averageRating}
-                    allowHalf
-                    className="text-yellow-400"
-                  />
-                  <Text className="!text-white text-lg">
-                    {averageRating} ({totalRatings} reviews)
-                  </Text>
-                </div>
+                {course.status === 'approved' && (
+                  <div className="flex items-center gap-4 mb-6">
+                    <Rate
+                      disabled
+                      value={averageRating}
+                      allowHalf
+                      className="text-yellow-400"
+                    />
+                    <Text className="!text-white text-lg">
+                      {averageRating} ({totalRatings} reviews)
+                    </Text>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
@@ -350,53 +553,90 @@ useEffect(() => {
 
                           <Divider className="!border-pink-200" />
 
-                          <div>
-                            <Title
-                              level={3}
-                              className="!text-rose-800 !mb-4 flex items-center gap-2"
-                            >
-                              ✅ Prerequisites
-                            </Title>
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-                              {course?.prerequisites?.split(".").map(
-                                (pre, sr) =>
-                                  pre.trim("").length > 0 && (
-                                    <>
+                          {course.prerequisites && (
+                            <div>
+                              <Title
+                                level={3}
+                                className="!text-rose-800 !mb-4 flex items-center gap-2"
+                              >
+                                ✅ Prerequisites
+                              </Title>
+                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                                {course.prerequisites.split(".").map(
+                                  (pre, idx) =>
+                                    pre.trim().length > 0 && (
                                       <Paragraph
-                                        className="!text-gray-700 !text-lg !leading-relaxed !mb-0"
-                                        key={sr}
+                                        className="!text-gray-700 !text-lg !leading-relaxed !mb-2"
+                                        key={`pre-${idx}`}
                                       >
-                                        ✅ {pre}
+                                        ✅ {pre.trim()}
                                       </Paragraph>
-                                    </>
-                                  )
-                              )}
+                                    )
+                                )}
+                              </div>
                             </div>
-                          </div>
+                          )}
 
-                          <div>
-                            <Title
-                              level={3}
-                              className="!text-rose-800 !mb-4 flex items-center gap-2"
-                            >
-                              🎯 What You Will Learn
-                            </Title>
-                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
-                              {course?.learningOutcomes?.split(".").map(
-                                (content, sr) =>
-                                  content.length > 0 && (
-                                    <>
+                          {course.learningOutcomes && (
+                            <div>
+                              <Title
+                                level={3}
+                                className="!text-rose-800 !mb-4 flex items-center gap-2"
+                              >
+                                🎯 What You Will Learn
+                              </Title>
+                              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                                {course.learningOutcomes.split(".").map(
+                                  (content, idx) =>
+                                    content.trim().length > 0 && (
                                       <Paragraph
-                                        className="!text-gray-700 !text-lg !leading-relaxed !mb-0"
-                                        key={sr}
+                                        className="!text-gray-700 !text-lg !leading-relaxed !mb-2"
+                                        key={`outcome-${idx}`}
                                       >
-                                        ✅ {content}
+                                        ✅ {content.trim()}
                                       </Paragraph>
-                                    </>
-                                  )
-                              )}
+                                    )
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    },
+                    {
+                      key: "educator",
+                      label: (
+                        <span className="flex items-center gap-2 font-semibold text-lg">
+                          👨‍🏫 Educator
+                        </span>
+                      ),
+                      children: (
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-6">
+                            <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-rose-200">
+                              <Image
+                                src={"/default-avatar.png"}
+                                alt={course.educatorName}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <div>
+                              <Title level={4} className="!mb-1">
+                                {course.educatorName}
+                              </Title>
+                              <Text type="secondary">
+                                Course Instructor
+                              </Text>
                             </div>
                           </div>
+                          <Button 
+                            type="primary" 
+                            onClick={() => router.push(`/profile/${course.educator?._id}`)}
+                            className="bg-rose-500 hover:bg-rose-600"
+                          >
+                            View Educator Profile
+                          </Button>
                         </div>
                       ),
                     },
@@ -410,23 +650,24 @@ useEffect(() => {
               <Card
                 className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm hover:shadow-3xl transition-all duration-300 sticky top-24"
                 style={{ borderRadius: "24px" }}
-                bodyStyle={{ padding: "32px" }}
               >
                 <div className="text-center mb-8">
                   <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 inline-block">
-                    💎 Premium Course
+                    {course.status === 'approved' ? '💎 Premium Course' : '📝 Under Review'}
                   </div>
                   <Title level={2} className="!text-rose-600 !mb-2 !text-4xl">
                     ₹{course.price.toLocaleString("en-IN")}
                   </Title>
                   <Text className="text-rose-500 text-lg font-medium">
-                    One-time payment • Lifetime access
+                    {course.status === 'approved' 
+                      ? 'One-time payment • Lifetime access' 
+                      : 'Price will be active after approval'}
                   </Text>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="space-y-4 mb-8">
-                  {!isCoursePurchased && !isOwner && (
+                  {canPurchaseCourse() && (
                     <Button
                       type="primary"
                       size="large"
@@ -439,8 +680,46 @@ useEffect(() => {
                     </Button>
                   )}
 
-                  {isOwner && (
+                  {!user && course.status === 'approved' && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      block
+                      className="!h-14 !bg-gradient-to-r !from-pink-500 !to-rose-500 hover:!from-pink-600 hover:!to-rose-600 !border-0 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      onClick={() => router.push('/login')}
+                    >
+                      🔒 Login to Enroll
+                    </Button>
+                  )}
+
+                  {(isCoursePurchased || isOwner || isAdmin) && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      block
+                      className="!h-14 !bg-gradient-to-r !from-indigo-500 !to-purple-500 hover:!from-indigo-600 hover:!to-purple-600 !border-0 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      onClick={handleViewChapters}
+                    >
+                      📚 Go to Chapters
+                    </Button>
+                  )}
+
+                  {!isCoursePurchased && !isOwner && !isAdmin && course.status === 'approved' && (
+                    <Button
+                      type="default"
+                      size="large"
+                      block
+                      className="!h-14 !text-rose-600 !border-2 !border-rose-300 hover:!text-rose-700 hover:!border-rose-400 !bg-gradient-to-r !from-rose-50 !to-pink-50 hover:!from-rose-100 hover:!to-pink-100 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      onClick={handleViewChapters}
+                    >
+                      👀 Preview Course
+                    </Button>
+                  )}
+
+                  {(isOwner || isAdmin) && (
+
                     <>
+                     {isOwner && (
                       <Button
                         type="primary"
                         size="large"
@@ -450,26 +729,13 @@ useEffect(() => {
                       >
                         ✏️ Update Course
                       </Button>
-
+                     )}
+                     
                       <DeleteCourseButton courseId={courseId} />
                     </>
                   )}
 
-                  <Button
-                    type={isCoursePurchased || isOwner ? "primary" : "default"}
-                    size="large"
-                    block
-                    className={`!h-14 !font-semibold !text-lg !rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ${
-                      isCoursePurchased || isOwner
-                        ? "!bg-gradient-to-r !from-indigo-500 !to-purple-500 hover:!from-indigo-600 hover:!to-purple-600 !border-0"
-                        : "!text-rose-600 !border-2 !border-rose-300 hover:!text-rose-700 hover:!border-rose-400 !bg-gradient-to-r !from-rose-50 !to-pink-50 hover:!from-rose-100 hover:!to-pink-100"
-                    }`}
-                    onClick={handleViewChapters}
-                  >
-                    {isCoursePurchased || isOwner
-                      ? "📚 Go to Chapters"
-                      : "👀 Preview Course"}
-                  </Button>
+
                 </div>
 
                 <Divider className="!border-pink-200 !my-8" />
@@ -497,11 +763,19 @@ useEffect(() => {
                         👨‍🏫 Educator:
                       </span>
                       <Link
-                        href={`/profile/${course?.educator?._id}`}
-                        className="font-bold text-rose-700"
+                        href={`/profile/${course.educator?._id}`}
+                        className="font-bold text-rose-700 hover:text-rose-800"
                       >
                         {course.educatorName}
                       </Link>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        📅 Created:
+                      </span>
+                      <span className="font-bold text-rose-700">
+                        {new Date(course.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium flex items-center gap-2">
@@ -534,35 +808,46 @@ useEffect(() => {
           </Row>
         </div>
 
-        {/* Enhanced Enrollment Modal */}
-        {showEnrollModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-pink-200 transform animate-pulse">
-              <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-t-2xl">
-                <Title
-                  level={3}
-                  className="!text-white !mb-2 flex items-center gap-2"
-                >
-                  🎓 Confirm Enrollment
-                </Title>
-                <Text className="text-pink-100">
-                  Join thousands of successful learners
-                </Text>
-              </div>
+        {/* Enrollment Modal - Only show if course is approved */}
+        {course.status === 'approved' && showEnrollModal && (
+          <Modal
+            open={showEnrollModal}
+            onCancel={() => setShowEnrollModal(false)}
+            footer={null}
+            centered
+            className="rounded-2xl overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-1">
+              <div className="bg-white p-6 rounded-xl">
+                <div className="text-center mb-6">
+                  <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    🎓
+                  </div>
+                  <Title level={3} className="!mb-2">
+                    Confirm Enrollment
+                  </Title>
+                  <Text type="secondary">
+                    Join thousands of successful learners
+                  </Text>
+                </div>
 
-              <div className="p-6">
                 <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl border border-pink-200 mb-6">
-                  <p className="text-gray-700 text-lg">
-                    Ready to start your journey with{" "}
+                  <p className="text-gray-700 text-lg text-center mb-4">
+                    You're enrolling in:{" "}
                     <span className="font-bold text-rose-700">
                       {course.title}
                     </span>
-                    ?
                   </p>
-                  <div className="mt-4 p-3 bg-white rounded-lg border border-pink-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Amount:</span>
-                      <span className="text-2xl font-bold text-rose-600">
+                  <div className="p-4 bg-white rounded-lg border border-pink-200">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-gray-600">Course Price:</span>
+                      <span className="text-lg font-semibold text-rose-600">
+                        ₹{course.price.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center font-bold">
+                      <span>Total Amount:</span>
+                      <span className="text-xl text-rose-600">
                         ₹{course.price.toLocaleString("en-IN")}
                       </span>
                     </div>
@@ -589,7 +874,7 @@ useEffect(() => {
                 </div>
               </div>
             </div>
-          </div>
+          </Modal>
         )}
       </div>
     </>

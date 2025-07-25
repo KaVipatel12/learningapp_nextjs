@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useNotification } from '../NotificationContext';
 import { useUser } from '@/context/userContext';
 import LoadingSpinner from '../LoadingSpinner';
+import ReportToggle from './ReportButton';
 
 interface Message {
   id: string | number;
@@ -304,31 +305,44 @@ const ChatBox = ({ isOwner = false, courseOwnerId }: ChatBoxProps) => {
                           </div>
                         </div>
 
-                        <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 flex gap-1 transition-opacity">
-                          {canEdit(message) && (
-                            <button 
-                              onClick={() => handleEditMessage(message)}
-                              className="text-gray-500 hover:text-purple-600 p-1 bg-white bg-opacity-70 rounded"
-                              title="Edit"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </button>
+                    <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 flex gap-1 transition-opacity">
+                      {canEdit(message) && (
+                        <button 
+                          onClick={() => handleEditMessage(message)}
+                          className="text-gray-500 hover:text-purple-600 p-1 bg-white bg-opacity-70 rounded"
+                          title="Edit"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </button>
+                      )}
+                      {canDelete(message) && (
+                        <button 
+                          onClick={() => handleDeleteMessage(message.id)}
+                          className="text-gray-500 hover:text-red-600 p-1 bg-white bg-opacity-70 rounded disabled:opacity-50"
+                          disabled={isDeleting}
+                          title="Delete"
+                        >
+                          {isDeleting ? (
+                            <RefreshCw className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
                           )}
-                          {canDelete(message) && (
-                            <button 
-                              onClick={() => handleDeleteMessage(message.id)}
-                              className="text-gray-500 hover:text-red-600 p-1 bg-white bg-opacity-70 rounded disabled:opacity-50"
-                              disabled={isDeleting}
-                              title="Delete"
-                            >
-                              {isDeleting ? (
-                                <RefreshCw className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-3 w-3" />
-                              )}
-                            </button>
-                          )}
-                        </div>
+                        </button>
+                      )}
+                      {/* Add Report Button */}
+                      {message.user !== "You" && (
+                        <ReportToggle
+                          commentId={message.id.toString()}
+                          chapterId={chapterId}
+                          courseId={courseId} 
+                          type="comment"
+                          buttonProps={{
+                            className: "text-gray-500 hover:text-red-500 p-1 bg-white bg-opacity-70 rounded",
+                            title: "Report"
+                          }}
+                        />
+                      )}
+                    </div>
                       </>
                     )}
                   </div>

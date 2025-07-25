@@ -1,10 +1,9 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2, Plus } from 'lucide-react';
+import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2, Plus, Shield, Settings, Flag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/userContext';
-import { useRouter } from 'next/navigation';
 
 export default function AppNavbar() {
   const { user, userLoading } = useUser();
@@ -12,7 +11,6 @@ export default function AppNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const router = useRouter(); 
   const { fetchUserData } = useUser(); 
 
   useEffect(() => {
@@ -26,55 +24,30 @@ export default function AppNavbar() {
     setIsOpen(false);
   }, []);
 
-  // Function to close mobile menu
   const closeMobileMenu = () => {
     setIsOpen(false);
   };
 
   const logOut = async () => {
     const confirmation = confirm("Do you really want to logout?")
-    if(!confirmation){
-      return; 
-    }
-    if (loggingOut) return; // Prevent multiple clicks
+    if(!confirmation) return;
+    if (loggingOut) return;
     
     setLoggingOut(true);
     
     try {
-      // Call backend logout API
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important: include cookies in request
+        credentials: 'include',
       });
 
-      
       if (response.ok) {
-        console.log('Logout successful ');
         fetchUserData()
         window.location.href = '/login'
-      } else {
-        console.error('Logout error ');
-        // Continue with logout process even if API fails
       }
-      
-    } catch {
-      console.error('Logout request failed ');
-      // Continue with logout process even if request fails
-    }
-    
-    try {
-      // Refresh user data to update UI state
-      await fetchUserData();
-      
-      // Navigate to home page
-      router.push("/login");
-      
-  
-    } catch (error) {
-      console.error('Error during logout cleanup:', error);
     } finally {
       setLoggingOut(false);
     }
@@ -102,6 +75,14 @@ export default function AppNavbar() {
     </button>
   );
 
+  // Admin-specific links
+  const adminLinks = [
+    { href: '/admin', icon: Shield, label: 'Admin', mobileOnly: false },
+    { href: '/admin/users', icon: User, label: 'Users', mobileOnly: true },
+    { href: '/admin/reports', icon: Flag, label: 'Reports', mobileOnly: true },
+    { href: '/admin/settings', icon: Settings, label: 'Settings', mobileOnly: true }
+  ];
+
   const renderAuthButtons = () => {
     if (!isClient || userLoading) {
       return (
@@ -113,56 +94,64 @@ export default function AppNavbar() {
     }
 
     if (user) {
-      if (user.role === "educator") {
-        return (
-          <div className="flex items-center space-x-6">
+      return (
+        <div className="flex items-center space-x-6">
+          {/* Show admin links if user is admin */}
+          {user.role === "admin" && adminLinks.filter(link => !link.mobileOnly).map(link => (
+            <Link 
+              key={link.href}
+              href={link.href}
+              className="text-rose-800 hover:text-rose-600 transition flex items-center"
+            >
+              <link.icon className="mr-1 h-5 w-5" />
+              <span className="hidden md:inline">{link.label}</span>
+            </Link>
+          ))}
+
+          {user.role === "educator" && (
             <Link href="/educator/addcourse" className="text-rose-800 hover:text-rose-600 transition flex items-center">
               <Plus className="mr-1 h-5 w-5" />
               <span className="hidden md:inline">Add Course</span>
             </Link>
-            <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
-              <Video className="mr-1 h-5 w-5" /> Courses
-            </Link>
-            <Link href="/user/profile" className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
-                <GraduationCap className="h-4 w-4 text-pink-600" />
-              </div>
-              <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
-            </Link>
-            <LogoutButton />
-          </div>
-        );
-      } else {
-        return (
-          <div className="flex items-center space-x-6">
+          )}
+
+          <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
+            <Video className="mr-1 h-5 w-5" /> 
+            <span className="hidden md:inline">Courses</span>
+          </Link>
+
+          {user.role !== "educator" && (
             <Link href="/user/wishlist" className="text-rose-700 hover:text-rose-900 transition flex items-center">
               <Heart className="mr-1 h-5 w-5" />
               <span className="hidden md:inline">Wishlist</span>
             </Link>
-            <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
-              <Video className="mr-1 h-5 w-5" /> Courses
-            </Link>
-            <Link href="/user/profile" className="flex items-center">
-              {user.avatar ? (
-                <Image
-                  src={user.avatar}
-                  alt={user.username}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                  priority
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
+          )}
+
+          <Link href="/user/profile" className="flex items-center">
+            {user.avatar ? (
+              <Image
+                src={user.avatar}
+                alt={user.username}
+                width={32}
+                height={32}
+                className="rounded-full"
+                priority
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
+                {user.role === "educator" ? (
+                  <GraduationCap className="h-4 w-4 text-pink-600" />
+                ) : (
                   <User className="h-4 w-4 text-pink-600" />
-                </div>
-              )}
-              <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
-            </Link>
-            <LogoutButton />
-          </div>
-        );
-      }
+                )}
+              </div>
+            )}
+            <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
+          </Link>
+
+          <LogoutButton />
+        </div>
+      );
     }
 
     // Default navigation for unauthenticated users
@@ -193,9 +182,22 @@ export default function AppNavbar() {
     }
 
     if (user) {
-      if (user.role === "educator") {
-        return (
-          <>
+      return (
+        <>
+          {/* Show all admin links in mobile menu */}
+          {user.role === "admin" && adminLinks.map(link => (
+            <Link 
+              key={link.href}
+              href={link.href}
+              onClick={closeMobileMenu}
+              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+            >
+              <link.icon className="mr-2 h-5 w-5" />
+              {link.label}
+            </Link>
+          ))}
+
+          {user.role === "educator" && (
             <Link 
               href="/educator/addcourse" 
               onClick={closeMobileMenu}
@@ -203,26 +205,17 @@ export default function AppNavbar() {
             >
               <Plus className="mr-2 h-5 w-5" /> Add Course
             </Link>
-            <Link 
-              href="/course" 
-              onClick={closeMobileMenu}
-              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-            >
-              <Video className="mr-2 h-5 w-5" /> Courses
-            </Link>
-            <Link 
-              href="/user/profile" 
-              onClick={closeMobileMenu}
-              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-            >
-              <GraduationCap className="mr-2 h-5 w-5" /> Profile
-            </Link>
-            <LogoutButton isMobile={true} />
-          </>
-        );
-      } else {
-        return (
-          <>
+          )}
+
+          <Link 
+            href="/course" 
+            onClick={closeMobileMenu}
+            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+          >
+            <Video className="mr-2 h-5 w-5" /> Courses
+          </Link>
+
+          {user.role !== "educator" && (
             <Link 
               href="/user/wishlist" 
               onClick={closeMobileMenu}
@@ -230,24 +223,24 @@ export default function AppNavbar() {
             >
               <Heart className="mr-2 h-5 w-5" /> Wishlist
             </Link>
-            <Link 
-              href="/course" 
-              onClick={closeMobileMenu}
-              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-            >
-              <Video className="mr-2 h-5 w-5" /> Courses
-            </Link>
-            <Link 
-              href="/user/profile" 
-              onClick={closeMobileMenu}
-              className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
-            >
-              <User className="mr-2 h-5 w-5" /> Profile
-            </Link>
-            <LogoutButton isMobile={true} />
-          </>
-        );
-      }
+          )}
+
+          <Link 
+            href="/user/profile" 
+            onClick={closeMobileMenu}
+            className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
+          >
+            {user.role === "educator" ? (
+              <GraduationCap className="mr-2 h-5 w-5" />
+            ) : (
+              <User className="mr-2 h-5 w-5" />
+            )}
+            Profile
+          </Link>
+
+          <LogoutButton isMobile={true} />
+        </>
+      );
     }
 
     // Default mobile navigation for unauthenticated users
@@ -283,14 +276,16 @@ export default function AppNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href={"/"} className="flex items-center">
+          <Link href={user?.role === "admin" ? "/admin" : "/"} className="flex items-center">
             <Book className="h-8 w-8 text-rose-600" />
-            <span className="ml-2 text-xl font-bold text-rose-900">EduPlatform</span>
+            <span className="ml-2 text-xl font-bold text-rose-900">
+              {user?.role === "admin" ? "Admin Portal" : "EduPlatform"}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href={"/"} className="text-rose-800 hover:text-rose-600 transition flex items-center">
+            <Link href={user?.role === "admin" ? "/admin" : "/"} className="text-rose-800 hover:text-rose-600 transition flex items-center">
               <Home className="mr-1 h-5 w-5" /> Home
             </Link>            
             {renderAuthButtons()}
@@ -314,7 +309,7 @@ export default function AppNavbar() {
         <div className="md:hidden bg-white shadow-lg">
           <div className="pt-2 pb-3 space-y-1 px-4">
             <Link 
-              href="/" 
+              href={user?.role === "admin" ? "/admin" : "/"} 
               onClick={closeMobileMenu}
               className="px-3 py-2 rounded-md text-base font-medium text-rose-800 hover:text-rose-600 hover:bg-pink-50 transition flex items-center"
             >

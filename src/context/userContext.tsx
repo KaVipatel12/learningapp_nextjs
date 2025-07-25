@@ -88,6 +88,8 @@ export interface Course {
   id: string;
   _id?: string;
   title: string;
+  description ? : string;
+  date? : Date;
   instructor: string;
   price: number;
   category?: string;

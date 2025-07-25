@@ -64,7 +64,7 @@ export async function courseModifyMiddleware(
       }
 
       // Check provider role and course ownership
-      if (EducatorData.role !== "educator") {
+      if (EducatorData.role !== "educator" || EducatorData.role !== "admin") {
         console.log("Unauthorized access")
         return NextResponse.json(
           { msg: "Unauthorized Access" },
@@ -73,8 +73,8 @@ export async function courseModifyMiddleware(
       }
 
       const EducatorVerify = EducatorData.courses.some((data: Types.ObjectId) => data.equals(courseId));
-      
-      if (!EducatorVerify) {
+      const admin = EducatorData.role === "admin"; 
+      if (!EducatorVerify || !admin) {
         console.log("Unauthorized access course not found ")
         return NextResponse.json(
           { msg: "Unauthorized Access - Course not found" },

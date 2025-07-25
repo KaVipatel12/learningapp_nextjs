@@ -40,18 +40,23 @@ export async function courseAccessMiddleware(
     if (!user) return unauthorizedResponse("User not found");
 
     // Educator: can access & modify course if they created it
+    let isOwner = false; 
     if (user.role === "educator") {
-      const isOwner = user.courses?.some(
+      isOwner = user.courses?.some(
         (course: Types.ObjectId) => course._id.toString() === courseId
       );
-      if (isOwner) {
+    } 
+    if(user.role === "admin"){
+      isOwner = true
+    }
+
+    if (isOwner) {
         return {
           user,
           courseAccess: true,
           courseModify: true,
         };
       }
-    }
 
     // Student: check if course is purchased
     const hasPurchased = user.purchaseCourse?.some((purchase: IPurchaseCourse) => {

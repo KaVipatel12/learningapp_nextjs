@@ -79,7 +79,7 @@ export default function HistorySlider() {
               <div
                 key={item._id}
                 onClick={() =>
-                  router.push(`/course/${item.courseId._id}/chapters/${item.chapterId}`)
+                  router.push(`/course/${item.courseId._id}/chapters/${item.chapterId._id}`)
                 }
                 className="cursor-pointer bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-pink-100 group min-w-[200px] max-w-[220px] flex-shrink-0"
               >
