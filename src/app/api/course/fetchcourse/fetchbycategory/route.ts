@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ msg: "No course available" }, { status: 400 });
     }
 
-    const courses = await Course.find({ category: { $in: user.category } , status : "live" });
+    const courses = await Course.find({ category: { $in: user.category } , status : "approved" });
 
     if (courses.length === 0) {
       return NextResponse.json({ msg: "No course available" }, { status: 400 });
