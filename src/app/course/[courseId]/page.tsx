@@ -833,7 +833,7 @@ const CourseDetailPage = () => {
 
                 <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl border border-pink-200 mb-6">
                   <p className="text-gray-700 text-lg text-center mb-4">
-                    You're enrolling in:{" "}
+                    {"You're enrolling in:"}{" "}
                     <span className="font-bold text-rose-700">
                       {course.title}
                     </span>
