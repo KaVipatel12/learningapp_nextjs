@@ -314,7 +314,7 @@ const CourseDetailPage = () => {
             Course not found
           </h2>
           <p className="text-rose-600">
-            The course you are looking for doesn't exist.
+            {"The course you are looking for doesn't exist."}
           </p>
           <Button 
             type="primary" 
