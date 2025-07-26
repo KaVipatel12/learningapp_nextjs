@@ -4,11 +4,30 @@ import Button from '@/components/ui/button';
 import Link from 'next/link';
 import React from 'react';
 import { useNotification } from '@/components/NotificationContext';
+import { Loader2 } from 'lucide-react';
 
+interface ReportTableProps {
+  items?: any[];
+  type: 'course' | 'comment' | 'restrictedCourse';
+  setReportedComments?: (items: any[]) => void;
+  setReportedCourses?: (items: any[]) => void;
+  setRestrictedCourses?: (items: any[]) => void;
+  loading?: boolean;
+}
 
-const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses, setRestrictedCourses }) => {
-  const { showNotification } = useNotification();  
-  const handleAction = async (action: string, reportId: string, item) => {
+const ReportTable: React.FC<ReportTableProps> = ({
+  items = [],
+  type,
+  setReportedComments,
+  setReportedCourses,
+  setRestrictedCourses,
+  loading = false
+}) => {
+  const { showNotification } = useNotification();
+  const [processing, setProcessing] = React.useState<string | null>(null);
+
+  const handleAction = async (action: string, reportId: string, item: any) => {
+    setProcessing(reportId);
     try {
       let mainActionUrl = '';
       let method = 'POST';
@@ -17,11 +36,11 @@ const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses
 
       // Determine the target ID based on type
       if (type === 'course') {
-        targetId = item.courseId?._id;
+        targetId = item.courseId?._id || '';
       } else if (type === 'comment') {
-        targetId = item.commentId?._id;
+        targetId = item.commentId?._id || '';
       } else if (type === 'restrictedCourse') {
-        targetId = item?._id;
+        targetId = item._id || '';
       }
 
       // First API call - perform the main action
@@ -31,12 +50,12 @@ const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses
           body = { 
             targetId,
             type,
-            userId: item.userId?._id // Include user ID for warning
+            userId: item.userId?._id 
           };
           break;
         case 'restrict':
           if (type === 'comment') {
-            const chapterId = item.chapterId?._id; 
+            const chapterId = item.chapterId; 
             mainActionUrl = `/api/course/${targetId}/chapters/${chapterId}/comment/deletecomment`;
             method = 'DELETE';
           } else {
@@ -47,7 +66,7 @@ const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses
           break;
         case 'unrestrict':
           mainActionUrl = `/api/admin/${targetId}/changestatus`;
-          body = { courseId: targetId, status: "approved" }; // Changed from "restricted" to "published"
+          body = { courseId: targetId, status: "approved" };
           method = 'PATCH';
           break;
         default:
@@ -64,7 +83,7 @@ const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses
       });
 
       if (!actionResponse.ok) {
-        throw new Error('Main action failed');
+        throw new Error('Action failed');
       }
 
       // Second API call - delete the report (for all actions except unrestrict)
@@ -78,165 +97,383 @@ const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses
         });
 
         if (!deleteReportResponse.ok) {
-          throw new Error('Failed to delete report');
+          throw new Error('Failed to update report status');
         }
       }
 
-      // Show success message
       showNotification(`Action ${action} completed successfully`, "success");
 
       // Update local state to remove the item
-      const removeItem = (prevItems) => prevItems.filter(i => i._id !== reportId);
+      const removeItem = (prevItems: any[]) => prevItems.filter(i => i._id !== reportId);
 
       if (type === 'course' && setReportedCourses) {
-        setReportedCourses(removeItem);
+        setReportedCourses(removeItem(items));
       } else if (type === 'comment' && setReportedComments) {
-        setReportedComments(removeItem);
+        setReportedComments(removeItem(items));
       } else if (type === 'restrictedCourse' && setRestrictedCourses) {
-        setRestrictedCourses(removeItem);
+        setRestrictedCourses(removeItem(items));
       }
 
     } catch (error) {
       console.error(`Error performing ${action}:`, error);
-      showNotification(`Failed to ${action}`, "error");
+      showNotification(`Failed to ${action}: ${error.message}`, "error");
+    } finally {
+      setProcessing(null);
     }
   };
 
-  // Ensure items is always an array
-  const safeItems = Array.isArray(items) ? items : [];
+  const getItemData = (item: any) => {
+    switch (type) {
+      case 'course':
+        return {
+          title: item?.courseId?.title || 'Untitled Course',
+          reporter: item?.userId?.username || 'Unknown',
+          reporterId: item?.userId?._id,
+          courseId: item?.courseId?._id,
+          chapterId: item?.chapterId,
+          reason: item?.reason || 'No reason provided'
+        };
+      case 'comment':
+        return {
+          content: item?.commentId?.comment || '[Comment removed]',
+          user: item?.commentId?.userId?.username || 'Unknown',
+          userId: item?.commentId?.userId?._id,
+          reporter: item?.userId?.username || 'Unknown',
+          reporterId: item?.userId?._id,
+          reason: item?.reason || 'No reason provided'
+        };
+      case 'restrictedCourse':
+        return {
+          title: item?.title || 'Untitled Course',
+          educator: item?.educator?.username || 'Unknown',
+          educatorId: item?.educator?._id,
+          reason: item?.reason || 'No reason provided',
+          restrictionDate: item?.restrictedAt || 'Unknown date'
+        };
+      default:
+        return {};
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+      </div>
+    );
+  }
+
+  if (!items || items.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <p className="text-gray-500">No {type === 'restrictedCourse' ? 'restricted courses' : `${type} reports`} found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      {/* Mobile responsive container - only shows on small screens */}
-      <div className="sm:hidden">
-        {safeItems?.map((item) => (
-          <div key={item?._id} className="p-4 border-b border-gray-200">
-            {type === 'course' && (
-              <>
-                <div className="font-medium text-gray-900">Course: {item?.course}</div>
-                <div className="text-gray-500">Reporter: {item?.reporter}</div>
-              </>
-            )}
-            {type === 'comment' && (
-              <>
-                <div className="font-medium text-gray-900">Comment: {item?.comment}</div>
-                <div className="text-gray-500">User: {item?.user}</div>
-                <div className="text-gray-500">Reporter: {item?.reporter}</div>
-              </>
-            )}
-            {type === 'restrictedCourse' && (
-              <>
-                <div className="font-medium text-gray-900">Course: {item?.course}</div>
-                <div className="text-gray-500">Reason: {item?.reason}</div>
-              </>
-            )}
-            <div className="mt-3 flex space-x-2">
-              {type === 'restrictedCourse' ? (
-                <Button
-                  onClick={() => handleAction('unrestrict', item?._id , item)}
-                  className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1"
-                >
-                  Unrestrict
-                </Button>
-              ) : (
+      {/* Mobile responsive view */}
+      <div className="sm:hidden divide-y divide-gray-200">
+        {items.map((item) => {
+          const data = getItemData(item);
+          const isProcessing = processing === item._id;
+          
+          return (
+            <div key={item._id} className="p-4">
+              {type === 'course' && (
                 <>
-                  <Button 
-                    onClick={() => handleAction('warn', item?._id , item)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-1"
-                  >
-                    Warn
-                  </Button>
-                  <Button 
-                    onClick={() => handleAction('restrict', item?._id , item)}
-                    className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1"
-                  >
-                    {type === 'comment' ? 'Delete' : 'Restrict'}
-                  </Button>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Course:</span>
+                    <Link 
+                      href={`/course/${data.courseId}/${data.chapterId}`}
+                      className="ml-1 text-gray-900 hover:text-pink-700"
+                    >
+                      {data.title}
+                    </Link>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Reporter:</span>
+                    <Link
+                      href={`/user/profile/${data.reporterId}`}
+                      className="ml-1 text-gray-700 hover:text-pink-700"
+                    >
+                      {data.reporter}
+                    </Link>
+                  </div>
+                  <div className="mb-3">
+                    <span className="text-pink-600 font-medium">Reason:</span>
+                    <span className="ml-1 text-gray-700">{data.reason}</span>
+                  </div>
                 </>
               )}
+              
+              {type === 'comment' && (
+                <>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Comment:</span>
+                    <p className="mt-1 text-gray-700 bg-gray-50 p-2 rounded">
+                      {data.content}
+                    </p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Author:</span>
+                    <Link
+                      href={`/user/profile/${data.userId}`}
+                      className="ml-1 text-gray-700 hover:text-pink-700"
+                    >
+                      {data.user}
+                    </Link>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Reporter:</span>
+                    <Link
+                      href={`/user/profile/${data.reporterId}`}
+                      className="ml-1 text-gray-700 hover:text-pink-700"
+                    >
+                      {data.reporter}
+                    </Link>
+                  </div>
+                  <div className="mb-3">
+                    <span className="text-pink-600 font-medium">Reason:</span>
+                    <span className="ml-1 text-gray-700">{data.reason}</span>
+                  </div>
+                </>
+              )}
+              
+              {type === 'restrictedCourse' && (
+                <>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Course:</span>
+                    <span className="ml-1 text-gray-900">{data.title}</span>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Educator:</span>
+                    <Link
+                      href={`/user/profile/${data.educatorId}`}
+                      className="ml-1 text-gray-700 hover:text-pink-700"
+                    >
+                      {data.educator}
+                    </Link>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-pink-600 font-medium">Reason:</span>
+                    <span className="ml-1 text-gray-700">{data.reason}</span>
+                  </div>
+                  <div className="mb-3">
+                    <span className="text-pink-600 font-medium">Restricted On:</span>
+                    <span className="ml-1 text-gray-700">{data.restrictionDate}</span>
+                  </div>
+                </>
+              )}
+              
+              <div className="flex flex-wrap gap-2">
+                {type === 'restrictedCourse' ? (
+                  <Button
+                    onClick={() => handleAction('unrestrict', item._id, item)}
+                    disabled={isProcessing}
+                    className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5"
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Unrestrict'
+                    )}
+                  </Button>
+                ) : (
+                  <>
+                    <Button 
+                      onClick={() => handleAction('warn', item._id, item)}
+                      disabled={isProcessing}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-1.5"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Warn'
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={() => handleAction('restrict', item._id, item)}
+                      disabled={isProcessing}
+                      className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1.5"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : type === 'comment' ? (
+                        'Delete'
+                      ) : (
+                        'Restrict'
+                      )}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Desktop table - only shows on medium screens and up */}
+      {/* Desktop table view */}
       <div className="hidden sm:block overflow-x-auto">
-        <div className="min-w-full inline-block align-middle">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-pink-50">
-              <tr>
-                {type === 'course' && (
-                  <>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Course</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Reporter</th>
-                  </>
-                )}
-                {type === 'comment' && (
-                  <>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Comment</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">User</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Reporter</th>
-                  </>
-                )}
-                {type === 'restrictedCourse' && (
-                  <>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Course</th>
-                  </>
-                )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {safeItems?.map((item) => (
-                <tr key={item?._id}>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-pink-50">
+            <tr>
+              {type === 'course' && (
+                <>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Course</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Reporter</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Reason</th>
+                </>
+              )}
+              {type === 'comment' && (
+                <>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Comment</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Author</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Reporter</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Reason</th>
+                </>
+              )}
+              {type === 'restrictedCourse' && (
+                <>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Course</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Educator</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Reason</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Date Restricted</th>
+                </>
+              )}
+              <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {items.map((item) => {
+              const data = getItemData(item);
+              const isProcessing = processing === item._id;
+              
+              return (
+                <tr key={item._id}>
                   {type === 'course' && (
                     <>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"> <Link href={`/course/${item?.courseId?._id}/${item?.chapterId?._id}`}> {item?.courseId?.title} </Link></td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item?.userId?.username}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/course/${data.courseId}/${data.chapterId}`}
+                          className="text-gray-900 hover:text-pink-700 font-medium"
+                        >
+                          {data.title}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/user/profile/${data.reporterId}`}
+                          className="text-gray-700 hover:text-pink-700"
+                        >
+                          {data.reporter}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                        {data.reason}
+                      </td>
                     </>
                   )}
+                  
                   {type === 'comment' && (
                     <>
-                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs whitespace-normal">{item?.commentId?.comment}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><Link href={`/user/profile/${item?.commentId?.userId?._id}`}> {item?.commentId?.userId?.username} </Link></td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><Link href={`/user/profile/${item?.userId?._id}`}>{item?.userId?.username}</Link></td>
+                      <td className="px-6 py-4 max-w-xs">
+                        <p className="text-gray-700 bg-gray-50 p-2 rounded">
+                          {data.content}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/user/profile/${data.userId}`}
+                          className="text-gray-700 hover:text-pink-700"
+                        >
+                          {data.user}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/user/profile/${data.reporterId}`}
+                          className="text-gray-700 hover:text-pink-700"
+                        >
+                          {data.reporter}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                        {data.reason}
+                      </td>
                     </>
                   )}
+                  
                   {type === 'restrictedCourse' && (
                     <>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><Link href={`/user/profile/${item?._id}`}>{item?.title}</Link></td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                        {data.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/user/profile/${data.educatorId}`}
+                          className="text-gray-700 hover:text-pink-700"
+                        >
+                          {data.educator}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                        {data.reason}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                        {data.restrictionDate}
+                      </td>
                     </>
                   )}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  
+                  <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     {type === 'restrictedCourse' ? (
-                      <Button 
-                        onClick={() => handleAction('unrestrict', item?._id, item)}
-                        className="bg-green-500 hover:bg-green-600 text-white"
+                      <Button
+                        onClick={() => handleAction('unrestrict', item._id, item)}
+                        disabled={isProcessing}
+                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5"
                       >
-                        Unrestrict
+                        {isProcessing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Unrestrict'
+                        )}
                       </Button>
                     ) : (
                       <>
                         <Button 
-                          onClick={() => handleAction('warn', item?._id, item)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                          onClick={() => handleAction('warn', item._id, item)}
+                          disabled={isProcessing}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-1.5"
                         >
-                          Warn
+                          {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            'Warn'
+                          )}
                         </Button>
                         <Button 
-                          onClick={() => handleAction('restrict', item?._id, item)}
-                          className="bg-red-500 hover:bg-red-600 text-white"
+                          onClick={() => handleAction('restrict', item._id, item)}
+                          disabled={isProcessing}
+                          className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1.5"
                         >
-                          {type === 'comment' ? 'Delete' : 'Restrict'}
+                          {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : type === 'comment' ? (
+                            'Delete'
+                          ) : (
+                            'Restrict'
+                          )}
                         </Button>
                       </>
                     )}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
