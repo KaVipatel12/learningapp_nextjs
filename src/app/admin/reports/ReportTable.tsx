@@ -18,7 +18,7 @@ const ReportTable = ({
   const { showNotification } = useNotification();
   const [processing, setProcessing] = React.useState<string | null>(null);
 
-  const handleAction = async (action: string, reportId: string, item: any) => {
+  const handleAction = async (action: string, reportId: string, item) => {
     setProcessing(reportId);
     try {
       let mainActionUrl = '';
@@ -96,7 +96,7 @@ const ReportTable = ({
       showNotification(`Action ${action} completed successfully`, "success");
 
       // Update local state to remove the item
-      const removeItem = (prevItems: any[]) => prevItems.filter(i => i._id !== reportId);
+      const removeItem = (prevItems) => prevItems.filter(i => i._id !== reportId);
 
       if (type === 'course' && setReportedCourses) {
         setReportedCourses(removeItem(items));
@@ -114,7 +114,7 @@ const ReportTable = ({
     }
   };
 
-  const getItemData = (item: any) => {
+  const getItemData = (item) => {
     switch (type) {
       case 'course':
         return {
