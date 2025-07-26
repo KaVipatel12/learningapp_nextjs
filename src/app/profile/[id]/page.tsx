@@ -17,7 +17,7 @@ export default function EducatorProfile() {
 
   useEffect(() => {
     if(user && !userLoading){
-      if(user._id === id) return router.push(`/profile/educator`)
+      if(user._id === id) return router.push(`/profile/user`)
     }
   }, [user, userLoading, router, id])
 

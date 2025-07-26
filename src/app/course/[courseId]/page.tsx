@@ -283,7 +283,7 @@ const CourseDetailPage = () => {
       icon: "🚫",
     },
   };
-t
+
   // Fallback to pending if status is not recognized
   const currentStatus = statusMap[status] || statusMap.pending;
 
@@ -763,7 +763,7 @@ t
                         👨‍🏫 Educator:
                       </span>
                       <Link
-                        href={`/profile/${course.educator?._id}`}
+                        href={`/user/profile/${course.educator?._id}`}
                         className="font-bold text-rose-700 hover:text-rose-800"
                       >
                         {course.educatorName}

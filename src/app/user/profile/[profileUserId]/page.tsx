@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Settings, Mail, Calendar, Heart, Bookmark, Award, User, Plus, HistoryIcon, Shield, Ban, LogIn } from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -10,6 +10,7 @@ import Card from '@/components/Card';
 import { useUser } from '@/context/userContext';
 import { PageLoading } from '@/components/PageLoading';
 import FormattedDate from '@/components/FormattedDate';
+import { useNotification } from '@/components/NotificationContext';
 
 export default function CombinedProfile() {
   const router = useRouter();
@@ -24,11 +25,11 @@ export default function CombinedProfile() {
   const isOwnProfile = !profileUserId || (currentUser && currentUser._id === profileUserId);
   const isAdmin = currentUser?.role === 'admin';
   const isLoggedIn = !!currentUser;
+  const { showNotification } = useNotification(); 
 
   // Fetch profile data based on URL
-  useEffect(() => {
-    const fetchProfileData = async () => {
-        console.log(profileUserId)
+  const fetchProfileData = useCallback( async () => {
+    console.log(profileUserId)
       try {
         setProfileLoading(true);
         // Accessing another user's profile
@@ -44,33 +45,38 @@ export default function CombinedProfile() {
       } finally {
         setProfileLoading(false);
       }
-    };
-
+    }, [profileUserId]);
+    
+    useEffect(() => {
     if (!userLoading) {
       fetchProfileData();
     }
-  }, [profileUserId, currentUser, userLoading, isOwnProfile, isLoggedIn, router]);
+  }, [userLoading , fetchProfileData]);
 
   useEffect(() => {
     setPageLoading(userLoading || profileLoading);
   }, [userLoading, profileLoading]);
 
   // Handle admin actions
-  const handleRestrictProfile = async () => {   
+  const handleRestrictProfile = async (status : number) => {   
     if (!isAdmin || isOwnProfile) return;
     
     try {
-      const response = await fetch(`/api/admin/restrict-profile/${profileUserId}`, {
-        method: 'POST',
+      const response = await fetch(`/api/admin/users/useractions`, {
+        method : "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId : profileUserId , status}),
       });
-      
-      if (response.ok) {
-        alert('Profile restricted successfully');
-        // Refresh profile data
-        window.location.reload();
-      } else {
-        alert('Failed to restrict profile');
+
+      const action = status === 0 ? "Unrestrict" : "Restrict" 
+      if (!response.ok) {
+       return showNotification(`${action} Action failed`, "error");
       }
+
+      showNotification(`User ${action}ed successfully`, "success");
+      await fetchProfileData();
     } catch (error) {
       console.error('Error restricting profile:', error);
       alert('Error restricting profile');
@@ -105,7 +111,7 @@ export default function CombinedProfile() {
         avatar: "/profilepic.png",
         role: profileUser.role || "Educator",
         bio: profileUser.bio || "",
-        isRestricted: profileUser.isRestricted || false
+        isRestricted: profileUser.restriction === 0 ? false : true 
       };
     } else {
       return {
@@ -119,7 +125,7 @@ export default function CombinedProfile() {
         avatar: "/profilepic.png",
         role: profileUser.role || "Student",
         bio: profileUser.bio || "",
-        isRestricted: profileUser.isRestricted || false
+        isRestricted: profileUser.restriction === 0 ? false : true 
       };
     }
   }, [profileUser, purchasedCourses, isEducator, isOwnProfile]);
@@ -236,7 +242,7 @@ export default function CombinedProfile() {
                 {/* Admin actions for other profiles */}
                 {isAdmin && !isOwnProfile && (
                   <button
-                    onClick={handleRestrictProfile}
+                    onClick={() => handleRestrictProfile(profileData?.isRestricted ? 0 : 1)}
                     className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition shadow-md"
                   >
                     <Shield size={16} />

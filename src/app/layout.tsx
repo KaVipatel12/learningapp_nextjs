@@ -6,14 +6,15 @@ import NotificationComponent from '@/components/NotificationComponent';
 import Footer from '@/components/Footer';
 import { UserProvider } from '@/context/userContext';
 import UserNav from '@/components/Navbar/UserNav';
+import RestrictionWrapper from '@/components/RestrictionWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Learnify - Your Smart Learning Platform',
   description: 'An engaging platform for students and educators to grow and learn together.',
-  icons : {
-    icon : '/favicon.ico'
+  icons: {
+    icon: '/favicon.ico'
   }
 };
 
@@ -34,8 +35,6 @@ export default function RootLayout({
         {/* Meta Tags for SEO & Social Sharing */}
         <meta property="og:title" content="Learnify - Your Smart Learning Platform" />
         <meta property="og:description" content="Interactive courses, notes, and tools for modern learning." />
-        {/* <meta property="og:image" content="/banner.png" />
-        <meta property="og:url" content="https://yourdomain.com" /> */}
         <meta name="theme-color" content="#ff69b4" />
       </head>
 
@@ -43,11 +42,13 @@ export default function RootLayout({
         <NotificationProvider>
           <NotificationComponent />
           <UserProvider>
+            <RestrictionWrapper>
               <main>
                 <UserNav />
                 {children}
                 <Footer />
               </main>
+            </RestrictionWrapper>
           </UserProvider>
         </NotificationProvider>
       </body>

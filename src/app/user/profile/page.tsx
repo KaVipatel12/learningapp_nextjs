@@ -59,7 +59,7 @@ export default function CombinedProfile() {
         purchasedCourses: purchasedCourses || [],
         coverImage: "/cover-placeholder.jpg",
         avatar: "/profilepic.png",
-        role: user.role || "Student",
+        role: user.role,
         bio: user.bio || ""
       };
     }
@@ -110,7 +110,7 @@ export default function CombinedProfile() {
                 <h1 className="text-2xl font-bold text-rose-900">
                   {profileData?.name}
                 </h1>
-                <p className="text-rose-600 font-medium">{profileData?.role === "educator" ? "Educator" : "Student"}</p>
+                <p className="text-rose-600 font-medium">{profileData?.role === "educator" ? "Educator" : profileData?.role === "admin" ? "Admin" : "Student"}</p>
               </div>
               <div className="flex gap-3">
                 <button className="flex items-center gap-2 bg-white hover:bg-rose-50 px-4 py-2 rounded-full text-sm font-medium transition text-rose-700 border border-rose-200 shadow-sm">

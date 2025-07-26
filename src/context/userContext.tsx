@@ -33,6 +33,7 @@ export interface UserData {
   avatar?: string;
   coverImage?: string;
   role: string;
+  restriction ? : number; 
   bio?: string;
   mobile: string;
   date: string | Date;
