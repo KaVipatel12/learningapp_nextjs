@@ -6,16 +6,8 @@ import React from 'react';
 import { useNotification } from '@/components/NotificationContext';
 import { Loader2 } from 'lucide-react';
 
-interface ReportTableProps {
-  items?: any[];
-  type: 'course' | 'comment' | 'restrictedCourse';
-  setReportedComments?: (items: any[]) => void;
-  setReportedCourses?: (items: any[]) => void;
-  setRestrictedCourses?: (items: any[]) => void;
-  loading?: boolean;
-}
 
-const ReportTable: React.FC<ReportTableProps> = ({
+const ReportTable = ({
   items = [],
   type,
   setReportedComments,
