@@ -5,17 +5,10 @@ import Link from 'next/link';
 import React from 'react';
 import { useNotification } from '@/components/NotificationContext';
 
-interface ReportTableProps {
-  items: any[];
-  type: string;
-  setReportedComments?: (updater: (prev: any[]) => any[]) => void;
-  setReportedCourses?: (updater: (prev: any[]) => any[]) => void;
-  setRestrictedCourses?: (updater: (prev: any[]) => any[]) => void;
-}
 
-const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses, setRestrictedCourses }: ReportTableProps) => {
+const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses, setRestrictedCourses }) => {
   const { showNotification } = useNotification();  
-  const handleAction = async (action: string, reportId: string, item: any) => {
+  const handleAction = async (action: string, reportId: string, item) => {
     try {
       let mainActionUrl = '';
       let method = 'POST';
@@ -93,7 +86,7 @@ const ReportTable = ({ items = [], type, setReportedComments, setReportedCourses
       showNotification(`Action ${action} completed successfully`, "success");
 
       // Update local state to remove the item
-      const removeItem = (prevItems: any[]) => prevItems.filter(i => i._id !== reportId);
+      const removeItem = (prevItems) => prevItems.filter(i => i._id !== reportId);
 
       if (type === 'course' && setReportedCourses) {
         setReportedCourses(removeItem);

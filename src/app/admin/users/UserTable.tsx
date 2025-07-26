@@ -6,14 +6,8 @@ import { UserData } from '@/context/userContext';
 import Link from 'next/link';
 import React from 'react';
 
-interface UserTableProps {
-  users: UserData;
-  type: string;
-  setUsers?: (updater: (prev: any[]) => any[]) => void;
-  setRestrictedUsers?: (updater: (prev: any[]) => any[]) => void;
-}
 
-const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers }: UserTableProps) => {
+const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers }) => {
 
   const { showNotification } = useNotification();
   const handleAction = async (action: string, userId: string) => {
