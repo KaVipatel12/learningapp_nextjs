@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { PageLoading } from '@/components/PageLoading';
 
 interface QuizAttempt {
   _id: string;
@@ -43,8 +44,8 @@ const QuizHistoryPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 flex items-center justify-center">
-        <div className="text-pink-600 text-xl">Loading your quiz history...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <PageLoading></PageLoading>
       </div>
     );
   }

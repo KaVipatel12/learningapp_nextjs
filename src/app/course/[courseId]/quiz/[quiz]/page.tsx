@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageLoading } from '@/components/PageLoading';
 
 interface Question {
   _id: string;
@@ -223,11 +224,8 @@ useEffect(() => {
   // Loading state
   if (loading || checkingExistingScore) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
-          <p className="text-pink-600 font-medium">Loading quiz...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <PageLoading></PageLoading>
       </div>
     );
   }
@@ -235,7 +233,7 @@ useEffect(() => {
   // Error state
   if (error || !quizData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
           <h2 className="text-xl font-bold text-red-600 mb-2">Error Loading Quiz</h2>
@@ -254,7 +252,7 @@ useEffect(() => {
   // Quiz completed state
   if (quizCompleted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 flex items-center justify-center p-4">
+      <div className="min-h-screenflex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full mt-13">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-pink-600 mb-2">Quiz Completed!</h1>
