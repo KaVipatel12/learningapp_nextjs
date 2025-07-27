@@ -1,13 +1,35 @@
 // app/restricted/page.tsx
 'use client';
 
+import { PageLoading } from '@/components/PageLoading';
 import { useUser } from '@/context/userContext';
 import { Mail, Lock, ShieldAlert, FileText, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function RestrictedPage() {
-  const { user } = useUser();
+  const { user , userLoading } = useUser();
+  const [ restricted , setRestricted] = useState(false)
+  const [loading , setLoading] = useState(true)
+  const  router  = useRouter(); 
+  useEffect(() => {
 
+    if(userLoading) return setLoading(true)
+    if(!userLoading && user)
+      if(user.status === 1){
+        setRestricted(true)
+        setLoading(false)
+      }
+  }, [user , userLoading])
+
+  if(loading){
+   return <PageLoading></PageLoading>
+  }
+
+  if(!restricted && !loading){
+    router.back()
+  }
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-rose-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto mt-13">

@@ -12,6 +12,10 @@ export async function GET() {
     path: 'userId',          
     select: 'username'     
   })
+    .populate({
+    path: 'reporterId',          
+    select: 'username'     
+  })
   .populate({
     path: 'courseId',          
     select: 'title'     
@@ -32,8 +36,8 @@ export async function GET() {
     // Fetch restricted courses
     const restrictedCourses = await Course.find(
       { status: "restricted" },
-      "title description educatorName date"
-    );
+      "title description educatorName educator date"
+    ).populate("educator" , "username");
 
     return NextResponse.json(
       {

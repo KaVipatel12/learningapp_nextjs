@@ -100,7 +100,7 @@ const ChapterPage = () => {
 
       // Type guard for courseId
       if (typeof data.msg.courseId === 'object') {
-        setEducatorName(data.msg.courseId.educatorName);
+        setEducatorName(data.msg.courseId.educator?.educatorName);
         setStudents(data.msg.courseId.totalEnrollment);
       }
 
@@ -293,6 +293,7 @@ const ChapterPage = () => {
                 type="chapter"
                 chapterId={chapterId}
                 courseId={courseId}
+                userId={chapter.educator?._id}
                 buttonProps={{
                   className: "p-3 hover:bg-pink-100/70 text-pink-700 rounded-xl transition-colors duration-200 w-full h-full flex items-center justify-center",
                   type: "text",

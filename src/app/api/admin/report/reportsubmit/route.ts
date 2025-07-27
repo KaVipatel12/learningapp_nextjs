@@ -16,9 +16,9 @@ import { connect } from '@/db/dbConfig';
         
         const { user } = authResult as AuthContext;
 
-    const { courseId , chapterId , commentId , description } = await req.json()
+    const { userId , courseId , chapterId , commentId , description } = await req.json()
 
-    const userId = user?._id
+    const reporterId = user?._id
 
       const checkReportAvailable = await Report.findOne({
       userId,
@@ -26,7 +26,6 @@ import { connect } from '@/db/dbConfig';
       chapterId: chapterId ?? null,
       commentId: commentId ?? null,
     });
-
 
       if(checkReportAvailable){
         return NextResponse.json(
@@ -37,7 +36,7 @@ import { connect } from '@/db/dbConfig';
            );
       }
       
-    const submitReport = await Report.create({ userId , courseId , chapterId , commentId , description}); 
+    const submitReport = await Report.create({ reporterId , userId , courseId , chapterId , commentId , description}); 
 
     console.log(submitReport)
 

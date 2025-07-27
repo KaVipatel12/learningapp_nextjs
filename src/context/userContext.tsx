@@ -35,6 +35,7 @@ export interface UserData {
   role: string;
   restriction ? : number; 
   bio?: string;
+  status ? : number; 
   mobile: string;
   date: string | Date;
   category: string[];

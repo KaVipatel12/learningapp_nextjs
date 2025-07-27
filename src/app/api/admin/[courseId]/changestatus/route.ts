@@ -1,6 +1,6 @@
 // app/api/quiz/history/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { Course } from '@/models/models';
+import { Course, Notification } from '@/models/models';
 import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
 import { connect } from '@/db/dbConfig';
 
@@ -15,7 +15,7 @@ import { connect } from '@/db/dbConfig';
         }
         
         const { user } = authResult as AuthContext;
-        
+        const userId = user._id
         if (!user) {
           return NextResponse.json(
             { msg: "Authentication failed" },
@@ -37,6 +37,9 @@ import { connect } from '@/db/dbConfig';
     console.log(status , courseId)
     const updateStatus = await Course.findByIdAndUpdate(courseId , { status : status } , {new : true})
 
+    const message = status === "restricted" ? `Your course ${updateStatus.title} has been ${status}, Please follow the guidlines to avoid the account restrictions, You can republish your course by following guidelines` : status === "approved" ? `Congratulations!, Your course has been ${status}` : `Sorry, Your course ${updateStatus.title} has been ${status}, This is due to violaton of guidelines, You can republish your course by following guidelines `; 
+
+    await Notification.create({userId , courseId , message}); 
     console.log(updateStatus)
 
     if(!updateStatus){

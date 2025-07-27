@@ -10,6 +10,8 @@ import DeleteCourseButton from "./DeleteButton";
 import { useNotification } from "@/components/NotificationContext";
 import ErrorPage from "@/components/ErrorPage";
 import Link from "next/link";
+import ReportToggle from "@/components/course/ReportButton";
+import { Flag } from "lucide-react";
 
 const { Title, Text, Paragraph } = Typography;
 // const { confirm } = Modal;
@@ -450,6 +452,23 @@ const CourseDetailPage = () => {
                   </span>
                   {renderLevelTag(course.level)}
                   {(isAdmin || isOwner) && renderStatusBadge(course.status)}
+                  {
+                    !isOwner &&
+                  <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-pink-200/50">
+                    <ReportToggle
+                      type="chapter"
+                      courseId={courseId}
+                      userId={course.educator?._id}
+                      buttonProps={{
+                        className: "p-3 hover:bg-pink-100/70 text-pink-700 rounded-xl transition-colors duration-200 w-full h-full flex items-center justify-center",
+                        type: "text",
+                        size: "small"
+                      }}
+                    >
+                      <Flag className="h-5 w-5" />
+                    </ReportToggle>
+                  </div>
+                    }
                 </div>
 
                 <Title

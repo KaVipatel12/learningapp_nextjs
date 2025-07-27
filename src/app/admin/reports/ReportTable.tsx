@@ -18,37 +18,61 @@ const ReportTable = ({
   const { showNotification } = useNotification();
   const [processing, setProcessing] = React.useState<string | null>(null);
 
-  const handleAction = async (action: string, reportId: string, item) => {
-    setProcessing(reportId);
-    try {
-      let mainActionUrl = '';
-      let method = 'POST';
-      let body = {};
-      let targetId = '';
+const handleAction = async (action: string, reportId: string, item) => {
+  setProcessing(reportId);
+  try {
+    let mainActionUrl = '';
+    let method = 'POST';
+    let body = {};
+    let targetId = '';
+    let commentId = '';
 
-      // Determine the target ID based on type
-      if (type === 'course') {
-        targetId = item.courseId?._id || '';
-      } else if (type === 'comment') {
-        targetId = item.commentId?._id || '';
-      } else if (type === 'restrictedCourse') {
-        targetId = item._id || '';
+    // Determine the target ID based on type
+    if (type === 'course') {
+      targetId = item.courseId?._id || '';
+    } else if (type === 'comment') {
+      targetId = item.courseId?._id || '';
+      commentId = item.commentId?._id || '';
+    } else if (type === 'restrictedCourse') {
+      targetId = item._id || '';
+    }
+
+    if (action === 'warn') {
+      //  Only hit reportaction API with status: "warn"
+      const warnResponse = await fetch(`/api/admin/report/reportaction`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reportId, status: "warn" }) // Send status "warn"
+      });
+
+      if (!warnResponse.ok) {
+        throw new Error('Failed to send warning');
       }
 
-      // First API call - perform the main action
+      showNotification("Warning sent successfully", "success");
+
+    } else {
+      //  First API - delete report (not for warn)
+      const deleteReportResponse = await fetch(`/api/admin/report/reportaction`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reportId })
+      });
+
+      if (!deleteReportResponse.ok) {
+        throw new Error('Failed to update report status');
+      }
+
+      //  Then perform the main action
       switch (action) {
-        case 'warn':
-          mainActionUrl = '/api/admin/warn';
-          body = { 
-            targetId,
-            type,
-            userId: item.userId?._id 
-          };
-          break;
         case 'restrict':
           if (type === 'comment') {
-            const chapterId = item.chapterId; 
-            mainActionUrl = `/api/course/${targetId}/chapters/${chapterId}/comment/deletecomment`;
+            const chapterId = item.chapterId;
+            mainActionUrl = `/api/course/${targetId}/chapters/${chapterId}/comment/deletecomment/${commentId}`;
             method = 'DELETE';
           } else {
             mainActionUrl = `/api/admin/${targetId}/changestatus`;
@@ -65,7 +89,6 @@ const ReportTable = ({
           throw new Error('Invalid action');
       }
 
-      // Perform main action
       const actionResponse = await fetch(mainActionUrl, {
         method,
         headers: {
@@ -77,70 +100,55 @@ const ReportTable = ({
       if (!actionResponse.ok) {
         throw new Error('Action failed');
       }
-
-      // Second API call - delete the report (for all actions except unrestrict)
-      if (action !== 'unrestrict') {
-        const deleteReportResponse = await fetch(`/api/admin/report/reportaction`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ reportId })
-        });
-
-        if (!deleteReportResponse.ok) {
-          throw new Error('Failed to update report status');
-        }
-      }
-
       showNotification(`Action ${action} completed successfully`, "success");
-
-      // Update local state to remove the item
-      const removeItem = (prevItems) => prevItems.filter(i => i._id !== reportId);
-
-      if (type === 'course' && setReportedCourses) {
-        setReportedCourses(removeItem(items));
-      } else if (type === 'comment' && setReportedComments) {
-        setReportedComments(removeItem(items));
-      } else if (type === 'restrictedCourse' && setRestrictedCourses) {
-        setRestrictedCourses(removeItem(items));
-      }
-
-    } catch (error) {
-      console.error(`Error performing ${action}:`, error);
-      showNotification(`Failed to ${action}: ${error.message}`, "error");
-    } finally {
-      setProcessing(null);
     }
-  };
+
+    //  Update local state
+    const removeItem = (prevItems) => prevItems.filter(i => i._id !== reportId);
+
+    if (type === 'course' && setReportedCourses) {
+      setReportedCourses(removeItem(items));
+    } else if (type === 'comment' && setReportedComments) {
+      setReportedComments(removeItem(items));
+    } else if (type === 'restrictedCourse' && setRestrictedCourses) {
+      setRestrictedCourses(removeItem(items));
+    }
+
+  } catch (error) {
+    console.error(`Error performing ${action}:`, error);
+    showNotification(`Failed to ${action}: ${error.message}`, "error");
+  } finally {
+    setProcessing(null);
+  }
+};
+
 
   const getItemData = (item) => {
     switch (type) {
       case 'course':
         return {
           title: item?.courseId?.title || 'Untitled Course',
-          reporter: item?.userId?.username || 'Unknown',
-          reporterId: item?.userId?._id,
+          reporter: item?.reporterId?.username || 'Unknown',
+          reporterId: item?.reporterId?._id,
           courseId: item?.courseId?._id,
           chapterId: item?.chapterId,
-          reason: item?.reason || 'No reason provided'
+          reason: item?.description || 'No reason provided'
         };
       case 'comment':
         return {
           content: item?.commentId?.comment || '[Comment removed]',
           user: item?.commentId?.userId?.username || 'Unknown',
           userId: item?.commentId?.userId?._id,
-          reporter: item?.userId?.username || 'Unknown',
-          reporterId: item?.userId?._id,
-          reason: item?.reason || 'No reason provided'
+          reporter: item?.reporterId?.username || 'Unknown',
+          reporterId: item?.reporterId?._id,
+          reason: item?.description || 'No reason provided'
         };
       case 'restrictedCourse':
         return {
           title: item?.title || 'Untitled Course',
           educator: item?.educator?.username || 'Unknown',
           educatorId: item?.educator?._id,
-          reason: item?.reason || 'No reason provided',
-          restrictionDate: item?.restrictedAt || 'Unknown date'
+          reason: item?.description || 'No reason provided',
         };
       default:
         return {};
@@ -178,7 +186,7 @@ const ReportTable = ({
                   <div className="mb-2">
                     <span className="text-pink-600 font-medium">Course:</span>
                     <Link 
-                      href={`/course/${data.courseId}/${data.chapterId}`}
+                      href={data.chapterId ? `/course/${data.courseId}/${data.chapterId}` :`/course/${data.courseId}`}
                       className="ml-1 text-gray-900 hover:text-pink-700"
                     >
                       {data.title}
@@ -237,7 +245,7 @@ const ReportTable = ({
                 <>
                   <div className="mb-2">
                     <span className="text-pink-600 font-medium">Course:</span>
-                    <span className="ml-1 text-gray-900">{data.title}</span>
+                  <Link href={data._id}> <span className="ml-1 text-gray-900">{data.title}</span> </Link>
                   </div>
                   <div className="mb-2">
                     <span className="text-pink-600 font-medium">Educator:</span>
@@ -254,7 +262,6 @@ const ReportTable = ({
                   </div>
                   <div className="mb-3">
                     <span className="text-pink-600 font-medium">Restricted On:</span>
-                    <span className="ml-1 text-gray-700">{data.restrictionDate}</span>
                   </div>
                 </>
               )}
@@ -331,7 +338,6 @@ const ReportTable = ({
                   <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Course</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Educator</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Reason</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Date Restricted</th>
                 </>
               )}
               <th className="px-6 py-3 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Actions</th>
@@ -348,7 +354,7 @@ const ReportTable = ({
                     <>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
-                          href={`/course/${data.courseId}/${data.chapterId}`}
+                          href={data.chapterId ? `/course/${data.courseId}/${data.chapterId}` :`/course/${data.courseId}`}
                           className="text-gray-900 hover:text-pink-700 font-medium"
                         >
                           {data.title}
@@ -412,9 +418,6 @@ const ReportTable = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                         {data.reason}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                        {data.restrictionDate}
                       </td>
                     </>
                   )}

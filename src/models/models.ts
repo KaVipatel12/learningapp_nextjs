@@ -21,6 +21,7 @@ export interface IChapter extends Document {
 export interface IReport extends Document {
   description: string;
   courseId: mongoose.Types.ObjectId;
+  reporterId : mongoose.Types.ObjectId; 
   chapterId: mongoose.Types.ObjectId;
   commentId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -69,6 +70,7 @@ export interface IPurchaseCourse {
 export interface IUser extends Document {
   _id: string;
   username: string;
+  warnings : number; 
   mobile: string;
   status : string;
   bio: string;
@@ -111,6 +113,7 @@ const userSchema: Schema<IUser> = new Schema({
   mobile: { type: String, required: true },
   email: { type: String, required: true },
   bio: { type: String },
+  warnings : { type: Number , required : true , default : 0 },
   password: { type: String, required: true },
   wishlist: [
     {
@@ -466,6 +469,11 @@ const UserQuizAttemptSchema = new mongoose.Schema(
 
 const ReportSchema = new mongoose.Schema<IReport>(
   {
+    reporterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -485,6 +493,33 @@ const ReportSchema = new mongoose.Schema<IReport>(
       ref: "Comment",
     },
     description : {
+      type : String,
+      req : true
+    }
+  },
+  { timestamps: true }
+);
+
+const NotificationSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    chapterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Chapter",
+    },
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+    commentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+    },
+    message : {
       type : String,
       req : true
     }
@@ -526,3 +561,7 @@ export const CourseQuiz =
 export const Report = 
 mongoose.models.Report || 
 mongoose.model<IReport>("Report", ReportSchema);
+
+export const Notification = 
+mongoose.models.Notification || 
+mongoose.model("Notification", NotificationSchema);

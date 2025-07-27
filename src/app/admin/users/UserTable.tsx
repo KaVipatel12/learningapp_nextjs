@@ -19,14 +19,15 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
       switch (action) {
         case 'warn':
           apiUrl = `/api/admin/users/useractions`;
+          body = { userId , status : 1, type : "warn" }
           break;
         case 'restrict':
           apiUrl = `/api/admin/users/useractions`;
-          body = { userId , status : 1}
+          body = { userId , status : 1 }
           break;
           case 'unrestrict':
             apiUrl = `/api/admin/users/useractions`;
-            body = { userId , status : 0}
+            body = { userId , status : 0 }
           break;
         default:
           throw new Error('Invalid action');
@@ -53,7 +54,7 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
           setUsers(prevUsers => 
             prevUsers.map(user => 
               user._id === userId 
-                ? { ...user, warningCounts: (user.warningCounts || 0) + 1 } 
+                ? { ...user, warnings: (user.warnings || 0) + 1 } 
                 : user
             )
           );
@@ -100,7 +101,7 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
             <div className="text-gray-500">Email: {user?.email}</div>
             <div className="text-gray-500">Joined: {new Date(user?.date).toLocaleDateString()}</div>
             {type !== 'restricted' && (
-              <div className="text-gray-500">Warnings: {user?.warningCounts || 0}</div>
+              <div className="text-gray-500">Warnings: {user?.warnings || 0}</div>
             )}
             {type === 'restricted' && (
               <div className="text-gray-500">Restricted Since: {new Date(user?.restrictedSince).toLocaleDateString()}</div>
@@ -165,7 +166,7 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
                   </td>
                   {type !== 'restricted' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user?.warningCounts || 0}
+                      {user?.warnings || 0}
                     </td>
                   )}
                   {type === 'restricted' && (

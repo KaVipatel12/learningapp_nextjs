@@ -1,12 +1,37 @@
-// app/admin/layout.tsx
+"use client"
+
+import { PageLoading } from '@/components/PageLoading';
+import { useUser } from '@/context/userContext';
 import Link from 'next/link';
-import React from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+
+  const { user , userLoading } = useUser()
+  const [loading , setLoading] = useState(true); 
+  const [admin , setAdmin] = useState(false); 
+  const router = useRouter()
+  useEffect(() => {
+    if(userLoading) return setLoading(true); 
+    if(!userLoading && user ){
+      if(user.role === "admin") return setAdmin(true);
+      setLoading(false)
+    }
+  }, [user, userLoading])
+  
+  if(loading){
+    return <PageLoading></PageLoading>
+  }
+
+  if(!loading && !admin){
+    router.back()
+  }
+
   return (
  <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100">
   <header className="bg-white shadow-sm">

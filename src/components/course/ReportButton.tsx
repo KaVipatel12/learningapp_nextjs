@@ -27,6 +27,7 @@ const ReportToggle = ({
   commentId , 
   chapterId , 
   onReportSuccess,
+  userId,
   buttonProps = {},
 }: ReportToggleProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,7 +48,7 @@ const ReportToggle = ({
 
     try {
        
-      const data = { description : reportReason , courseId , chapterId : chapterId , commentId : commentId || null}
+      const data = { description : reportReason , courseId , chapterId : chapterId , commentId : commentId, userId : userId || null}
       const endpoint = `/api/admin/report/reportsubmit`;
       const response = await fetch(endpoint, {
         method: "POST",
