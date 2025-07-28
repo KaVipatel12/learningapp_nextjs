@@ -55,6 +55,8 @@ const handleAction = async (action: string, reportId: string, item) => {
 
     } else {
       //  First API - delete report (not for warn)
+
+      if(type !== "restrictedCourse"){
       const deleteReportResponse = await fetch(`/api/admin/report/reportaction`, {
         method: 'PATCH',
         headers: {
@@ -66,7 +68,7 @@ const handleAction = async (action: string, reportId: string, item) => {
       if (!deleteReportResponse.ok) {
         throw new Error('Failed to update report status');
       }
-
+    }
       //  Then perform the main action
       switch (action) {
         case 'restrict':
