@@ -147,6 +147,7 @@ const handleAction = async (action: string, reportId: string, item) => {
         return {
           title: item?.title || 'Untitled Course',
           educator: item?.educator?.username || 'Unknown',
+          courseId : item?._id || "#",
           educatorId: item?.educator,  // This should be the whole educator object
           reason: item?.description || 'No reason provided',
         };
@@ -245,7 +246,7 @@ const handleAction = async (action: string, reportId: string, item) => {
                 <>
                   <div className="mb-2">
                     <span className="text-pink-600 font-medium">Course:</span>
-                  <Link href={data._id}> <span className="ml-1 text-gray-900">{data.title}</span> </Link>
+                  <Link href={data.courseId}> <span className="ml-1 text-gray-900">{data.title}</span> </Link>
                   </div>
                   <div className="mb-2">
                     <span className="text-pink-600 font-medium">Educator:</span>
