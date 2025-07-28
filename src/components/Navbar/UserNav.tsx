@@ -86,7 +86,7 @@ export default function AppNavbar() {
         <LogOut className="mr-1 h-5 w-5" />
       )}
       <span className={isMobile ? '' : 'hidden md:inline'}>
-        {loggingOut ? 'Logging out...' : 'Logout'}
+        {loggingOut ? 'Logging out...' : ''}
       </span>
     </button>
   );
@@ -155,7 +155,6 @@ export default function AppNavbar() {
                 )}
               </div>
             )}
-            <span className="ml-2 text-rose-800">{user.username?.split(' ')[0]}</span>
           </Link>
 
           <LogoutButton />
@@ -165,7 +164,7 @@ export default function AppNavbar() {
 
     // Default navigation for unauthenticated users
     return (
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-4">
         <Link href="/course" className="text-rose-800 hover:text-rose-600 transition flex items-center">
           <Video className="mr-1 h-5 w-5" />
           <span className="hidden md:inline">Browse Courses</span>
@@ -288,8 +287,8 @@ export default function AppNavbar() {
             <span className="ml-2 text-xl font-bold text-rose-900">EduPlatform</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation */} 
+         <nav className="hidden md:flex items-center ml-6 space-x-6">
             <Link href="/" className="text-rose-800 hover:text-rose-600 transition flex items-center">
               <Home className="mr-1 h-5 w-5" /> Home
             </Link>            

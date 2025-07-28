@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { UserProvider } from '@/context/userContext';
 import UserNav from '@/components/Navbar/UserNav';
 import RestrictionWrapper from '@/components/RestrictionWrapper';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -39,7 +40,8 @@ export default function RootLayout({
       </head>
 
       <body className={inter.className}>
-        <NotificationProvider>
+        <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID}>        
+          <NotificationProvider>
           <NotificationComponent />
           <UserProvider>
             <RestrictionWrapper>
@@ -51,6 +53,8 @@ export default function RootLayout({
             </RestrictionWrapper>
           </UserProvider>
         </NotificationProvider>
+        </GoogleOAuthProvider>
+
       </body>
     </html>
   );

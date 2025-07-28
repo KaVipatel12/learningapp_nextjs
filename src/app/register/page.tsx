@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '@/components/NotificationContext';
 import Link from 'next/link';
+import { GoogleLogin } from '@react-oauth/google';
 
 interface RegisterValues {
   username: string;
@@ -98,6 +99,42 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-bold">Create an Account</h1>
           <p className="text-white/90">Join our learning community today</p>
         </div>
+
+      <div className="px-6 pt-6">
+  <GoogleLogin
+    onSuccess={async (credentialResponse) => {
+      try {
+        const res = await fetch('/api/auth/oauth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: credentialResponse.credential }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showNotification(data.msg || 'Login successful!', 'success');
+
+          // Optional: redirect based on role if you return it in `data`
+          if (data.registeration) {
+            router.push('/user/additionaldetails');
+          } else {
+            window.location.href = '/user/profile'; 
+          }
+        } else {
+          showNotification(data.msg || 'OAuth login failed', 'error');
+        }
+      } catch (error) {
+        console.error('OAuth error:', error);
+        showNotification('An error occurred during Google login', 'error');
+      }
+    }}
+    onError={() => {
+      showNotification('Google sign-in was cancelled or failed', 'error');
+    }}
+  />
+</div>
+
 
         {/* Form */}
         <div className="p-6">

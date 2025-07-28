@@ -6,6 +6,8 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 import Link from 'next/link';
 import { useNotification } from '@/components/NotificationContext';
 import { useUser } from '@/context/userContext';
+import { GoogleLogin } from '@react-oauth/google';
+import { useRouter } from 'next/navigation';
 
 interface LoginValues {
   email: string;
@@ -25,7 +27,7 @@ export default function LoginPage() {
   const { showNotification } = useNotification();
 
   const { fetchUserData } = useUser();
-
+  const router = useRouter(); 
   const handleLogin = async (
     values: LoginValues,
     { setSubmitting }: FormikHelpers<LoginValues>
@@ -75,6 +77,41 @@ export default function LoginPage() {
         <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white">
           <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="text-white/90">Sign in to your account</p>
+        </div>
+
+        <div className="px-6 pt-6">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              try {
+                const res = await fetch('/api/auth/oauth', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ credential: credentialResponse.credential }),
+                });
+        
+                const data = await res.json();
+        
+                if (data.success) {
+                  showNotification(data.msg || 'Login successful!', 'success');
+        
+                  // Optional: redirect based on role if you return it in `data`
+                  if (data.registeration) {
+                    router.push('/user/additionaldetails');
+                  } else {
+                       window.location.href = '/user/profile'  // There were glitch in loading educator data so i am using it
+                  }
+                } else {
+                  showNotification(data.msg || 'OAuth login failed', 'error');
+                }
+              } catch (error) {
+                console.error('OAuth error:', error);
+                showNotification('An error occurred during Google login', 'error');
+              }
+            }}
+            onError={() => {
+              showNotification('Google sign-in was cancelled or failed', 'error');
+            }}
+          />
         </div>
 
         {/* Form */}

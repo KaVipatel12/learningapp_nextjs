@@ -74,6 +74,7 @@ export interface IUser extends Document {
   mobile: string;
   status : string;
   bio: string;
+  isOAuth ? : boolean; 
   email: string;
   password: string;
   wishlist: Types.ObjectId[];
@@ -87,6 +88,7 @@ export interface IUser extends Document {
   // Educator fields
   courses?: Types.ObjectId[];
   teachingFocus?: string[];
+  profilePic ? : string; 
 }
 
 export interface IComment extends Document {
@@ -110,11 +112,13 @@ export interface IReview extends Document {
 // Define schema
 const userSchema: Schema<IUser> = new Schema({
   username: { type: String, required: true },
-  mobile: { type: String, required: true },
+  mobile: { type: String },
   email: { type: String, required: true },
   bio: { type: String },
-  warnings : { type: Number , required : true , default : 0 },
-  password: { type: String, required: true },
+  warnings : { type: Number , default : 0 },
+  password: { type: String },
+  isOAuth : { type : Boolean , default : false}, 
+  profilePic : { type : String},
   wishlist: [
     {
       type: mongoose.Schema.Types.ObjectId,
