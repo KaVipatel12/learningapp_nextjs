@@ -410,7 +410,7 @@ const handleAction = async (action: string, reportId: string, item) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
-                          href={`/user/profile/${data.educatorId}`}
+                          href={`/user/profile/${data.educatorId?._id}`}
                           className="text-gray-700 hover:text-pink-700"
                         >
                           {data.educator}
