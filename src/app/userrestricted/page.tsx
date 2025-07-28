@@ -1,10 +1,13 @@
 // app/restricted/page.tsx
 'use client';
 
+import { useUser } from '@/context/userContext';
 import { Mail, Lock, ShieldAlert, FileText, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RestrictedPage() {
+  const { user } = useUser();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-rose-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto mt-13">
