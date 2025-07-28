@@ -54,7 +54,6 @@ export async function POST(req: NextRequest) {
       {
         id: user._id.toString(),
         email: user.email,
-        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "30d" }
@@ -65,7 +64,6 @@ export async function POST(req: NextRequest) {
       msg: user ? "Login Successful" : "Registration Successful",
       success: true,
       userId: user._id.toString(),
-      role: user.role,
       token,
       registration : user ? false : true
     });

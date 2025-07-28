@@ -1,6 +1,6 @@
 // app/api/user/updatecategories/route.ts
 import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
-import { User }  from '@/models/models';
+import { Notification, User }  from "@/models/models";
 import { NextRequest, NextResponse } from 'next/server';
 
 export const PATCH = async (req: NextRequest) => {
@@ -36,12 +36,21 @@ export const PATCH = async (req: NextRequest) => {
         { status: 400 }
       );
     }
-
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { mobile , role },
       { new: true }
     );
+
+    const message = role === "educator" ? `Welcome aboard, Educator! 🎉
+        Your account has been successfully created.
+        You're now ready to share knowledge and inspire learners! 📚
+        👉 Don’t forget to follow our community guidelines to ensure a safe and respectful learning environment. ✅` :`Welcome to the learning hub! 🚀
+        Your account is all set up.
+        Start exploring courses, learn new skills, and track your progress! 🌟
+        📌 Make sure to follow the student guidelines for a great experience. ✅`
+
+    await Notification.create({ userId , message})
 
     if (!updatedUser) {
       return NextResponse.json(
@@ -49,6 +58,7 @@ export const PATCH = async (req: NextRequest) => {
         { status: 500 }
       );
     }
+
 
     return NextResponse.json(
       { 
