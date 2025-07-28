@@ -143,11 +143,11 @@ const handleAction = async (action: string, reportId: string, item) => {
           reporterId: item?.reporterId?._id,
           reason: item?.description || 'No reason provided'
         };
-      case 'restrictedCourse':
+     case 'restrictedCourse':
         return {
           title: item?.title || 'Untitled Course',
           educator: item?.educator?.username || 'Unknown',
-          educatorId: item?.educator?._id,
+          educatorId: item?.educator,  // This should be the whole educator object
           reason: item?.description || 'No reason provided',
         };
       default:
