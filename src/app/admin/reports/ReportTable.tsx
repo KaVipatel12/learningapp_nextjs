@@ -250,7 +250,7 @@ const handleAction = async (action: string, reportId: string, item) => {
                   <div className="mb-2">
                     <span className="text-pink-600 font-medium">Educator:</span>
                     <Link
-                      href={`/user/profile/${data.educatorId}`}
+                      href={`/user/profile/${data.educatorId._id}`}
                       className="ml-1 text-gray-700 hover:text-pink-700"
                     >
                       {data.educator}
