@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, User, Book, Home, Video, LogIn, LogOut, UserPlus, Heart, GraduationCap, Loader2, Plus, Shield } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@/context/userContext';
 import NotificationDropdown from './Notification';
 
@@ -12,6 +12,8 @@ export default function AppNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const navbarRef = useRef(null);
+  const menuButtonRef = useRef(null);
   const { fetchUserData } = useUser();
 
   useEffect(() => {
@@ -20,6 +22,23 @@ export default function AppNavbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && 
+          navbarRef.current && 
+          !navbarRef.current.contains(event.target) && 
+          menuButtonRef.current && 
+          !menuButtonRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const closeMobileMenu = () => {
     setIsOpen(false);
@@ -260,7 +279,7 @@ export default function AppNavbar() {
   };
 
   return (
-    <header className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-white/90 backdrop-blur-sm'}`}>
+    <header   ref={navbarRef} className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-white/90 backdrop-blur-sm'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -285,6 +304,7 @@ export default function AppNavbar() {
               </div>
             )}
             <button
+             ref={menuButtonRef}
               onClick={() => setIsOpen(!isOpen)}
               className="text-rose-800 hover:text-rose-600 focus:outline-none"
               aria-label="Toggle menu"
