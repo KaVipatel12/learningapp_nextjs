@@ -2,7 +2,7 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/db/dbConfig";
-import { User }  from "@/models/models";
+import { Notification, User }  from "@/models/models";
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,6 +57,18 @@ export async function POST(req: NextRequest) {
       process.env.JWT_SECRET!,
       { expiresIn: "30d" }
     );
+
+    // sending a notification message. 
+    const userId = newUser._id
+    const message = role === "educator" ? `Welcome aboard, Educator! 🎉
+        Your account has been successfully created.
+        You're now ready to share knowledge and inspire learners! 📚
+        👉 Don’t forget to follow our community guidelines to ensure a safe and respectful learning environment. ✅` :`Welcome to the learning hub! 🚀
+        Your account is all set up.
+        Start exploring courses, learn new skills, and track your progress! 🌟
+        📌 Make sure to follow the student guidelines for a great experience. ✅`
+
+    await Notification.create({ userId , message})
 
     // Set cookie
     const response = NextResponse.json(

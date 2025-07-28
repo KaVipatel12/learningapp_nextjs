@@ -19,7 +19,7 @@ export default function AdminLayout({
   useEffect(() => {
     if(userLoading) return setLoading(true); 
     if(!userLoading && user ){
-      if(user.role === "admin") return setAdmin(true);
+      if(user.role === "admin") setAdmin(true);
       setLoading(false)
     }
   }, [user, userLoading])

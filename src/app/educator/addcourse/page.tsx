@@ -122,6 +122,7 @@ export default function AddCourse() {
         showNotification(errorData.msg || 'Failed to create course', "error")
       }
 
+      showNotification("Course created Successfully, Your course will be verified by our moderators")
       const data = await response.json();
       fetchUserData(); 
       return router.push(`/educator/${data.course._id}/addchapter`);
