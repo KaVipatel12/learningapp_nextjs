@@ -61,18 +61,19 @@ const HomePage = () => {
   ];
 
   // Features sections
-  const features: Feature[] = [
-    {
-      title: 'Learn Anything',
-      description: 'Access 5000+ courses across all categories',
-      image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80'
-    },
-    {
-      title: 'Expert Instructors',
-      description: 'Learn from industry professionals',
-      image: '/blogsectionimg.jpg'
-    }
-  ];
+ const features: Feature[] = [
+  {
+    title: 'Learn Anything',
+    description: 'Access over 5000 high-quality courses spanning categories such as technology, business, personal development, and more. Whether you’re a beginner or a pro, our platform helps you learn at your own pace and skill level.',
+    image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80'
+  },
+  {
+    title: 'Expert Instructors',
+    description: 'Learn directly from experienced industry professionals who bring real-world knowledge into every lesson. Our instructors are carefully selected to ensure you receive practical, up-to-date, and engaging content.',
+    image: '/blogsectionimg.jpg'
+  }
+];
+
 
   // Receiving the purchased courses and wishlist
   useEffect(() => {
