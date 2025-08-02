@@ -54,6 +54,7 @@ export interface UserData {
   teachingFocus?: string[];
   courses?: Array<{
     _id: string;
+    id ? : string;
     title: string;
     description: string;
     price: number;
@@ -181,7 +182,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         courseData = {
           id: course._id,
           imageUrl: course.imageUrl || '/default-course.jpg',
-          title: course.title || item.title,
+          title: course.title || item.title || "",
           instructor: course.educatorName || 'Unknown Instructor',
           price: course.price || 0,
           progress: 0,

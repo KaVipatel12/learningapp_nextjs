@@ -3,15 +3,16 @@
 
 import { useNotification } from '@/components/NotificationContext';
 import Button from '@/components/ui/button';
+import { Course } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+interface CourseApprovalTableProps {
+  courses: Course[];
+  fetchPendingCourses: () => Promise<void>; 
+}
 
-// interface CourseApprovalTableProps {
-//   courses: Course[];
-// }
-
-const CourseApprovalTable = ({ courses ,  setPendingCourses }) => {
+const CourseApprovalTable = ({ courses , fetchPendingCourses } : CourseApprovalTableProps) => {
 
     const { showNotification } = useNotification();
   const router = useRouter();  
@@ -32,7 +33,7 @@ const CourseApprovalTable = ({ courses ,  setPendingCourses }) => {
     } 
     
     showNotification('Status updated successfully', "success");
-    setPendingCourses(courses.filter((course) => course?._id!.toString() !== courseId.toString())); 
+    await fetchPendingCourses(); 
     }catch(err){
         showNotification('Failed to update course status', "error");
         console.log(err)
@@ -59,17 +60,17 @@ const CourseApprovalTable = ({ courses ,  setPendingCourses }) => {
                 <tr key={course.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{course.title}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{course.educatorName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{course.date}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{course.date ? course.date.toLocaleDateString() : 'N/A'}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-xs whitespace-normal">{course.description?.slice(0 , 200)}...</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                     <Button
-                      onClick={() => handleStatusChange(course._id, "approved")}
+                      onClick={() => handleStatusChange(course._id!, "approved")}
                       className="bg-green-500 hover:bg-green-600 text-white"
                     >
                       Approve
                     </Button>
                     <Button 
-                      onClick={() => handleStatusChange(course._id , "rejected")}
+                      onClick={() => handleStatusChange(course._id! , "rejected")}
                       className="bg-red-500 hover:bg-red-600 text-white"
                     >
                       Reject

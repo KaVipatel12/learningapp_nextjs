@@ -7,7 +7,7 @@ import { Course } from '@/context/userContext';
 
 export default function AdminCoursesPage(){
     
-    const [pendingCourses , setPendingCourses] = useState<Course | null>(null)
+    const [pendingCourses , setPendingCourses] = useState<Course[]>([])
 
     const fetchPendingCourses = async  () => {
 
@@ -31,7 +31,7 @@ export default function AdminCoursesPage(){
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold text-pink-700 mb-6">Course Approval Queue</h2>
-      <CourseApprovalTable courses={pendingCourses} setPendingCourses={setPendingCourses} />
+      <CourseApprovalTable courses={pendingCourses} fetchPendingCourses={fetchPendingCourses}/>
     </div>
   );
 };

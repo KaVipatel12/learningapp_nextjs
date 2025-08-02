@@ -2,12 +2,18 @@
 
 import { useNotification } from '@/components/NotificationContext';
 import Button from '@/components/ui/button';
-import { UserData } from '@/context/userContext';
+import { IUser } from '@/models/models';
 import Link from 'next/link';
 import React from 'react';
 
 
-const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers }) => {
+interface UserProp {
+  users : IUser[], 
+  type : string, 
+  fetchUsers : () => void
+}
+
+const UserTable = ({ users = [], type , fetchUsers } : UserProp) => {
 
   const { showNotification } = useNotification();
   const handleAction = async (action: string, userId: string) => {
@@ -47,42 +53,6 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
 
       showNotification(`User ${action}ed successfully`, "success");
       await fetchUsers(); 
-      // Update local state without refetching
-      if (action === 'warn') {
-        // Increment warning count
-        if (setUsers) {
-          setUsers(prevUsers => 
-            prevUsers.map(user => 
-              user._id === userId 
-                ? { ...user, warnings: (user.warnings || 0) + 1 } 
-                : user
-            )
-          );
-        }
-      } else if (action === 'restrict') {
-        // Move user to restricted list
-        if (setUsers && setRestrictedUsers) {
-          setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
-          setRestrictedUsers(prevRestricted => {
-            const userToRestrict = users.find((user : UserData) => user._id === userId);
-            return userToRestrict 
-              ? [...prevRestricted, { ...userToRestrict, restrictedSince: new Date().toISOString() }] 
-              : prevRestricted;
-          });
-        }
-      } else if (action === 'unrestrict') {
-        // Move user back to normal list
-        if (setUsers && setRestrictedUsers) {
-          setRestrictedUsers(prevRestricted => prevRestricted.filter(user => user._id !== userId));
-          setUsers(prevUsers => {
-            const userToUnrestrict = users?.find((user : UserData) => user._id === userId);
-            return userToUnrestrict 
-              ? [...prevUsers, { ...userToUnrestrict, restrictedSince: undefined }] 
-              : prevUsers;
-          });
-        }
-      }
-
     } catch (error) {
       console.error(`Error performing ${action}:`, error);
       showNotification(`Failed to ${action} user`, "error");
@@ -102,9 +72,6 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
             <div className="text-gray-500">Joined: {new Date(user?.date).toLocaleDateString()}</div>
             {type !== 'restricted' && (
               <div className="text-gray-500">Warnings: {user?.warnings || 0}</div>
-            )}
-            {type === 'restricted' && (
-              <div className="text-gray-500">Restricted Since: {new Date(user?.restrictedSince).toLocaleDateString()}</div>
             )}
 
             <div className="mt-3 flex space-x-2">
@@ -148,9 +115,7 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
                 {type !== 'restricted' && (
                   <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Warnings</th>
                 )}
-                {type === 'restricted' && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Restricted Since</th>
-                )}
+              
                 <th className="px-6 py-3 text-left text-xs font-medium text-pink-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -167,11 +132,6 @@ const UserTable = ({ users = [], type, setUsers, setRestrictedUsers , fetchUsers
                   {type !== 'restricted' && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {user?.warnings || 0}
-                    </td>
-                  )}
-                  {type === 'restricted' && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(user?.restrictedSince).toLocaleDateString()}
                     </td>
                   )}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
