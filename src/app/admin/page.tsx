@@ -1,15 +1,35 @@
-import React from 'react';
+"use client"
+
+import React, { useEffect, useState } from 'react';
 import { FaUsers, FaBook, FaDollarSign, FaFlag } from 'react-icons/fa';
 
-const AdminDashboard = async () => {
-  // Fetch stats from your API
-  const stats = {
-    totalUsers: 1243,
-    totalCourses: 287,
-    totalRevenue: 12500,
-    totalReports: 42,
-  };
+export default function AdminDashboard(){
 
+     const [ totalUsers , setTotalUsers ] = useState<number>(0); 
+     const [ totalCourses , setTotalCourses ] = useState<number>(0); 
+     const [ totalReports , setTotalReports ] = useState<number>(0); 
+     const [ totalRevenue , setTotalRevenue ] = useState<number>(0); 
+
+       const fetchStats = async  () => {
+         try{
+             const response = await fetch(`/api/admin/fetchstats`);
+             const data = await response.json(); 
+             console.log(data)
+             if(response.ok){
+                 setTotalUsers(data.totalUsers)
+                 setTotalCourses(data.totalCourses)
+                 setTotalReports(data.totalReports)
+                 setTotalRevenue(12000)
+             }
+         }catch {
+           console.log("There is some error")
+         }
+       }
+   
+       useEffect(() => {
+         fetchStats(); 
+       }, [])
+ 
   return (
     <div>
       <h2 className="text-xl font-bold text-pink-700 mb-6">Dashboard Overview</h2>
@@ -18,25 +38,25 @@ const AdminDashboard = async () => {
         <StatCard 
           icon={<FaUsers className="text-pink-500" size={24} />}
           title="Total Users"
-          value={stats.totalUsers}
+          value={totalUsers}
           change="+12% from last month"
         />
         <StatCard 
           icon={<FaBook className="text-pink-500" size={24} />}
           title="Total Courses"
-          value={stats.totalCourses}
+          value={totalCourses}
           change="+5 new this week"
         />
         <StatCard 
           icon={<FaDollarSign className="text-pink-500" size={24} />}
           title="Total Revenue"
-          value={`$${stats.totalRevenue.toLocaleString()}`}
+          value={`$${totalRevenue.toLocaleString()}`}
           change="+8% from last month"
         />
         <StatCard 
           icon={<FaFlag className="text-pink-500" size={24} />}
           title="Active Reports"
-          value={stats.totalReports}
+          value={totalReports}
           change="3 new today"
         />
       </div>
@@ -87,5 +107,3 @@ const ActivityItem = ({ action, user, time }: { action: string, user: string, ti
     </div>
   </div>
 );
-
-export default AdminDashboard;
