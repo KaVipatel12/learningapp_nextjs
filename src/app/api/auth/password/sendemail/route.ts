@@ -43,10 +43,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate 6-digit OTP
-    const digits = '0123456789';
+    const digits = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let otp = '';
     for (let i = 0; i < 6; i++) {
-      otp += digits[crypto.randomInt(0, 9)];
+      otp += digits[crypto.randomInt(0, 36)];
     }
 
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration

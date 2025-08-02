@@ -19,7 +19,7 @@ export default function AdminDashboard(){
                  setTotalUsers(data.totalUsers)
                  setTotalCourses(data.totalCourses)
                  setTotalReports(data.totalReports)
-                 setTotalRevenue(12000)
+                 setTotalRevenue(120)
              }
          }catch {
            console.log("There is some error")

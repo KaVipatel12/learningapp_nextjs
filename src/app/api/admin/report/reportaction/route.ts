@@ -3,7 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Report, Notification } from '@/models/models';
 import { AuthContext, authUserMiddleware } from '@/app/middleware/authUserMiddleware';
 import { connect } from '@/db/dbConfig';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+
+
+ interface INotification {
+  userId? : Types.ObjectId | string; 
+  chapterId? : Types.ObjectId | string; 
+  courseId ? : Types.ObjectId | string; 
+  commentId ? : Types.ObjectId | string; 
+  message ? : string
+}
+
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -52,7 +62,7 @@ export async function PATCH(req: NextRequest) {
 
     // Prepare notification
     let notificationMessage = '';
-    const notificationData = {
+    const notificationData : INotification= {
       userId: report.userId._id,
       message: ''
     };

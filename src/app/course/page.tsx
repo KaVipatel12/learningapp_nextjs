@@ -191,7 +191,7 @@ export default function CoursesPage() {
                   <Card
                     key={course.id}
                     id={course.id}
-                    imageUrl={course.imageUrl}
+                    imageUrl={course.imageUrl || ""}
                     title={course.title}
                     instructor={course.instructor}
                     price={course.price}

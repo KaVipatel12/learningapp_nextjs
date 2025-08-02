@@ -14,8 +14,8 @@ import { connect } from '@/db/dbConfig';
           return authResult;
         }
         
-        const { user } = authResult as AuthContext;
-        const userId = user._id
+        const { user }  = authResult as AuthContext;
+        const userId : string | undefined = user?._id
         if (!user) {
           return NextResponse.json(
             { msg: "Authentication failed" },

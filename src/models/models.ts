@@ -101,6 +101,16 @@ export interface IComment extends Document {
   updatedAt?: Date;
 }
 
+// Notification interface 
+
+export interface INotification extends Document {
+  userId : Types.ObjectId | string; 
+  chapterId : Types.ObjectId | string; 
+  courseId : Types.ObjectId | string; 
+  commentId : Types.ObjectId | string; 
+  message ? : string
+}
+
 // Define the Review interface
 export interface IReview extends Document {
   courseId: mongoose.Schema.Types.ObjectId;
@@ -504,7 +514,7 @@ const ReportSchema = new mongoose.Schema<IReport>(
   { timestamps: true }
 );
 
-const NotificationSchema = new mongoose.Schema(
+const NotificationSchema = new mongoose.Schema<INotification>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -568,4 +578,4 @@ mongoose.model<IReport>("Report", ReportSchema);
 
 export const Notification = 
 mongoose.models.Notification || 
-mongoose.model("Notification", NotificationSchema);
+mongoose.model<INotification>("Notification", NotificationSchema);
