@@ -112,7 +112,7 @@ export async function PATCH(req: NextRequest) {
       await Report.findByIdAndDelete(reportId).session(session);
 
       // Create notification
-      const notify = await Notification.create([notificationData], { session });
+      await Notification.create([notificationData], { session });
       await session.commitTransaction();
 
       return NextResponse.json(

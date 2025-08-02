@@ -40,7 +40,7 @@ export async function PATCH(req: NextRequest) {
       // Send only warning notification
       message = "⚠️ Warning: Your account activity is against our community guidelines. Repeated violations may result in restriction.";
       await Notification.create({ userId, message });
-      const inc = await User.findByIdAndUpdate(userId , { $inc : { warnings : 1 }}, {new : true})
+      await User.findByIdAndUpdate(userId , { $inc : { warnings : 1 }}, {new : true})
       return NextResponse.json(
         {
           message: "Warning notification sent successfully"
@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest) {
         ? "✅ Your account has been recovered. Please follow the guidelines to avoid future restrictions."
         : "🚫 Your account has been restricted due to repeated violations of our guidelines.";
 
-    const notify = await Notification.create({ userId, message });
+    await Notification.create({ userId, message });
 
     return NextResponse.json(
       {

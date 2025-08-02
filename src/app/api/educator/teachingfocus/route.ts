@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json( { msg: "Authentication failed" },
             { status: 401 })
     }
-    const save = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
        user._id,{
       $set : { 
         teachingFocus 
