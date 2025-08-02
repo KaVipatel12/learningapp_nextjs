@@ -48,11 +48,6 @@ const ReviewsSection = () => {
   const fetchReview = useCallback(async () => {
     try {
       const response = await fetch(`/api/user/review/${courseId}`)
-
-      if (!response.ok) {
-        console.log('Failed to submit rating');
-      }
-
       const data = await response.json(); 
       setUserRating(data.msg || 0);
     } catch{

@@ -56,8 +56,8 @@ const TeachingFocusPage = () => {
         );
         setSelectedFocus(validFocus);
       }
-    } catch (err) {
-      console.log(err)
+    } catch {
+      console.log("There is some error")
     } finally {
       setLoading(false);
     }

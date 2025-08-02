@@ -23,7 +23,6 @@ import { connect } from '@/db/dbConfig';
           );
         }
         
-        console.log(user)
         // Now we can use the user data to fetch more information
           const userId = user._id;
     

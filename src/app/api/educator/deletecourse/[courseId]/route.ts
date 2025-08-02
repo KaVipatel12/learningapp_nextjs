@@ -57,9 +57,6 @@ export async function DELETE(
         }
       }
     }
-
-    console.log('Resources to delete:', resourcesToDelete);
-
     // 4. Delete from Cloudinary (continue even if some fail)
     const deletionPromises = resourcesToDelete.map(async ({ type, publicId, source }) => {
       try {

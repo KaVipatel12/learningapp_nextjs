@@ -104,7 +104,6 @@ const CourseDetailPage = () => {
         }
 
         const data = await response.json();
-        console.log(data.msg)
         setCourse(data.msg);
       } catch (err) {
         console.error("Error fetching course:", err);
@@ -212,7 +211,6 @@ const CourseDetailPage = () => {
         `/api/user/review/${courseId}/averagerating`
       );
       if (!response.ok) {
-        console.log("Failed to fetch rating");
         return;
       }
       const data = await response.json();

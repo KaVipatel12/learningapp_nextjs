@@ -37,9 +37,6 @@ import { connect } from '@/db/dbConfig';
       }
       
     const submitReport = await Report.create({ reporterId , userId , courseId , chapterId , commentId , description}); 
-
-    console.log(submitReport)
-
     if(!submitReport){
          return NextResponse.json(
             { 

@@ -10,7 +10,6 @@ export async function GET(
 
   await connect(); 
 
-  console.log("Reached")
   const {chapterId, courseId} = await props.params; 
   const accessCourse = await courseAccessMiddleware(req, courseId);
 
@@ -19,7 +18,6 @@ export async function GET(
     }
 
   const {courseModify , courseAccess } = accessCourse as CourseAccessContext;
-  console.log(chapterId)
 
   try{
     const chapters = await Chapter.findById(chapterId)
@@ -34,8 +32,7 @@ export async function GET(
       }
 
       return NextResponse.json({msg : chapters ,  courseAccess , courseModify}, {status : 200})
-    }catch(err) {
-      console.log(err)
+    }catch {
       return NextResponse.json({msg : "Internal servor error", courseAccess , courseModify} , {status : 500})
     }
 }

@@ -30,7 +30,6 @@ export default function NotificationDropdown({ user }) {
 
   const fetchNotifications = async () => {
     setLoadingNotifications(true);
-    console.log("fetching");
     try {
       const response = await fetch('/api/notification/fetchnotification');
       if (response.ok) {
@@ -52,7 +51,6 @@ export default function NotificationDropdown({ user }) {
   };
 
   const markAsRead = async (notificationId) => {
-    console.log(notificationId);
     try {
       const response = await fetch(`/api/notification/deletenotification/${notificationId}`, {
         method: 'DELETE',

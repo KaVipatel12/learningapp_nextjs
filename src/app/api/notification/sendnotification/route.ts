@@ -14,8 +14,6 @@ try {
     }
     const sendNotification = await Notification.create({userId , commentId , chapterId , courseId}); 
 
-    console.log(sendNotification)
-
     if(!sendNotification){
          return NextResponse.json(
             { 

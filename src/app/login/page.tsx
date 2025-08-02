@@ -48,8 +48,7 @@ export default function LoginPage() {
       }
 
       if (data.success) {
-        console.log("this")
-        showNotification('Login successful!', 'success'); 
+\        showNotification('Login successful!', 'success'); 
 
          await fetchUserData();
          window.location.href = '/user/profile'  // There were glitch in loading educator data so i am using it

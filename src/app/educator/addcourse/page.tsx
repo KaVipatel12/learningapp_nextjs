@@ -128,7 +128,6 @@ export default function AddCourse() {
       return router.push(`/educator/${data.course._id}/addchapter`);
     } catch (error){
       showNotification('Submission error', "error");
-      console.log("Submission error" , error);
     } finally {
       setIsLoading(false);
     }

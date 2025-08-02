@@ -20,7 +20,6 @@ export async function GET(req : NextRequest, props : {params : Promise<{educator
     
     return NextResponse.json({ msg: educatorData }, {status : 200});
   } catch (error : unknown) {
-    console.log(error)
    return NextResponse.json({ msg: "Server error", error: error}, {status : 500});
   }
 }

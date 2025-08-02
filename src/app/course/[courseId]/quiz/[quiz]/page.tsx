@@ -152,7 +152,6 @@ useEffect(() => {
         throw new Error('No quiz data received');
       }
 
-      console.log(data.quiz)
       setQuizData(data.quiz);
     } catch (err) {
       console.error("Error fetching quiz:", err);
@@ -188,7 +187,6 @@ useEffect(() => {
         throw new Error('Failed to submit quiz results');
       }
 
-      console.log("Quiz submitted successfully");
     } catch (error) {
       console.error("Error submitting quiz results:", error);
     } finally {

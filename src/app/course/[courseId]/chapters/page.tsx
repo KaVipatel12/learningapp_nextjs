@@ -66,8 +66,8 @@ const CourseContentPage = () => {
       const quizzesData = await quizzesResponse.json();
       setQuizzes(quizzesData.quiz);
 
-    } catch (err) {
-      console.log(err)
+    } catch {
+      console.log("There is some error")
     } finally {
       setLoading(false);
     }

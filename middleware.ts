@@ -13,8 +13,6 @@ export function middleware(request: NextRequest) {
   const secret = process.env.JWT_SECRET;
   const currentPath = request.nextUrl.pathname;
 
-  console.log(`Middleware triggered for path: ${currentPath}`);
-
   // Define all protected paths
   const protectedPaths = [
     '/user',
@@ -32,14 +30,11 @@ export function middleware(request: NextRequest) {
 
   // If no token on protected route, redirect to login
   if (!token || !secret) {
-    console.log(`No token found for protected path: ${currentPath}`);
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
   try {
-    const decoded = jwt.verify(token, secret) as MyTokenPayload;
-    console.log(`User ${decoded.userId} (${decoded.role}) accessing ${currentPath}`);
-    
+    const decoded = jwt.verify(token, secret) as MyTokenPayload;    
     const isEducator = decoded.role === 'educator';
     const isStudent = decoded.role === 'student';
 
@@ -66,7 +61,6 @@ export function middleware(request: NextRequest) {
     if (isEducator) {
       const isDenied = educatorRestrictedPaths.some(path => currentPath.startsWith(path));
       if (isDenied) {
-        console.log(`Educator denied access to ${currentPath}`);
         return NextResponse.redirect(new URL('/unauthorized', request.url));
       }
     }
@@ -75,7 +69,6 @@ export function middleware(request: NextRequest) {
     if (isStudent) {
       const isDenied = studentRestrictedPaths.some(path => currentPath.startsWith(path));
       if (isDenied) {
-        console.log(`Student denied access to ${currentPath}`);
         return NextResponse.redirect(new URL('/unauthorized', request.url));
       }
     }

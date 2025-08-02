@@ -54,7 +54,6 @@ export default function EditChapterPage() {
       try {
         const response = await fetch(`/api/course/${courseId}/chapters/${chapterId}`);
         const data = await response.json();
-        console.log(data.msg)
         if (!response.ok) {
           throw new Error(data.msg || 'Failed to fetch chapter');
         }

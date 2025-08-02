@@ -90,7 +90,6 @@ const ChapterPage = () => {
       }
 
       const data: IChapterResponse = await response.json();
-      console.log(data)
       
       if (!data.courseAccess) {
         alert("You don't have access to this course");
@@ -105,7 +104,6 @@ const ChapterPage = () => {
       }
 
       setChapter(data.msg);
-      console.log(data.courseModify)
       setIsOwner(data.courseModify);
 
     } catch (error) {

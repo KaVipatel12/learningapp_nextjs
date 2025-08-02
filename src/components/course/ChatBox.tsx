@@ -70,7 +70,6 @@ const ChatBox = ({ isOwner = false, courseOwnerId }: ChatBoxProps) => {
       
       const data = await response.json();
       if (data.comments) {
-        console.log(data.comments)
         const transformedMessages = data.comments.map(transformCommentToMessage);
         setMessages(transformedMessages);
       }

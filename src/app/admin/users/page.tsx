@@ -15,7 +15,6 @@ export default function AdminUsersPage (){
         try{
             const response = await fetch(`/api/admin/users/fetchusers`);
             const data = await response.json(); 
-            console.log(data)
             if(response.ok){
                 setStudents(data.students)
                 setEducators(data.educators)

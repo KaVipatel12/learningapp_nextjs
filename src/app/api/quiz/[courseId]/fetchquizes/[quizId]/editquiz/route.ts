@@ -29,7 +29,6 @@ export async function PUT(
       questions,
     });
 
-    console.log(newQuiz)
     return NextResponse.json(
       { message: "Quiz created successfully", quiz: newQuiz },
       { status: 201 }

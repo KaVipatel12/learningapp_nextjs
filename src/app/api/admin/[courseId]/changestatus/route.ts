@@ -33,14 +33,11 @@ import { connect } from '@/db/dbConfig';
         }
         
     const { status , courseId } = await req.json()
-
-    console.log(status , courseId)
     const updateStatus = await Course.findByIdAndUpdate(courseId , { status : status } , {new : true})
 
     const message = status === "restricted" ? `Your course ${updateStatus.title} has been ${status}, Please follow the guidlines to avoid the account restrictions, You can republish your course by following guidelines` : status === "approved" ? `Congratulations!, Your course has been ${status}` : `Sorry, Your course ${updateStatus.title} has been ${status}, This is due to violaton of guidelines, You can republish your course by following guidelines `; 
 
     await Notification.create({userId , courseId , message}); 
-    console.log(updateStatus)
 
     if(!updateStatus){
          return NextResponse.json(

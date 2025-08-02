@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
       { $push: { courses: newCourse._id } }
     );
 
-    console.log(newCourse)
     return NextResponse.json(
       { 
         msg: "Course created successfully",
@@ -88,7 +87,6 @@ export async function POST(req: NextRequest) {
     );
 
   } catch (error) {
-    console.log('Error creating course:', error);
     return NextResponse.json(
       { 
         msg: "Failed to create course",

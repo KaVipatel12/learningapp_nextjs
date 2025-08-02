@@ -17,7 +17,6 @@ export default function AdminCoursesPage(){
             const data = await response.json(); 
             if(response.ok){
                 setPendingCourses(data.courses)
-                console.log(data.courses)
             }
         }catch {
             console.log("There is some error")

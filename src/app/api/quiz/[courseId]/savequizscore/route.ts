@@ -20,7 +20,6 @@ export async function POST(
     const {user , courseModify , courseAccess } = accessCourse as CourseAccessContext;
     
     const userId = user._id.toString()
-    console.log(quizId , courseId, score, total, userId)
 
    try {
     const saveUser = await UserQuizAttempt.findOneAndUpdate({
@@ -35,13 +34,11 @@ export async function POST(
       { upsert: true, new: true }
     );
 
-    console.log(saveUser)
     return NextResponse.json(
       { message: "Quiz fetched successfully", quiz: saveUser , courseModify , courseAccess},
       { status: 201 }
     );
-  } catch (error) {
-    console.error("Error creating quiz:", error);
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

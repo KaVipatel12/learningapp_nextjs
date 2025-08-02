@@ -134,7 +134,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      console.log(data);
 
       if (data.msg) {
         setUser(data.msg);

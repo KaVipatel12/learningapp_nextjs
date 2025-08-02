@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
 
     const { teachingFocus } = await req.json();
     
-    console.log(teachingFocus)
     if (!Array.isArray(teachingFocus) || teachingFocus.some(item => typeof item !== 'string')) {
       throw new Error('Invalid teaching focus format');
     }
@@ -41,7 +40,6 @@ export async function POST(req: NextRequest) {
       { new: true }
     );
     
-    console.log(save)
     return NextResponse.json({
       success: true,
       msg: 'Teaching focus saved successfully'
@@ -75,7 +73,6 @@ export async function GET(req : NextRequest) {
         );
         }
   
-      console.log(user.teachingFocus)
     return NextResponse.json({
       success: true,
       teachingFocus: user?.teachingFocus || []

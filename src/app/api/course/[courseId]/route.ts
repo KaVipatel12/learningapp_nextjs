@@ -10,7 +10,6 @@ export async function GET(
   const { courseId } = await props.params;
 
   await connect(); 
-  console.log(courseId)
   if(!courseId){
     return NextResponse.json({msg : "Wrong url", isParams : false}, {status : 404})
   }
@@ -22,7 +21,6 @@ export async function GET(
     
     return NextResponse.json({ msg: courseData }, {status : 200});
   } catch (error : unknown) {
-    console.log(error)
    return NextResponse.json({ msg: "Server error", error: error}, {status : 500});
   }
 }

@@ -32,7 +32,6 @@ export async function GET(
    try {
     const fetchScore = await UserQuizAttempt.findOne({ userId , quizId , courseId });
 
-    console.log(fetchScore)
     return NextResponse.json(
       { message: "Quiz fetched successfully", fetchScore},
       { status: 201 }

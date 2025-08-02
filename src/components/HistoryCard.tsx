@@ -29,7 +29,6 @@ export default function HistorySlider() {
       const res = await axios.get('/api/user/fetchhistory');
       if (res.data?.history) {
         setHistory(res.data.history);
-        console.log('Fetched history:', res.data.history);
       }
     } catch (error) {
       console.error('Failed to fetch history:', error);

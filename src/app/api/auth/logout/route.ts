@@ -6,8 +6,6 @@ export async function POST(request: NextRequest) {
       request.cookies.get('token')?.value ||
       request.headers.get('authorization')?.replace('Bearer ', '');
 
-    console.log('Token:', token);
-
     const response = NextResponse.json(
       {
         success: true,

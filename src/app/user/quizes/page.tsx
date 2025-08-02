@@ -30,7 +30,6 @@ const QuizHistoryPage = () => {
       try {
         // Replace with your actual API endpoint
         const response = await axios.get('/api/quiz/userhistory');
-        console.log(response)
         setAttempts(response.data.attempts);
       } catch (err) {
         console.error('Error fetching quiz history:', err);

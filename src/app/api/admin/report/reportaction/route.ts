@@ -113,8 +113,6 @@ export async function PATCH(req: NextRequest) {
 
       // Create notification
       const notify = await Notification.create([notificationData], { session });
-
-      console.log(notify)
       await session.commitTransaction();
 
       return NextResponse.json(

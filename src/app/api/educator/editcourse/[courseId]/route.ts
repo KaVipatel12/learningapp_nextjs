@@ -65,8 +65,6 @@ export async function PUT(
 
     // Check if image was changed (new flag from frontend)
     const imageChanged = formData.get('imageChanged') === 'true';
-    console.log('Image changed flag:', imageChanged);
-
     // Validate required fields
     if (!courseInput.title || !courseInput.description || !courseInput.category) {
       return NextResponse.json(

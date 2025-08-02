@@ -86,7 +86,6 @@ export default function UpdateCourse() {
           throw new Error('Failed to fetch course data');
         }        
         const data = await response.json();
-        console.log(data.msg)
         setFormData(data.msg);
         
         // Store the original image URL from the database
@@ -178,10 +177,7 @@ export default function UpdateCourse() {
       if (file) {
         formPayload.append('imageUrl', file);
       }
-      
-      // Log the payload for debugging (optional)
-      console.log("Submitting form with image changed:", imageChanged);
-  
+        
       const response = await fetch(`/api/educator/editcourse/${courseId}`, {
         method: 'PUT',
         body: formPayload,

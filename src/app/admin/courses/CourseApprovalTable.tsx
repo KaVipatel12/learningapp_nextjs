@@ -18,7 +18,6 @@ const CourseApprovalTable = ({ courses , fetchPendingCourses } : CourseApprovalT
   const router = useRouter();  
 
   const handleStatusChange = async (courseId: string , status : string ) => {
-    console.log(courseId , status)
      try {
         const response = await fetch(`/api/admin/${courseId}/changestatus`, {
         method: 'PATCH',
@@ -34,9 +33,8 @@ const CourseApprovalTable = ({ courses , fetchPendingCourses } : CourseApprovalT
     
     showNotification('Status updated successfully', "success");
     await fetchPendingCourses(); 
-    }catch(err){
+    }catch {
         showNotification('Failed to update course status', "error");
-        console.log(err)
     }
   };
 

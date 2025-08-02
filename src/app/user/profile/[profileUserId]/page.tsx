@@ -29,7 +29,6 @@ export default function CombinedProfile() {
 
   // Fetch profile data based on URL
   const fetchProfileData = useCallback( async () => {
-    console.log(profileUserId)
       try {
         setProfileLoading(true);
         // Accessing another user's profile

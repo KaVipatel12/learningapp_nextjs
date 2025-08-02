@@ -50,8 +50,6 @@ export async function POST(req: NextRequest) {
     }
 
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
-
-    console.log(otp)
     // Remove any existing OTPs for this email
     await OTP.deleteMany({ email });
 
@@ -59,7 +57,6 @@ export async function POST(req: NextRequest) {
     await OTP.create({ email, code: otp, expiresAt });
 
     // In production, you would send the OTP via email here
-    console.log(`OTP for ${email}: ${otp}`);
     
     await sendOTPEmail(email, otp);
     return NextResponse.json(

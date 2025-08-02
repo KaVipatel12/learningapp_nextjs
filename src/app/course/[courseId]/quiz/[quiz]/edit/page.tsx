@@ -108,7 +108,7 @@ const response = await axios.get(
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.put(
+       await axios.put(
         `/api/quiz/${courseId}/fetchquizes/${quiz}/editquiz`,
         quizData
       );
@@ -116,18 +116,15 @@ const response = await axios.get(
         success: true,
         message: "Quiz updated successfully!"
       });
-      console.log("Data sent to backend:", response.data);
       
-      // // Redirect after successful update (optional)
-      // setTimeout(() => {
-      //   router.push(`/course/${courseId}/quizzes`);
-      // }, 1500);
-    } catch (error) {
+      // Redirect after successful update (optional)
+        router.push(`/course/${courseId}/courses`);
+    } catch {
       setSubmissionStatus({
         success: false,
         message: "Failed to update quiz. Please try again."
       });
-      console.error("Error updating quiz:", error);
+      console.error("Error updating quiz:");
     }
   };
 

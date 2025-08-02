@@ -23,7 +23,6 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    console.log('Received formData:', body);
 
     const { username, bio } = body.formData || {};
     
@@ -33,10 +32,6 @@ export async function PATCH(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    console.log('Username:', username);
-    console.log('Bio:', bio);
-
     const updatedUser = await User.findByIdAndUpdate(user._id, {
       username,
       bio

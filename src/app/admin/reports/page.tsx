@@ -15,7 +15,6 @@ export default function AdminReportsPage(){
         try{
             const response = await fetch(`/api/admin/report/fetchreportdata`);
             const data = await response.json(); 
-            console.log(data)
             if(response.ok){
                 setCourseReports(data.courseReports)
                 setCommentReports(data.commentReports)

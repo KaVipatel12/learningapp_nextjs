@@ -68,13 +68,11 @@ const QuizApp = () => {
     const endPoint = `/api/quiz/${courseId}/addquiz`
     try {
       // Replace with your actual backend endpoint
-      const response = await axios.post( endPoint, quizData);
+      await axios.post( endPoint, quizData);
       setSubmissionStatus({ success: true, message: "Quiz submitted successfully!" });
       router.push(`/course/${courseId}/chapters`)
-      console.log("Data sent to backend:", response.data);
-    } catch (error) {
+    } catch  {
       setSubmissionStatus({ success: false, message: "Failed to submit quiz. Please try again." });
-      console.error("Error sending data:", error);
     }
   };
 

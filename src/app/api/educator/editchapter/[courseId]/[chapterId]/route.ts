@@ -230,7 +230,6 @@ for (const existingVideo of existingChapter.videos) {
       );
     }
 
-    console.log(updatedChapter)
     return NextResponse.json(
       {
         msg: "Chapter updated successfully",

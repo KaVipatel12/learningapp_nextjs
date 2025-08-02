@@ -55,9 +55,7 @@ interface VideoInput {
           }
         });
       });
-  
-      console.log('Videos to delete from Cloudinary:', videoPublicIds);
-  
+    
       const cloudinaryDeletions = await Promise.allSettled(
         videoPublicIds.map(publicId => 
           cloudinary.uploader.destroy(publicId, { 

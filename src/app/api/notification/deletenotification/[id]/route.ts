@@ -22,7 +22,6 @@ export async function DELETE(
         );
     }
 
-    console.log(deleteNotification)
     return NextResponse.json(
       { message: "Success" },
       { status: 201 }

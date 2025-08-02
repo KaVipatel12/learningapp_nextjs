@@ -14,7 +14,6 @@ export default function AdminDashboard(){
          try{
              const response = await fetch(`/api/admin/fetchstats`);
              const data = await response.json(); 
-             console.log(data)
              if(response.ok){
                  setTotalUsers(data.totalUsers)
                  setTotalCourses(data.totalCourses)

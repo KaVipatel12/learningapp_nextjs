@@ -33,7 +33,6 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
   // Fetch last watched time from API
   const fetchLastWatched = useCallback(async () => {
     try {
-      console.log("📊 Fetching last watched time...");
       const res = await fetch(
         `/api/user/watchhistory/savehistory/${courseId}/${chapterId}`,
         {
@@ -47,17 +46,15 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
       
       if (data.ok) {
         lastWatchedTime = data.msg;
-        console.log("⏰ Last watched time:", lastWatchedTime, "seconds");
       }
 
       // Resume from last watched time
       if (videoRef.current && lastWatchedTime > 5 && !hasResumed) { // Only resume if > 5 seconds
         videoRef.current.currentTime = lastWatchedTime;
         setHasResumed(true);
-        console.log("▶️ Resuming from:", lastWatchedTime, "seconds");
       }
-    } catch (error) {
-      console.error("❌ Failed to fetch watch history:", error);
+    } catch  {
+      console.error("❌ Failed to fetch watch history:");
     }
   }, [courseId, chapterId, hasResumed]);
 
@@ -65,14 +62,12 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
   const saveProgressToBackend = useCallback(
     async (seconds: number) => {
       try {
-        console.log("💾 Saving progress:", Math.floor(seconds), "seconds");
         await axios.post("/api/user/watchhistory/savehistory", {
           videoId: video.id || chapterId,
           courseId,
           chapterId,
           watchedTime: Math.floor(seconds),
         });
-        console.log("✅ Progress saved successfully");
       } catch (error) {
         console.error("❌ Failed to save progress:", error);
       }
@@ -82,20 +77,11 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
 
   // Debug: Log all video events
   const handleLoadStart = () => {
-    console.log("🔄 Load started");
     setVideoState(prev => ({ ...prev, hasError: false }));
   };
 
-  const handleLoadedMetadata = () => {
-    console.log("📊 Metadata loaded", {
-      duration: videoRef.current?.duration,
-      videoWidth: videoRef.current?.videoWidth,
-      videoHeight: videoRef.current?.videoHeight
-    });
-  };
 
   const handleLoadedData = () => {
-    console.log("✅ Data loaded");
     setVideoState(prev => ({ 
       ...prev, 
       loadedData: true,
@@ -107,16 +93,10 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
   };
 
   const handleCanPlay = () => {
-    console.log("▶️ Can play");
     setVideoState(prev => ({ ...prev, canPlay: true }));
   };
 
-  const handleCanPlayThrough = () => {
-    console.log("🚀 Can play through");
-  };
-
-  const handleError = (e) => {
-    console.error("❌ Video Error:", e);
+  const handleError = () => {
     const error = videoRef.current?.error;
     let errorMsg = "Unknown error";
     
@@ -137,7 +117,6 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
       }
     }
     
-    console.error("Error details:", errorMsg);
     setVideoState(prev => ({ 
       ...prev, 
       hasError: true, 
@@ -161,21 +140,14 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
     }
   };
 
-  const handlePlay = () => {
-    console.log("▶️ Playing");
-  };
 
   const handlePause = () => {
-    console.log("⏸️ Paused");
-    // Save progress when user pauses
     if (videoRef.current && videoRef.current.currentTime > 0) {
       saveProgressToBackend(videoRef.current.currentTime);
     }
   };
 
   const handleEnded = () => {
-    console.log("🏁 Video ended");
-    // Mark as completed when video ends
     if (videoRef.current) {
       saveProgressToBackend(videoRef.current.duration);
     }
@@ -185,7 +157,6 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
   useEffect(() => {
     return () => {
       if (videoState.currentTime > 0) {
-        console.log("🔄 Component unmounting, saving final progress");
         // Use synchronous request for cleanup
         const finalTime = videoRef.current?.currentTime || videoState.currentTime;
         navigator.sendBeacon(
@@ -216,13 +187,10 @@ const VideoPlayer = ({ video, courseId, chapterId }: VideoPlayerProps) => {
         controls
         preload="metadata"
         onLoadStart={handleLoadStart}
-        onLoadedMetadata={handleLoadedMetadata}
         onLoadedData={handleLoadedData}
         onCanPlay={handleCanPlay}
-        onCanPlayThrough={handleCanPlayThrough}
         onError={handleError}
         onTimeUpdate={handleTimeUpdate}
-        onPlay={handlePlay}
         onPause={handlePause}
         onEnded={handleEnded}
         crossOrigin="anonymous"
