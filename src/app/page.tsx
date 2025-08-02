@@ -70,7 +70,7 @@ const HomePage = () => {
     {
       title: 'Expert Instructors',
       description: 'Learn from industry professionals',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1588&q=80'
+      image: '/blogsectionimg.jpg'
     }
   ];
 
