@@ -1,8 +1,8 @@
-# 📚 EduFlex - Full Stack Education Platform Built with Next.js
+# 📚 Learnify - Full Stack Education Platform Built with Next.js
 
-![EduFlex Banner](https://github.com/KaVipatel12/learningapp_nextjs/blob/main/public/icon-192.png)
+![Learnify Banner](https://github.com/KaVipatel12/learningapp_nextjs/blob/main/public/icon-192.png)
 
-EduFlex is a comprehensive, full-stack education platform powered by the MERN stack with **Next.js App Router**. It supports role-based access (Admin, Educator, Student), Google OAuth/JWT authentication, course management, real-time notifications, reporting, and more — perfect for scalable educational experiences.
+Learnify is a comprehensive, full-stack education platform powered by the MERN stack with **Next.js App Router**. It supports role-based access (Admin, Educator, Student), Google OAuth/JWT authentication, course management, real-time notifications, reporting, and more — perfect for scalable educational experiences.
 
 ---
 
