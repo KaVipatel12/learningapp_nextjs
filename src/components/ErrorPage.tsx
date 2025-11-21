@@ -1,10 +1,12 @@
 "use client";
 
-interface error {
-    message : string
+interface ErrorPageProps {
+    error: {
+        message: string;
+    }
 }
 
-export default function ErrorPage({ error } : error) {
+export default function ErrorPage({ error }: ErrorPageProps) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-rose-200">

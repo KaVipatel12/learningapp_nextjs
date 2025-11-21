@@ -12,6 +12,6 @@ export default function Unauthorized(){
     } 
 
     return(
-        <ErrorPage error={error}></ErrorPage>
+        <ErrorPage error={error} />
     )
 }
