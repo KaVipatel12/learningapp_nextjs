@@ -30,39 +30,49 @@ export default function AdminDashboard(){
        }, [])
  
   return (
-    <div>
-      <h2 className="text-xl font-bold text-pink-700 mb-6">Dashboard Overview</h2>
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+          Dashboard Overview
+        </h2>
+        <div className="text-sm text-gray-500">
+          Last updated: {new Date().toLocaleTimeString()}
+        </div>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          icon={<FaUsers className="text-pink-500" size={24} />}
+          icon={<FaUsers className="text-pink-500" size={28} />}
           title="Total Users"
           value={totalUsers}
           change="+12% from last month"
         />
         <StatCard 
-          icon={<FaBook className="text-pink-500" size={24} />}
+          icon={<FaBook className="text-rose-500" size={28} />}
           title="Total Courses"
           value={totalCourses}
           change="+5 new this week"
         />
         <StatCard 
-          icon={<FaDollarSign className="text-pink-500" size={24} />}
+          icon={<FaDollarSign className="text-fuchsia-500" size={28} />}
           title="Total Revenue"
           value={`$${totalRevenue.toLocaleString()}`}
           change="+8% from last month"
         />
         <StatCard 
-          icon={<FaFlag className="text-pink-500" size={24} />}
+          icon={<FaFlag className="text-amber-500" size={28} />}
           title="Active Reports"
           value={totalReports}
           change="3 new today"
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-pink-700 mb-4">Recent Activity</h3>
-        <div className="space-y-4">
+      <div className="bg-white rounded-2xl shadow-card border border-pink-100 p-8 hover:shadow-card-hover transition-all duration-300">
+        <h3 className="text-2xl font-bold text-pink-700 mb-6 flex items-center gap-2">
+          <div className="w-1 h-8 bg-gradient-to-b from-pink-500 to-rose-500 rounded-full"></div>
+          Recent Activity
+        </h3>
+        <div className="space-y-5">
           <ActivityItem 
             action="New course submitted"
             user="John Doe"
@@ -85,24 +95,33 @@ export default function AdminDashboard(){
 };
 
 const StatCard = ({ icon, title, value, change }: { icon: React.ReactNode, title: string, value: string | number, change: string }) => (
-  <div className="bg-white rounded-lg shadow-md p-6 flex items-start">
-    <div className="mr-4">{icon}</div>
-    <div>
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="text-2xl font-bold text-pink-600">{value}</p>
-      <p className="text-xs text-gray-400">{change}</p>
+  <div className="bg-white rounded-2xl shadow-card p-6 flex items-start border border-pink-100 hover:shadow-card-hover transition-all duration-300 group hover:-translate-y-1">
+    <div className="mr-5 p-3 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl group-hover:scale-110 transition-transform duration-300">
+      {icon}
+    </div>
+    <div className="flex-1">
+      <p className="text-sm text-gray-600 font-medium mb-1">{title}</p>
+      <p className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-1">
+        {value}
+      </p>
+      <p className="text-xs text-gray-500 font-medium">{change}</p>
     </div>
   </div>
 );
 
 const ActivityItem = ({ action, user, time }: { action: string, user: string, time: string }) => (
-  <div className="flex items-center ">
-    <div className="h-2 w-2 rounded-full bg-pink-500 mr-3"></div>
-    <div>
-      <p className="text-sm">
-        <span className="font-medium">{action}</span> by <span className="text-pink-600">{user}</span>
+  <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-pink-50 transition-all duration-200 group">
+    <div className="flex-shrink-0 mt-1">
+      <div className="h-3 w-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 shadow-sm group-hover:shadow-pink-glow group-hover:scale-125 transition-all duration-300"></div>
+    </div>
+    <div className="flex-1">
+      <p className="text-sm font-medium text-gray-800">
+        <span className="text-pink-700">{action}</span> by{' '}
+        <span className="font-bold text-rose-600">{user}</span>
       </p>
-      <p className="text-xs text-gray-400">{time}</p>
+      <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+        <span>🕐</span> {time}
+      </p>
     </div>
   </div>
 );

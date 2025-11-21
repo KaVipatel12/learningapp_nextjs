@@ -84,24 +84,24 @@ export default function Card({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border border-pink-100 group w-full max-w-[240px] transform hover:-translate-y-1">
+    <div className="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-card-hover transition-all duration-300 border border-pink-100 group w-full max-w-[260px] transform hover:-translate-y-2 animate-fade-in">
       {/* Image Container */}
-      <div className="relative h-40 w-full overflow-hidden">
+      <div className="relative h-44 w-full overflow-hidden">
         <Image
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover group-hover:scale-110 transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-pink-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-pink-900/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Purchased Tag */}
         {isPurchased && (
-          <div className="absolute top-2 left-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-lg backdrop-blur-sm border border-white/20">
-            <Check size={12} className="text-white" />
+          <div className="absolute top-3 left-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-sm border border-white/20 animate-scale-in">
+            <Check size={13} className="text-white" />
             <span className="font-semibold tracking-tight">Purchased</span>
           </div>
         )}
@@ -113,13 +113,13 @@ export default function Card({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             disabled={isProcessing}
-            className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-sm transition-all duration-300 shadow-lg ${
+            className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 shadow-lg ${
               localWishlisted
-                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white'
-                : 'bg-white/90 text-pink-600 hover:bg-gradient-to-r hover:from-pink-500 hover:to-rose-500 hover:text-white'
+                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-pink-glow'
+                : 'bg-white/95 text-pink-600 hover:bg-gradient-to-r hover:from-pink-500 hover:to-rose-500 hover:text-white'
             } ${
               isClicked ? 'scale-90' : 'scale-100'
-            } ${isProcessing ? 'opacity-80 cursor-not-allowed' : 'hover:scale-110'}`}
+            } ${isProcessing ? 'opacity-80 cursor-not-allowed' : 'hover:scale-110 hover:shadow-rose-glow'}`}
             aria-label={localWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           >
             <Heart
@@ -129,7 +129,7 @@ export default function Card({
                   ? 'currentColor'
                   : 'none'
               }
-              strokeWidth={2}
+              strokeWidth={2.5}
               className="transition-all duration-300"
             />
           </button>
@@ -137,30 +137,30 @@ export default function Card({
       </div>
 
       {/* Card Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-sm text-pink-900 line-clamp-2 mb-1">
+      <div className="p-5">
+        <h3 className="font-bold text-base text-pink-900 line-clamp-2 mb-2 leading-tight">
           <Link href={`/course/${id}`} className="hover:text-rose-600 transition-colors">
             {title}
           </Link>
         </h3>
 
-        <p className="text-xs text-pink-600 mb-2">By {instructor}</p>
+        <p className="text-sm text-pink-600 mb-3 font-medium">By {instructor}</p>
 
         {showRatings && (
-          <div className="flex items-center space-x-1 mb-3">
-            <Star size={14} className="text-amber-400 fill-amber-400" />
-            <span className="text-xs font-medium text-pink-900">
+          <div className="flex items-center space-x-1.5 mb-3">
+            <Star size={16} className="text-amber-400 fill-amber-400" />
+            <span className="text-sm font-bold text-pink-900">
               {rating.toFixed(1)}
             </span>
-            <span className="text-xs text-pink-500">({totalRatings})</span>
+            <span className="text-sm text-pink-500">({totalRatings})</span>
           </div>
         )}
 
         <div className="flex items-center justify-between pt-3 border-t border-pink-100">
-          <div className="flex items-center space-x-1">
+          <div className="flex flex-col">
             {discountedPrice && discountedPrice !== price ? (
               <>
-                <span className="text-sm font-bold text-rose-600">
+                <span className="text-base font-bold text-rose-600">
                   ${discountedPrice.toFixed(2)}
                 </span>
                 <span className="text-xs text-pink-400 line-through">
@@ -168,7 +168,7 @@ export default function Card({
                 </span>
               </>
             ) : (
-              <span className="text-sm font-bold text-rose-600">
+              <span className="text-base font-bold text-rose-600">
                 ${price.toFixed(2)}
               </span>
             )}
@@ -176,7 +176,7 @@ export default function Card({
 
           <Link
             href={`/course/${id}`}
-            className="text-xs font-medium text-pink-600 hover:text-rose-700 transition-colors bg-pink-50 hover:bg-pink-100 px-3 py-1 rounded-lg"
+            className="text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 transition-all duration-200 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105"
           >
             View
           </Link>
