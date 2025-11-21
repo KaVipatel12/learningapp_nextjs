@@ -57,15 +57,33 @@ export default function AdminReportsPage(){
   
   <div className="mt-4">
     <TabsContent value="courses">
-      <ReportTable items={courseReports!} setReportedCourses={setCourseReports} type="course" />
+      <ReportTable 
+        items={courseReports!} 
+        setReportedCourses={setCourseReports} 
+        setReportedComments={setCommentReports}
+        setRestrictedCourses={setRestrictedCourses}
+        type="course" 
+      />
     </TabsContent>
     
     <TabsContent value="comments">
-      <ReportTable items={commentReports!} setReportedComments={setCommentReports} type="comment" />
+      <ReportTable 
+        items={commentReports!} 
+        setReportedComments={setCommentReports} 
+        setReportedCourses={setCourseReports}
+        setRestrictedCourses={setRestrictedCourses}
+        type="comment" 
+      />
     </TabsContent>
     
     <TabsContent value="restricted">
-      <ReportTable items={restrictedCourses!} setRestrictedCourses={setRestrictedCourses} type="restrictedCourse" />
+      <ReportTable 
+        items={restrictedCourses!} 
+        setRestrictedCourses={setRestrictedCourses} 
+        setReportedComments={setCommentReports}
+        setReportedCourses={setCourseReports}
+        type="restrictedCourse" 
+      />
     </TabsContent>
   </div>
 </Tabs>

@@ -7,6 +7,15 @@ import { useNotification } from '@/components/NotificationContext';
 import { Loader2 } from 'lucide-react';
 
 
+interface ReportTableProps {
+  items?: any[];
+  type: 'course' | 'comment' | 'restrictedCourse';
+  setReportedComments?: (items: any) => void;
+  setReportedCourses?: (items: any) => void;
+  setRestrictedCourses?: (items: any) => void;
+  loading?: boolean;
+}
+
 const ReportTable = ({
   items = [],
   type,
@@ -14,11 +23,11 @@ const ReportTable = ({
   setReportedCourses,
   setRestrictedCourses,
   loading = false
-}) => {
+}: ReportTableProps) => {
   const { showNotification } = useNotification();
   const [processing, setProcessing] = React.useState<string | null>(null);
 
-const handleAction = async (action: string, reportId: string, item) => {
+const handleAction = async (action: string, reportId: string, item: any) => {
   setProcessing(reportId);
   try {
     let mainActionUrl = '';
@@ -106,7 +115,7 @@ const handleAction = async (action: string, reportId: string, item) => {
     }
 
     //  Update local state
-    const removeItem = (prevItems) => prevItems.filter(i => i._id !== reportId);
+    const removeItem = (prevItems: any[]) => prevItems.filter((i: any) => i._id !== reportId);
 
     if (type === 'course' && setReportedCourses) {
       setReportedCourses(removeItem(items));
@@ -116,16 +125,16 @@ const handleAction = async (action: string, reportId: string, item) => {
       setRestrictedCourses(removeItem(items));
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error performing ${action}:`, error);
-    showNotification(`Failed to ${action}: ${error.message}`, "error");
+    showNotification(`Failed to ${action}: ${error?.message || 'Unknown error'}`, "error");
   } finally {
     setProcessing(null);
   }
 };
 
 
-  const getItemData = (item) => {
+  const getItemData = (item: any) => {
     switch (type) {
       case 'course':
         return {

@@ -207,13 +207,13 @@ const HomePage = () => {
   }, [handleInterestScroll, handleCoursesScroll]);
 
   // Scroll functions for horizontal containers
-  const scrollLeft = (ref: React.RefObject<HTMLDivElement>) => {
+  const scrollLeft = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       ref.current.scrollBy({ left: -300, behavior: 'smooth' });
     }
   };
 
-  const scrollRight = (ref: React.RefObject<HTMLDivElement>) => {
+  const scrollRight = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       ref.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
@@ -299,9 +299,9 @@ const HomePage = () => {
                 className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
               >
                 {purchasedCourse.map((course) => (
-                  <div key={course.id} className="flex-shrink-0 w-50">
+                   <div key={course.id} className="flex-shrink-0 w-50">
                     <Card
-                      id={course?.id}
+                      id={course?.id || ''}
                       imageUrl={course.imageUrl}
                       title={course.title}
                       instructor={course.instructor}
@@ -354,7 +354,7 @@ const HomePage = () => {
                   {categoryCourses.map((course) => (
                     <div key={course.id} className="flex-shrink-0 w-50">
                       <Card
-                        id={course?.id}
+                        id={course?.id || ''}
                         imageUrl={course.imageUrl}
                         title={course.title}
                         instructor={course.instructor}
@@ -364,7 +364,7 @@ const HomePage = () => {
                         discountedPrice={course.price}
                         isWishlisted={isWishlisted(course.id)}
                         onWishlistToggle={() => {}}
-                        isPurchased={isPurchased(course?.id)}
+                        isPurchased={isPurchased(course?.id || '')}
                         />
                     </div>
                   ))}
@@ -467,7 +467,7 @@ const HomePage = () => {
                       {courses.map((course) => (
                         <div key={course.id} className="flex-shrink-0 w-50 gap-1">
                           <Card
-                            id={course.id}
+                            id={course.id || ''}
                             imageUrl={course.imageUrl}
                             title={course.title}
                             instructor={course.instructor}
@@ -475,9 +475,9 @@ const HomePage = () => {
                             rating={course.rating || 0}
                             totalRatings={course.totalRatings || 0}
                             discountedPrice={course.price}
-                            isWishlisted={isWishlisted(course.id) || false}
+                            isWishlisted={isWishlisted(course.id || '') || false}
                             onWishlistToggle={() => {}}
-                            isPurchased={isPurchased(course?.id)}
+                            isPurchased={isPurchased(course?.id || '')}
                           />
                         </div>
                       ))}
@@ -503,47 +503,56 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Features Sections */}
-{features.map((feature, index) => (
-  <center key={index}>
-    <div 
-      key={index} 
-      className={`py-8 lg:py-16 ${index % 2 === 0 ? 'bg-gradient-to-r from-pink-50 to-rose-50' : 'bg-white'} rounded-xl my-6`}
-      style={{ minHeight: '400px', width: "90%" }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-          
-          {/* TEXT SECTION */}
-          <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}`}>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-              {feature.title}
-            </h2>
-            <p className="text-gray-700 text-base sm:text-lg mb-6">
-              {feature.description}
-            </p>
-          </div>
-          
-          {/* IMAGE SECTION - Modified for better mobile display */}
-          <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}>
-            <div className="relative w-full h-auto aspect-video max-h-60 lg:max-h-80 rounded-xl overflow-hidden shadow-2xl border-4 border-white">
-              <Image
-                src={feature.image}
-                alt={feature.title}
-                width={600} 
-                height={400} 
-                className="object-cover w-full h-full"
-                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 50vw, 600px"
-                priority={index === 0}
-              />
+      {/* Features Sections - Enhanced & Aligned */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {features.map((feature, index) => (
+          <div 
+            key={index} 
+            className={`py-12 lg:py-20 px-6 lg:px-12 ${index % 2 === 0 ? 'bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50' : 'bg-gradient-to-br from-white via-pink-50/30 to-white'} rounded-3xl my-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-pink-100/50`}
+          >
+            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+              
+              {/* TEXT SECTION */}
+              <div className={`w-full lg:w-1/2 space-y-6 ${index % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}`}>
+                <div className="inline-block">
+                  <span className="text-sm font-semibold text-pink-600 bg-pink-100 px-4 py-2 rounded-full">
+                    {index === 0 ? '🎓 Featured' : '👨‍🏫 Premium'}
+                  </span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+                  {feature.title}
+                </h2>
+                <p className="text-gray-700 text-lg sm:text-xl leading-relaxed">
+                  {feature.description}
+                </p>
+                <button 
+                  className="group mt-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                  onClick={() => router.push("/course")}
+                >
+                  Explore Courses
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+              
+              {/* IMAGE SECTION */}
+              <div className={`w-full lg:w-1/2 ${index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}>
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/20 to-purple-500/20 z-10"></div>
+                  <Image
+                    src={feature.image}
+                    alt={feature.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+                    priority={index === 0}
+                  />
+                </div>
+              </div>
+
             </div>
           </div>
-
-        </div>
+        ))}
       </div>
-    </div>
-  </center>
-))}
 
     </div>
   );

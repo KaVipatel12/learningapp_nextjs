@@ -19,25 +19,25 @@ const QuizApp = () => {
     ]
   });
 
-  const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [submissionStatus, setSubmissionStatus] = useState<{success: boolean; message: string} | null>(null);
 
-  const handleTitleChange = (e) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuizData({...quizData, title: e.target.value});
   };
 
-  const handleQuestionChange = (index : number, e) => {
+  const handleQuestionChange = (index : number, e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuestions = [...quizData.questions];
     newQuestions[index].questionText = e.target.value;
     setQuizData({...quizData, questions: newQuestions});
   };
 
-  const handleOptionChange = (qIndex : number , oIndex : number , e) => {
+  const handleOptionChange = (qIndex : number , oIndex : number , e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuestions = [...quizData.questions];
     newQuestions[qIndex].options[oIndex] = e.target.value;
     setQuizData({...quizData, questions: newQuestions});
   };
 
-  const handleCorrectAnswerChange = (qIndex : number , e) => {
+  const handleCorrectAnswerChange = (qIndex : number , e: React.ChangeEvent<HTMLSelectElement>) => {
     const newQuestions = [...quizData.questions];
     newQuestions[qIndex].correctOptionIndex = parseInt(e.target.value);
     setQuizData({...quizData, questions: newQuestions});
@@ -63,7 +63,7 @@ const QuizApp = () => {
     setQuizData({...quizData, questions: newQuestions});
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const endPoint = `/api/quiz/${courseId}/addquiz`
     try {
