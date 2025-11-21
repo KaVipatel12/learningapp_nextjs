@@ -4,6 +4,7 @@ const config: Config = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -49,9 +50,35 @@ const config: Config = {
         'pink-gradient': 'linear-gradient(to right, #EC4899, #F472B6, #F9A8D4)',
         'cherry-blossom': 'linear-gradient(to right, #FBCFE8, #F9A8D4, #F472B6)',
         'premium-pink': 'linear-gradient(135deg, #DB2777 0%, #EC4899 50%, #F472B6 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #EC4899, #F472B6)',
+        'gradient-secondary': 'linear-gradient(135deg, #F43F5E, #FB7185)',
+        'gradient-accent': 'linear-gradient(135deg, #D946EF, #E879F9)',
       },
       boxShadow: {
         'pink-glow': '0 4px 14px 0 rgba(236, 72, 153, 0.3)',
+        'rose-glow': '0 4px 14px 0 rgba(244, 63, 94, 0.3)',
+        'elegant': '0 10px 30px -10px rgba(236, 72, 153, 0.3)',
+        'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
+        'card-hover': '0 8px 24px rgba(236, 72, 153, 0.15)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
       },
     },
   },

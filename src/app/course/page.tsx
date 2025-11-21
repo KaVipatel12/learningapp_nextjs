@@ -7,7 +7,7 @@ import { SearchSection } from "@/components/CourseSearchPage/SearchSection";
 import { Course, useUser } from "@/context/userContext";
 import { WishList } from "../page";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Pagination from "@/components/ui/pagination";
 
 export default function CoursesPage() {
   const [filters, setFilters] = useState({
@@ -153,12 +153,15 @@ export default function CoursesPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-lg border border-pink-100 mt-10">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-            Explore Courses
-          </h1>
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-elegant border border-pink-100 mt-10 hover:shadow-card-hover transition-all duration-300">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-2 h-12 bg-gradient-to-b from-pink-500 to-rose-500 rounded-full"></div>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-600 via-rose-600 to-fuchsia-600 bg-clip-text text-transparent">
+              Explore Courses
+            </h1>
+          </div>
 
           {/* Search and Filter Section */}
           <div className="mb-8">
@@ -207,9 +210,17 @@ export default function CoursesPage() {
 
               {/* Empty State */}
               {courses.length === 0 && !loading && (
-                <div className="text-center py-10 bg-pink-50 rounded-lg">
-                  <p className="text-pink-600 text-lg mb-4">
-                    No courses found matching your criteria.
+                <div className="text-center py-16 bg-gradient-to-br from-pink-50 to-rose-50 rounded-3xl border-2 border-pink-100 animate-fade-in">
+                  <div className="mb-6">
+                    <div className="inline-flex p-6 bg-white rounded-full shadow-md">
+                      <svg className="w-16 h-16 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-pink-900 mb-2">No courses found</h3>
+                  <p className="text-pink-600 text-lg mb-6">
+                    No courses match your search criteria. Try adjusting your filters.
                   </p>
                   <button 
                     onClick={() => setFilters({
@@ -220,91 +231,20 @@ export default function CoursesPage() {
                       page: "1",
                       limit: "6",
                     })}
-                    className="px-6 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-medium shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-105 transition-all duration-200"
+                    className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-semibold shadow-lg hover:from-pink-600 hover:to-rose-600 transform hover:scale-105 transition-all duration-200 hover:shadow-rose-glow"
                   >
-                    Clear Filters
+                    Clear All Filters
                   </button>
                 </div>
               )}
 
               {/* Pagination */}
               {!loading && courses.length > 0 && pagination.totalPages > 1 && (
-                <div className="flex flex-col items-center space-y-4">
-                  {/* Page Info */}
-                  <div className="text-sm text-gray-600">
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </div>
-                  
-                  {/* Pagination Controls */}
-                  <div className="flex items-center space-x-2">
-                    {/* Previous Button */}
-                    <button
-                      onClick={() => handlePageChange(pagination.currentPage - 1)}
-                      disabled={pagination.currentPage <= 1}
-                      className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-200 hover:from-pink-200 hover:to-rose-200"
-                    >
-                      <ChevronLeft className="w-5 h-5 mr-1" />
-                      Previous
-                    </button>
-                    
-                    {/* Page Numbers */}
-                    <div className="flex items-center space-x-1">
-                      {renderPaginationButtons().map((page, index) => {
-                        if (page === '...') {
-                          return (
-                            <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
-                              ...
-                            </span>
-                          );
-                        }
-                        
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => handlePageChange(page as number)}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
-                              pagination.currentPage === page 
-                                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg transform scale-110" 
-                                : "bg-gradient-to-r from-pink-50 to-rose-50 text-pink-700 hover:from-pink-100 hover:to-rose-100"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Next Button */}
-                    <button
-                      onClick={() => handlePageChange(pagination.currentPage + 1)}
-                      disabled={pagination.currentPage >= pagination.totalPages}
-                      className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-200 hover:from-pink-200 hover:to-rose-200"
-                    >
-                      Next
-                      <ChevronRight className="w-5 h-5 ml-1" />
-                    </button>
-                  </div>
-
-                  {/* Quick Jump to First/Last */}
-                  {pagination.totalPages > 5 && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <button
-                        onClick={() => handlePageChange(1)}
-                        disabled={pagination.currentPage === 1}
-                        className="px-3 py-1 rounded-md bg-pink-50 text-pink-600 disabled:opacity-50 hover:bg-pink-100 transition-colors duration-200"
-                      >
-                        First
-                      </button>
-                      <button
-                        onClick={() => handlePageChange(pagination.totalPages)}
-                        disabled={pagination.currentPage === pagination.totalPages}
-                        className="px-3 py-1 rounded-md bg-pink-50 text-pink-600 disabled:opacity-50 hover:bg-pink-100 transition-colors duration-200"
-                      >
-                        Last
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                />
               )}
             </>
           )}
