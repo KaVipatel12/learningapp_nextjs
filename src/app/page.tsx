@@ -299,12 +299,12 @@ const HomePage = () => {
                 className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide"
               >
                 {purchasedCourse.map((course) => (
-                   <div key={course.id} className="flex-shrink-0 w-50">
+                   <div key={course.id} className="flex-shrink-0 w-72 sm:w-80">
                     <Card
                       id={course?.id || ''}
-                      imageUrl={course.imageUrl}
-                      title={course.title}
-                      instructor={course.instructor}
+                      imageUrl={course.imageUrl || ''}
+                      title={course.title || ''}
+                      instructor={course.instructor || ''}
                       price={course.price}
                       rating={4.5}
                       totalRatings={0}
@@ -465,12 +465,12 @@ const HomePage = () => {
                   courses.length > 0 ? (
                     <>
                       {courses.map((course) => (
-                        <div key={course.id} className="flex-shrink-0 w-50 gap-1">
+                        <div key={course.id} className="flex-shrink-0 w-72 sm:w-80 gap-1">
                           <Card
                             id={course.id || ''}
-                            imageUrl={course.imageUrl}
-                            title={course.title}
-                            instructor={course.instructor}
+                            imageUrl={course.imageUrl || ''}
+                            title={course.title || ''}
+                            instructor={course.instructor || ''}
                             price={course.price}
                             rating={course.rating || 0}
                             totalRatings={course.totalRatings || 0}

@@ -73,6 +73,11 @@ export default function Card({
         }
         showNotification(data.msg, "success"); 
         await fetchUserData();
+        // Call parent's callback to refresh data
+        const result = await onWishlistToggle(id);
+        if (result === false) {
+          setLocalWishlisted(previousState);
+        }
       }
     } catch {
       showNotification('Wishlist update failed', "error");
@@ -84,9 +89,9 @@ export default function Card({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-card-hover transition-all duration-300 border border-pink-100 group w-full max-w-[260px] transform hover:-translate-y-2 animate-fade-in">
+    <div className="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-card-hover transition-all duration-300 border border-pink-100 group w-full max-w-[280px] transform hover:-translate-y-2 animate-fade-in">
       {/* Image Container */}
-      <div className="relative h-44 w-full overflow-hidden">
+      <div className="relative h-48 w-full overflow-hidden">
         <Image
           src={imageUrl}
           alt={title}
@@ -156,31 +161,20 @@ export default function Card({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-pink-100">
-          <div className="flex flex-col">
-            {discountedPrice && discountedPrice !== price ? (
-              <>
-                <span className="text-base font-bold text-rose-600">
-                  ${discountedPrice.toFixed(2)}
-                </span>
-                <span className="text-xs text-pink-400 line-through">
-                  ${price.toFixed(2)}
-                </span>
-              </>
-            ) : (
-              <span className="text-base font-bold text-rose-600">
-                ${price.toFixed(2)}
+          <div className="flex items-center justify-between pt-3 border-t border-pink-100">
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                Free
               </span>
-            )}
-          </div>
+            </div>
 
-          <Link
-            href={`/course/${id}`}
-            className="text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 transition-all duration-200 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105"
-          >
-            View
-          </Link>
-        </div>
+            <Link
+              href={`/course/${id}`}
+              className="text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 transition-all duration-200 px-5 py-2 rounded-xl shadow-md hover:shadow-pink-glow transform hover:scale-105"
+            >
+              View
+            </Link>
+          </div>
       </div>
     </div>
   );
