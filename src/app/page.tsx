@@ -7,8 +7,9 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Course, useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
 import HistorySlider from '@/components/HistoryCard';
+import { courseCategories } from '@/constants/categories';
 
-export interface Category {
+export interface Category { 
   id: string;
   name: string;
 }
@@ -25,7 +26,7 @@ export interface Feature {
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
-  const { user, userLoading, purchasedCoursesIds, purchasedCourses } = useUser(); 
+  const { user, userLoading, purchasedCoursesIds, purchasedCourses, fetchUserData } = useUser(); 
   const [purchasedCourse, setPurchasedCourse] = useState<Course[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
@@ -51,13 +52,8 @@ const HomePage = () => {
 
   // Categories
   const categories: Category[] = [
-    { id: 'all', name: 'Trending' },
-    { id: 'tech', name: 'Technology' },
-    { id: 'business', name: 'Business' },
-    { id: 'design', name: 'Design' },
-    { id: 'programming', name: 'Programming' },
-    { id: 'data science', name: 'Data Science' },
-    { id: 'science', name: 'Science' },
+    { id: 'all', name: 'Trending' }, // 'Trending' is a special case for this page
+    ...courseCategories
   ];
 
   // Features sections
@@ -120,7 +116,7 @@ const HomePage = () => {
       console.error("Error fetching courses:", error);
       setHasMoreInterest(false);
     } finally {
-      setCourseCategoryLoading(false);
+      if (initialLoad) setCourseCategoryLoading(false);
       setLoadMore(false);
     }
   }, [user]);
@@ -128,10 +124,10 @@ const HomePage = () => {
   // Fetch all courses with pagination
   const fetchCourses = useCallback(async (page = 1, initialLoad = false) => {
     if (initialLoad) setCourseLoading(true);
-
-    const effectiveCategory = category === "all" ? "" : category;
+    
+    const effectiveCategory = activeTab === "all" ? "" : activeTab;
     const endpoint = effectiveCategory.length === 0
-      ? `/api/course/fetchcourse?page=${page}&limit=6`
+      ? `/api/course/fetchcourse?page=${page}&limit=6` // 'all' is for trending, so no category filter
       : `/api/course/fetchcourse?category=${encodeURIComponent(effectiveCategory)}&page=${page}&limit=6`;
 
     try {
@@ -151,8 +147,14 @@ const HomePage = () => {
           educatorName: course.educatorName || ''
         }));
 
-        setCourses(prev => initialLoad ? formattedCourses : [...prev, ...formattedCourses]);
-        setHasMoreAllCourses(data.msg.length === 6);
+        setCourses(prev => {
+          const newCourses = initialLoad ? formattedCourses : [...prev, ...formattedCourses];
+          // Remove duplicates by ID, keeping the first occurrence
+          const uniqueCourses = newCourses.filter((course, index, self) =>
+            index === self.findIndex((c) => c.id === course.id));
+          return uniqueCourses;
+        });
+        setHasMoreAllCourses(data.msg.length > 0);
       } else {
         setHasMoreAllCourses(false);
       }
@@ -160,37 +162,47 @@ const HomePage = () => {
       console.error("Error fetching courses:", error);
       setHasMoreAllCourses(false);
     } finally {
-      setCourseLoading(false);
+      if (initialLoad) setCourseLoading(false);
       setLoadMore(false);
     }
-  }, [category]);
+  }, [activeTab]);
 
   // Initial loads
   useEffect(() => {
     fetchCourseByCategory(1, true);
+  }, [fetchCourseByCategory]);
+
+  useEffect(() => {
+    setCourses([]);
+    setAllCoursesPage(1);
+    setHasMoreAllCourses(true);
     fetchCourses(1, true);
-  }, [fetchCourses , fetchCourseByCategory]);
+  }, [activeTab, fetchCourses]);
 
   // Improved scroll handlers for infinite loading
   const handleInterestScroll = useCallback(() => {
     if (!interestContainerRef.current || courseCategoryLoading || !hasMoreInterest) return;
     
     const { scrollLeft, scrollWidth, clientWidth } = interestContainerRef.current;
-    if (scrollLeft + clientWidth >= scrollWidth - 100) {
-      setInterestPage(prev => prev + 1);
-      fetchCourseByCategory(interestPage + 1);
+    if (scrollLeft + clientWidth >= scrollWidth - 200) { // Increased threshold
+      setInterestPage(prevPage => {
+        fetchCourseByCategory(prevPage + 1);
+        return prevPage + 1;
+      });
     }
-  }, [courseCategoryLoading, hasMoreInterest, interestPage, fetchCourseByCategory]);
+  }, [courseCategoryLoading, hasMoreInterest, fetchCourseByCategory]);
 
   const handleCoursesScroll = useCallback(() => {
     if (!coursesContainerRef.current || courseLoading || !hasMoreAllCourses) return;
     
     const { scrollLeft, scrollWidth, clientWidth } = coursesContainerRef.current;
-    if (scrollLeft + clientWidth >= scrollWidth - 100) {
-      setAllCoursesPage(prev => prev + 1);
-      fetchCourses(allCoursesPage + 1);
+    if (scrollLeft + clientWidth >= scrollWidth - 200) { // Increased threshold
+      setAllCoursesPage(prevPage => {
+        fetchCourses(prevPage + 1);
+        return prevPage + 1;
+      });
     }
-  }, [courseLoading, hasMoreAllCourses, allCoursesPage, fetchCourses]);
+  }, [courseLoading, hasMoreAllCourses, fetchCourses]);
 
   // Improved scroll event listeners
   useEffect(() => {
@@ -237,6 +249,11 @@ const HomePage = () => {
 
   const isPurchased = (courseId: string) => {
     return purchasedCoursesIds.some(id => id.toString() === courseId);
+  };
+
+  const handleWishlistUpdate = async () => {
+    // Refetch user data to get the latest wishlist
+    await fetchUserData();
   };
 
   return (
@@ -309,8 +326,8 @@ const HomePage = () => {
                       rating={4.5}
                       totalRatings={0}
                       discountedPrice={course.price}
-                      isWishlisted={false}
-                      onWishlistToggle={() => {}}
+                      isWishlisted={isWishlisted(course.id)}
+                      onWishlistToggle={handleWishlistUpdate}
                       isPurchased={true}
                       showWishlist={false}
                       showRatings={false}
@@ -363,7 +380,7 @@ const HomePage = () => {
                         totalRatings={course.totalRatings || 0}
                         discountedPrice={course.price}
                         isWishlisted={isWishlisted(course.id)}
-                        onWishlistToggle={() => {}}
+                        onWishlistToggle={handleWishlistUpdate}
                         isPurchased={isPurchased(course?.id || '')}
                         />
                     </div>
@@ -393,7 +410,7 @@ const HomePage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-100 overflow-hidden">
           {/* Categories */}
-          <div className="relative mb-6 sm:mb-8 p-6 sm:p-8 pb-4">
+          <div className="relative p-2 sm:p-8 pb-5 lg:pb-0">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Explore Categories</h2>
             <button 
               onClick={scrollCategoriesLeft}
@@ -421,12 +438,7 @@ const HomePage = () => {
                       : 'bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 text-pink-700 border border-pink-200'
                   }`}
                   onClick={() => { 
-                    setActiveTab(category.id);
-                    setCategory(category.id);
-                    setCourses([]);
-                    setAllCoursesPage(1);
-                    setHasMoreAllCourses(true);
-                    fetchCourses(1, true);
+                    setActiveTab(category.id); // This will trigger the useEffect to fetch new courses
                   }}
                 >
                   {category.name}
@@ -475,8 +487,8 @@ const HomePage = () => {
                             rating={course.rating || 0}
                             totalRatings={course.totalRatings || 0}
                             discountedPrice={course.price}
-                            isWishlisted={isWishlisted(course.id || '') || false}
-                            onWishlistToggle={() => {}}
+                            isWishlisted={isWishlisted(course.id)}
+                            onWishlistToggle={handleWishlistUpdate}
                             isPurchased={isPurchased(course?.id || '')}
                           />
                         </div>

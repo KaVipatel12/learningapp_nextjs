@@ -668,17 +668,12 @@ const CourseDetailPage = () => {
                 className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm hover:shadow-3xl transition-all duration-300 sticky top-24"
                 style={{ borderRadius: "24px" }}
               >
-                <div className="text-center mb-8">
-                  <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 inline-block">
-                    {course.status === 'approved' ? '💎 Premium Course' : '📝 Under Review'}
+                <div className="text-center mb-6">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 inline-block">
+                    ✅ Free Course
                   </div>
-                  <Title level={2} className="!text-rose-600 !mb-2 !text-4xl">
-                    ₹{course.price.toLocaleString("en-IN")}
-                  </Title>
-                  <Text className="text-rose-500 text-lg font-medium">
-                    {course.status === 'approved' 
-                      ? 'One-time payment • Lifetime access' 
-                      : 'Price will be active after approval'}
+                  <Text className="text-gray-600 text-lg font-medium">
+                    Lifetime access
                   </Text>
                 </div>
 
@@ -693,7 +688,7 @@ const CourseDetailPage = () => {
                       onClick={() => setShowEnrollModal(true)}
                       loading={enrollLoading}
                     >
-                      🚀 Enroll Now
+                      🚀 Enroll for Free
                     </Button>
                   )}
 
@@ -855,20 +850,6 @@ const CourseDetailPage = () => {
                       {course.title}
                     </span>
                   </p>
-                  <div className="p-4 bg-white rounded-lg border border-pink-200">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-600">Course Price:</span>
-                      <span className="text-lg font-semibold text-rose-600">
-                        ₹{course.price.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center font-bold">
-                      <span>Total Amount:</span>
-                      <span className="text-xl text-rose-600">
-                        ₹{course.price.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex gap-3">
@@ -886,7 +867,7 @@ const CourseDetailPage = () => {
                     className="flex-1 !h-12 !bg-gradient-to-r !from-pink-500 !to-rose-500 hover:!from-pink-600 hover:!to-rose-600 !border-0 !font-semibold !rounded-xl shadow-lg"
                     size="large"
                   >
-                    {enrollLoading ? "Processing..." : "💳 Confirm & Pay"}
+                    {enrollLoading ? "Processing..." : "✅ Confirm Enrollment"}
                   </Button>
                 </div>
               </div>

@@ -402,41 +402,6 @@ export default function UpdateCourse() {
                     </select>
                   </div>
 
-                  {/* Price */}
-                  <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                      Price ($)
-                    </label>
-                    <input
-                      type="number"
-                      id="price"
-                      name="price"
-                      min="0"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                      required
-                    />
-                  </div>
-
-                  {/* Discount */}
-                  <div>
-                    <label htmlFor="discount" className="block text-sm font-medium text-gray-700">
-                      Discount (%)
-                    </label>
-                    <input
-                      type="number"
-                      id="discount"
-                      name="discount"
-                      min="0"
-                      max="100"
-                      value={formData.discount}
-                      onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                    />
-                  </div>
-
                   {/* Level */}
                   <div>
                     <label htmlFor="level" className="block text-sm font-medium text-gray-700">

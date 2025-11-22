@@ -59,7 +59,7 @@ export default function WishlistPage() {
 
       const data = await response.json();
       if (response.ok) {
-        showNotification('All courses purchased successfully!', 'success');
+        showNotification('Enrolled in all courses successfully!', 'success');
         setCourses([]);
         fetchUserData();
         setShowPurchaseModal(false);
@@ -76,8 +76,6 @@ export default function WishlistPage() {
   const isPurchased = (courseId: string) => {
     return purchasedCoursesIds.some(id => id.toString() === courseId);
   };
-
-  const totalPrice = courses.reduce((sum, course) => sum + (course.discountedPrice || course.price), 0);
 
   return (
     <div className="min-h-screen animate-fade-in">      
@@ -142,11 +140,8 @@ export default function WishlistPage() {
             <div className="fixed bottom-0 left-0 right-0 bg-white shadow-elegant border-t-2 border-pink-200 py-5 px-6 backdrop-blur-sm bg-white/95 z-50">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="text-center sm:text-left">
-                  <p className="text-sm text-rose-700 font-medium mb-1">
+                  <p className="text-lg text-rose-700 font-medium">
                     {courses.length} {courses.length === 1 ? 'course' : 'courses'} in wishlist
-                  </p>
-                  <p className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                    Total: ${totalPrice.toFixed(2)}
                   </p>
                 </div>
                 <button
@@ -154,7 +149,7 @@ export default function WishlistPage() {
                   className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600 text-white px-8 py-4 rounded-xl text-base font-bold shadow-lg hover:shadow-rose-glow transition-all duration-200 transform hover:scale-105"
                 >
                   <ShoppingCart size={22} />
-                  Purchase All Courses
+                  Enroll in All Courses
                 </button>
               </div>
             </div>
@@ -166,18 +161,12 @@ export default function WishlistPage() {
       <Modal
         isOpen={showPurchaseModal}
         onClose={() => setShowPurchaseModal(false)}
-        title="Confirm Purchase"
+        title="Confirm Enrollment"
       >
         <div className="space-y-6">
           <p className="text-rose-800">
-            Are you sure you want to purchase all {courses.length} courses in your wishlist?
+            Are you sure you want to enroll in all {courses.length} courses in your wishlist for free?
           </p>
-          
-          <div className="bg-rose-50 p-4 rounded-lg border border-rose-100">
-            <p className="font-semibold text-rose-900">
-              Total Amount: ${totalPrice.toFixed(2)}
-            </p>
-          </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -200,7 +189,7 @@ export default function WishlistPage() {
                   Processing...
                 </>
               ) : (
-                'Confirm Purchase'
+                'Confirm Enrollment'
               )}
             </button>
           </div>

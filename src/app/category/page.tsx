@@ -1,18 +1,12 @@
 'use client';
 
 import { useNotification } from '@/components/NotificationContext';
+import { courseCategories } from '@/constants/categories';
 import { PageLoading } from '@/components/PageLoading';
 import { useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Check, Plus, X } from 'lucide-react';
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  description?: string;
-}
 
 interface UserSelections {
   selectedCategories: string[];
@@ -38,25 +32,14 @@ const CategoryUpdatePage = () => {
     }
   }, [user, userLoading]);
 
-  const categories: Category[] = [
-      { id: "Programming", name: 'Programming', icon: '💻' },
-    { id: "Design", name: 'Design', icon: '🎨' },
-    { id: "Business", name: 'Business', icon: '📈' },
-    { id: "Marketing", name: 'Marketing', icon: '📢' },
-    { id: "Photography", name: 'Photography', icon: '📷' },
-    { id: "Ai", name: 'Ai', icon: '💻' },
-    { id: "Data Science", name: 'Data Science', icon: '📈' },
-    { id: "Language", name: 'Language', icon: '🗣️' },
-  ];
-  
   const maxSelections = 3
-  const handleCategoryToggle = (categoryId: string): void => {
-    const currentIndex = selections.selectedCategories.indexOf(categoryId);
+  const handleCategoryToggle = (categoryName: string): void => {
+    const currentIndex = selections.selectedCategories.indexOf(categoryName);
     const newSelectedCategories = [...selections.selectedCategories];
     
     if (currentIndex === -1) {
       if (newSelectedCategories.length < maxSelections) {
-        newSelectedCategories.push(categoryId);
+        newSelectedCategories.push(categoryName);
       } else {
         showNotification(`You can select maximum ${maxSelections} categories`, "info");
         return;
@@ -116,8 +99,8 @@ const CategoryUpdatePage = () => {
     }
   };
 
-  const isSelected = (categoryId: string): boolean =>
-    selections.selectedCategories.includes(categoryId);
+  const isSelected = (categoryName: string): boolean =>
+    selections.selectedCategories.includes(categoryName);
 
   if(pageLoading){
     return <PageLoading />;
@@ -134,8 +117,8 @@ const CategoryUpdatePage = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-purple-800 mb-4">Your Selected Categories</h2>
             <div className="flex flex-wrap gap-3">
-              {selections.selectedCategories.map(categoryId => {
-                const category = categories.find(c => c.id === categoryId);
+              {selections.selectedCategories.map(categoryName => {
+                const category = courseCategories.find(c => c.name === categoryName);
                 return category ? (
                   <div 
                     key={category.id}
@@ -158,12 +141,12 @@ const CategoryUpdatePage = () => {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map(category => {
-            const selected = isSelected(category.id);
+          {courseCategories.map(category => {
+            const selected = isSelected(category.name);
             return (
               <div
                 key={category.id}
-                onClick={() => handleCategoryToggle(category.id)}
+                onClick={() => handleCategoryToggle(category.name)}
                 className={`p-4 rounded-lg border cursor-pointer transition-all ${
                   selected
                     ? 'border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 shadow-md'

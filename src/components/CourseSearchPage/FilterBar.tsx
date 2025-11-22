@@ -1,5 +1,7 @@
 "use client";
 
+import { CustomSelect, SelectOption } from '@/app/CustomSelect';
+import { categoryNames } from '@/constants/categories';
 import { useCallback } from 'react';
 
 type Filters = {
@@ -16,21 +18,9 @@ type FilterBarProps = {
 };
 
 export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
-  const categories = [
-    "Programming",
-    "Design", 
-    "Business",
-    "Marketing",
-    "Photography",
-    "Music"
-  ];
-
-  const priceRanges = [
-    { label: "All Prices", value: "" },
-    { label: "Under ₹500", value: "500" },
-    { label: "Under ₹1000", value: "1000" },
-    { label: "Under ₹2000", value: "2000" },
-    { label: "Under ₹5000", value: "5000" }
+  const categoryOptions: SelectOption[] = [
+    { label: "All Categories", value: "" },
+    ...categoryNames.map(name => ({ label: name, value: name }))
   ];
 
   // Memoize the change handler to prevent unnecessary re-renders
@@ -60,43 +50,19 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
   const clearEducatorName = useCallback(() => handleChange("educatorName", ""), [handleChange]);
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-sm mb-4 border border-pink-100">
+    <div className="relative z-10 bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-sm mb-4 border border-pink-100">
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
         <div className="flex-1 w-full">
           <label htmlFor="category-filter" className="block text-sm font-medium text-pink-700 mb-1">
             Category
           </label>
-          <select
-            id="category-filter"
+          <CustomSelect
+            label="Category"
+            options={categoryOptions}
             value={filters.category || ""}
-            onChange={(e) => handleChange("category", e.target.value)}
-            className="w-full px-3 py-2 border border-pink-200 rounded-md focus:ring-pink-500 focus:border-pink-500 bg-white transition-colors duration-200"
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex-1 w-full">
-          <label htmlFor="price-filter" className="block text-sm font-medium text-pink-700 mb-1">
-            Price Range
-          </label>
-          <select
-            id="price-filter"
-            value={filters.price || ""}
-            onChange={(e) => handleChange("price", e.target.value)}
-            className="w-full px-3 py-2 border border-pink-200 rounded-md focus:ring-pink-500 focus:border-pink-500 bg-white transition-colors duration-200"
-          >
-            {priceRanges.map((range) => (
-              <option key={range.value || "all"} value={range.value}>
-                {range.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleChange("category", value)}
+            placeholder="All Categories"
+          />
         </div>
 
         <div className="flex-none self-end mt-4 md:mt-0">

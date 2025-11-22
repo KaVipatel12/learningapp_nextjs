@@ -19,7 +19,7 @@ interface CardProps {
   isPurchased?: boolean;
   showRatings?: boolean;
   showWishlist?: boolean;
-  onWishlistToggle?: (id: string) => Promise<boolean> | void;
+  onWishlistToggle?: () => void;
 }
 
 export default function Card({
@@ -42,7 +42,6 @@ export default function Card({
   const [localWishlisted, setLocalWishlisted] = useState(isWishlisted);
   const [isProcessing, setIsProcessing] = useState(false);
   const { showNotification } = useNotification();
-  const {fetchUserData} = useUser();
 
   useEffect(() => {
     setLocalWishlisted(isWishlisted);
@@ -58,22 +57,20 @@ export default function Card({
     setLocalWishlisted(!previousState);
     
     try {
-      if (onWishlistToggle) {
-        const response = await fetch(`/api/user/wishlist/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-      
-        const data = await response.json();
-        if (!response.ok) {
-          setLocalWishlisted(previousState);
-          return showNotification(data.msg, "error"); 
+      const response = await fetch(`/api/user/wishlist/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
         }
-        showNotification(data.msg, "success"); 
-        await fetchUserData();
+      });
+    
+      const data = await response.json();
+      if (!response.ok) {
+        setLocalWishlisted(previousState);
+        return showNotification(data.msg, "error"); 
       }
+      showNotification(data.msg, "success"); 
+      if (onWishlistToggle) onWishlistToggle();
     } catch {
       showNotification('Wishlist update failed', "error");
       setLocalWishlisted(previousState);
