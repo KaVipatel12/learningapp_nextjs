@@ -35,14 +35,14 @@ export default function WishlistPage() {
       if (response.ok) {
         setCourses(data.msg);
       } else {
-        alert(data.msg || 'Failed to load wishlist');
+        showNotification(data.msg || 'Failed to load wishlist', 'error');
       }
     } catch {
-      alert('Network error');
+      showNotification('Network error', 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showNotification]);
 
   useEffect(() => {
     fetchWishlist();
@@ -130,7 +130,10 @@ export default function WishlistPage() {
                   rating={course.averageRating || 0}
                   totalRatings={course.totalRatings || 0}
                   isWishlisted={true}
-                  onWishlistToggle={() => {}}
+                  onWishlistToggle={async (id: string) => {
+                    await fetchWishlist();
+                    return true;
+                  }}
                   isPurchased={isPurchased(course._id)}
                 />
               ))}
@@ -142,6 +145,9 @@ export default function WishlistPage() {
                 <div className="text-center sm:text-left">
                   <p className="text-lg text-rose-700 font-medium">
                     {courses.length} {courses.length === 1 ? 'course' : 'courses'} in wishlist
+                  </p>
+                  <p className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                    All Free
                   </p>
                 </div>
                 <button
@@ -165,8 +171,15 @@ export default function WishlistPage() {
       >
         <div className="space-y-6">
           <p className="text-rose-800">
-            Are you sure you want to enroll in all {courses.length} courses in your wishlist for free?
+            Are you sure you want to enroll in all {courses.length} courses in your wishlist?
           </p>
+          
+          <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border-2 border-pink-200">
+            <p className="font-bold text-2xl bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+              All Courses are Free!
+            </p>
+            <p className="text-rose-700 mt-2">Start learning today at no cost</p>
+          </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <button

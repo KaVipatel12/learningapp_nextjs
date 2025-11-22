@@ -250,8 +250,8 @@ useEffect(() => {
   // Quiz completed state
   if (quizCompleted) {
     return (
-      <div className="min-h-screenflex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full mt-13">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-50 to-rose-50">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full mt-20">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-pink-600 mb-2">Quiz Completed!</h1>
             <p className="text-pink-500">Your results are in</p>

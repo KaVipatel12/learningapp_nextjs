@@ -312,11 +312,11 @@ export default function AddCourse() {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm sm:text-base p-2 sm:p-3 border hover:border-pink-300 transition-colors bg-white cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23DB2777%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat pr-10"
                   >
                     <option value="">Select a category</option>
                     {category.map((cat, index) => (
-                      <option value={cat} key={index}>{cat}</option>
+                      <option value={cat} key={index} className="py-2">{cat}</option>
                     ))}
                   </select>
                 </div>
@@ -385,7 +385,8 @@ export default function AddCourse() {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
+                    min={new Date().toISOString().split('T')[0]}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm sm:text-base p-2 sm:p-3 border hover:border-pink-300 transition-colors"
                   />
                 </div>
 
@@ -400,7 +401,8 @@ export default function AddCourse() {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base p-2 sm:p-3 border"
+                    min={formData.startDate || new Date().toISOString().split('T')[0]}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 text-sm sm:text-base p-2 sm:p-3 border hover:border-pink-300 transition-colors"
                   />
                 </div>
 

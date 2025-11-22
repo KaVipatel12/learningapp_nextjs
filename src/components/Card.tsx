@@ -155,20 +155,9 @@ export default function Card({
 
         <div className="flex items-center justify-between pt-3 border-t border-pink-100">
           <div className="flex flex-col">
-            {discountedPrice && discountedPrice !== price ? (
-              <>
                 <span className="text-base font-bold text-rose-600">
-                  ${discountedPrice.toFixed(2)}
+                  Free
                 </span>
-                <span className="text-xs text-pink-400 line-through">
-                  ${price.toFixed(2)}
-                </span>
-              </>
-            ) : (
-              <span className="text-base font-bold text-rose-600">
-                ${price.toFixed(2)}
-              </span>
-            )}
           </div>
 
           <Link
