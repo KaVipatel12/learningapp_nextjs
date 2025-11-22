@@ -35,14 +35,14 @@ export default function WishlistPage() {
       if (response.ok) {
         setCourses(data.msg);
       } else {
-        alert(data.msg || 'Failed to load wishlist');
+        showNotification(data.msg || 'Failed to load wishlist', 'error');
       }
     } catch {
-      alert('Network error');
+      showNotification('Network error', 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showNotification]);
 
   useEffect(() => {
     fetchWishlist();
@@ -132,7 +132,10 @@ export default function WishlistPage() {
                   rating={course.averageRating || 0}
                   totalRatings={course.totalRatings || 0}
                   isWishlisted={true}
-                  onWishlistToggle={() => {}}
+                  onWishlistToggle={async (id: string) => {
+                    await fetchWishlist();
+                    return true;
+                  }}
                   isPurchased={isPurchased(course._id)}
                 />
               ))}
@@ -146,7 +149,7 @@ export default function WishlistPage() {
                     {courses.length} {courses.length === 1 ? 'course' : 'courses'} in wishlist
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                    Total: ${totalPrice.toFixed(2)}
+                    All Free
                   </p>
                 </div>
                 <button
@@ -154,7 +157,7 @@ export default function WishlistPage() {
                   className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600 text-white px-8 py-4 rounded-xl text-base font-bold shadow-lg hover:shadow-rose-glow transition-all duration-200 transform hover:scale-105"
                 >
                   <ShoppingCart size={22} />
-                  Purchase All Courses
+                  Enroll in All Courses
                 </button>
               </div>
             </div>
@@ -170,13 +173,14 @@ export default function WishlistPage() {
       >
         <div className="space-y-6">
           <p className="text-rose-800">
-            Are you sure you want to purchase all {courses.length} courses in your wishlist?
+            Are you sure you want to enroll in all {courses.length} courses in your wishlist?
           </p>
           
-          <div className="bg-rose-50 p-4 rounded-lg border border-rose-100">
-            <p className="font-semibold text-rose-900">
-              Total Amount: ${totalPrice.toFixed(2)}
+          <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border-2 border-pink-200">
+            <p className="font-bold text-2xl bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+              All Courses are Free!
             </p>
+            <p className="text-rose-700 mt-2">Start learning today at no cost</p>
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
