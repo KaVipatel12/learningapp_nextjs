@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { Heart, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Heart, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
 import Card from '@/components/Card';
 import { useNotification } from '@/components/NotificationContext';
 import Link from 'next/link';
@@ -80,15 +80,31 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen animate-fade-in">      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-12 mt-10">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <Heart className="w-10 h-10 text-pink-500 fill-pink-500 animate-pulse" />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-600 via-rose-600 to-fuchsia-600 bg-clip-text text-transparent">
-              My Wishlist
-            </h1>
+        {/* Header with Welcome Message */}
+        <div className="mb-8 mt-10">
+          <div className="bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                  <Heart className="w-7 h-7 text-white fill-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold text-white">My Wishlist</h1>
+                  <p className="text-pink-100">Your collection of favorite courses</p>
+                </div>
+              </div>
+              
+              {courses.length > 0 && (
+                <div className="flex items-center gap-2 text-white">
+                  <Sparkles className="w-5 h-5" />
+                  <span className="text-lg font-medium">{courses.length} {courses.length === 1 ? 'course' : 'courses'} waiting for you</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="w-32 h-1.5 bg-gradient-to-r from-pink-400 via-rose-500 to-fuchsia-500 mx-auto rounded-full shadow-pink-glow"></div>
         </div>
 
         {/* Content */}
@@ -97,27 +113,27 @@ export default function WishlistPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500"></div>
           </div>
         ) : courses.length === 0 ? (
-          <div className="text-center py-20 bg-gradient-to-br from-pink-50 to-rose-50 rounded-3xl shadow-card border-2 border-pink-100 max-w-2xl mx-auto animate-fade-in hover:shadow-card-hover transition-all duration-300">
-            <div className="inline-flex p-6 bg-white rounded-full shadow-lg mb-6">
+          <div className="text-center py-20 bg-white rounded-3xl shadow-lg border border-gray-100 max-w-2xl mx-auto animate-fade-in">
+            <div className="inline-flex p-8 bg-gradient-to-br from-pink-50 to-rose-50 rounded-full mb-6">
               <Heart className="h-20 w-20 text-rose-400" strokeWidth={1.5} />
             </div>
-            <h3 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-3">
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">
               Your wishlist is empty
             </h3>
-            <p className="text-lg text-rose-700 mb-8">Start adding courses to your wishlist and build your learning journey!</p>
-            <div>
-              <Link
-                href="/course"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl text-base font-semibold shadow-lg hover:shadow-rose-glow transition-all duration-200 transform hover:scale-105"
-              >
-                Browse Courses
-                <ArrowRight size={20} />
-              </Link>
-            </div>
+            <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+              Start adding courses to your wishlist and build your learning journey!
+            </p>
+            <Link
+              href="/course"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            >
+              Browse Courses
+              <ArrowRight size={20} />
+            </Link>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 pb-20 place-items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-24">
               {courses.map((course) => (
                 <Card
                   key={course._id}
@@ -125,12 +141,10 @@ export default function WishlistPage() {
                   imageUrl={course.imageUrl}
                   title={course.title}
                   instructor={course.instructor}
-                  price={course.price}
-                  discountedPrice={course.discountedPrice}
                   rating={course.averageRating || 0}
                   totalRatings={course.totalRatings || 0}
                   isWishlisted={true}
-                  onWishlistToggle={async (id: string) => {
+                  onWishlistToggle={async () => {
                     await fetchWishlist();
                     return true;
                   }}
@@ -140,10 +154,10 @@ export default function WishlistPage() {
             </div>
 
             {/* Fixed Purchase Button */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white shadow-elegant border-t-2 border-pink-200 py-5 px-6 backdrop-blur-sm bg-white/95 z-50">
+            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-2xl border-t border-gray-200 py-4 px-6 z-50">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="text-center sm:text-left">
-                  <p className="text-lg text-rose-700 font-medium">
+                  <p className="text-sm text-gray-600 font-medium">
                     {courses.length} {courses.length === 1 ? 'course' : 'courses'} in wishlist
                   </p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
@@ -152,7 +166,7 @@ export default function WishlistPage() {
                 </div>
                 <button
                   onClick={() => setShowPurchaseModal(true)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600 text-white px-8 py-4 rounded-xl text-base font-bold shadow-lg hover:shadow-rose-glow transition-all duration-200 transform hover:scale-105"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600 text-white px-8 py-4 rounded-xl text-base font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <ShoppingCart size={22} />
                   Enroll in All Courses
@@ -170,28 +184,28 @@ export default function WishlistPage() {
         title="Confirm Enrollment"
       >
         <div className="space-y-6">
-          <p className="text-rose-800">
+          <p className="text-gray-700">
             Are you sure you want to enroll in all {courses.length} courses in your wishlist?
           </p>
           
-          <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border-2 border-pink-200">
+          <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-2xl border-2 border-pink-200">
             <p className="font-bold text-2xl bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
               All Courses are Free!
             </p>
-            <p className="text-rose-700 mt-2">Start learning today at no cost</p>
+            <p className="text-gray-700 mt-2">Start learning today at no cost</p>
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setShowPurchaseModal(false)}
-              className="px-4 py-2 border border-rose-200 text-rose-700 rounded-lg hover:bg-rose-50 transition-colors"
+              className="px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handlePurchaseAll}
               disabled={purchasing}
-              className="px-6 py-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:to-rose-600 text-white rounded-lg disabled:opacity-80 flex items-center gap-2 transition-all"
+              className="px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-lg disabled:opacity-70 flex items-center gap-2 font-semibold shadow-md transition-all"
             >
               {purchasing ? (
                 <>
