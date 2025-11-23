@@ -21,7 +21,6 @@ export interface WishList {
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const { user, userLoading, purchasedCoursesIds, purchasedCourses, fetchUserData } = useUser(); 
-  const [purchasedCourse, setPurchasedCourse] = useState<Course[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoriesContainerRef = useRef<HTMLDivElement>(null);
   const coursesContainerRef = useRef<HTMLDivElement>(null);
@@ -47,9 +46,6 @@ const HomePage = () => {
   // Receiving the purchased courses and wishlist
   useEffect(() => {
     if (userLoading) return;
-    if (purchasedCourses.length > 0) {
-      setPurchasedCourse(purchasedCourses); 
-    }
     if (user?.wishlist) {
       const userWishlist = user.wishlist.map(id => id);
       setUserWishList(userWishlist); 
@@ -95,7 +91,15 @@ const HomePage = () => {
     if (initialLoad) setCourseLoading(true);
     
     try {
-      const response = await fetch(`/api/course/fetchcourse?page=${page}&limit=6`);
+      let url: string;
+      if (activeTab === 'all' || !activeTab) {
+        url = `/api/course/fetchcourse?page=${page}&limit=6`;
+      } else {
+        // Use the single endpoint with a category query parameter, as identified from the working code.
+        url = `/api/course/fetchcourse?category=${encodeURIComponent(activeTab)}&page=${page}&limit=6`;
+      }
+
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Error in fetching course");
 
       const data = await response.json();
@@ -113,7 +117,11 @@ const HomePage = () => {
           averageRating: course.averageRating,
         }));
 
-        setCourses(prev => page === 1 ? formattedCourses : [...prev, ...formattedCourses]);
+        if (page === 1) {
+          setCourses(formattedCourses);
+        } else {
+          setCourses(prev => [...prev, ...formattedCourses]);
+        }
         setHasMoreAllCourses(data.msg.length === 6);
       }
     } catch (error) {
@@ -121,14 +129,21 @@ const HomePage = () => {
     } finally {
       if (initialLoad) setCourseLoading(false);
     }
-  }, []);
+  }, [activeTab]);
 
   // Initial load
   useEffect(() => {
     fetchCourseByCategory(1, true);
-    fetchCourse(1, true);
   }, [fetchCourseByCategory, fetchCourse]);
 
+  // Fetch courses when activeTab changes
+  useEffect(() => {
+    // Reset courses and fetch new ones when the tab changes
+    setCourses([]);
+    setHasMoreAllCourses(true); // Assume there are more pages until an empty response
+    fetchCourse(1, true);
+  }, [activeTab]);
+  
   // Infinite scroll handlers
   const handleInterestScroll = useCallback(() => {
     const container = interestContainerRef.current;
@@ -149,10 +164,10 @@ const HomePage = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container;
     if (scrollLeft + clientWidth >= scrollWidth - 50) {
       setLoadMore(true);
-      const nextPage = Math.floor(courses.length / 6) + 1;
+      const nextPage = Math.floor(courses.length / 6) + 1;      
       fetchCourse(nextPage).finally(() => setLoadMore(false));
     }
-  }, [hasMoreAllCourses, loadMore, courses.length, fetchCourse]);
+  }, [hasMoreAllCourses, loadMore, courses.length, fetchCourse, activeTab]);
 
   // Scroll event listeners
   useEffect(() => {
@@ -235,12 +250,6 @@ const HomePage = () => {
                   className="px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all"
                 >
                   Explore Courses
-                </button>
-                <button 
-                  onClick={() => router.push('/register')}
-                  className="px-6 py-3 bg-white text-gray-900 border-2 border-gray-300 rounded-lg font-semibold hover:border-pink-500 hover:text-pink-600 transition-all"
-                >
-                  Sign Up Free
                 </button>
               </div>
 
@@ -325,7 +334,7 @@ const HomePage = () => {
       </section>
 
       {/* Continue Learning Section */}
-      {purchasedCourse.length > 0 && (
+      {user && purchasedCourses.length > 0 && (
         <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center mb-6">
@@ -337,10 +346,53 @@ const HomePage = () => {
                 View All <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <HistorySlider />
+            
+            <div className="relative group">
+              {purchasedCourses.length > 4 && (
+                <>
+                  <button
+                    onClick={() => scrollLeft(scrollContainerRef)}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-50"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={() => scrollRight(scrollContainerRef)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-50"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                  </button>
+                </>
+              )}
+
+              <div
+                ref={scrollContainerRef}
+                className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {purchasedCourses.map((course) => (
+                  <div key={course.id} className="flex-shrink-0">
+                    <Card
+                      id={course.id}
+                      imageUrl={course.imageUrl}
+                      title={course.title}
+                      instructor={course.instructor || course.educatorName || ''}
+                      rating={course.rating || course.averageRating || 0}
+                      totalRatings={course.totalRatings || 0}
+                      isWishlisted={isWishlisted(course.id)}
+                      isPurchased={true}
+                      onWishlistToggle={handleWishlistUpdate}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       )}
+
 
       {/* Courses For You Section */}
       {user && categoryCourses.length > 0 && (
@@ -431,7 +483,6 @@ const HomePage = () => {
                   key={cat.id}
                   onClick={() => {
                     setActiveTab(cat.id);
-                    router.push(`/category?category=${cat.id}`);
                   }}
                   className={`flex-shrink-0 px-5 py-2.5 rounded-lg font-medium transition-all ${
                     activeTab === cat.id
@@ -459,7 +510,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">Popular Courses</h2>
+              <h2 className="text-3xl font-bold text-gray-900">{activeTab === 'all' ? 'Popular Courses' : `Courses in ${categories.find(c => c.id === activeTab)?.name}`}</h2>
               <p className="text-gray-600 mt-1">Trending now</p>
             </div>
             <button 
