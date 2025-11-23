@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Star, Heart, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNotification } from './NotificationContext';
-import { useUser } from '@/context/userContext';
 
 interface CardProps {
   id: string;
@@ -13,8 +12,6 @@ interface CardProps {
   instructor: string;
   rating: number;
   totalRatings: number;
-  price: number;
-  discountedPrice?: number;
   isWishlisted?: boolean;
   isPurchased?: boolean;
   showRatings?: boolean;
@@ -29,8 +26,6 @@ export default function Card({
   instructor,
   rating,
   totalRatings,
-  price,
-  discountedPrice,
   isWishlisted = false,
   isPurchased = false,
   showRatings = true,

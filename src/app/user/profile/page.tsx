@@ -228,12 +228,8 @@ export default function CombinedProfile() {
                     imageUrl={course.imageUrl || "/course-placeholder.jpg"}
                     title={course.title}
                     instructor={profileData.name}
-                    rating={course.averageRating || 0}  // Ensure rating has a default value
-                    totalRatings={course.totalRatings || 0}  // Ensure totalRatings has a default value
-                    price={course.price || 0}  // Ensure price has a default value
-                    discountedPrice={course.discount ? 
-                      (course.price || 0) - ((course.price || 0) * (course.discount || 0) / 100) : 
-                      (course.price || 0)}
+                    rating={course.averageRating || 0}
+                    totalRatings={course.totalRatings || 0}
                     isWishlisted={false}
                     onWishlistToggle={() => {}}
                     showWishlist={false}
@@ -272,10 +268,8 @@ export default function CombinedProfile() {
                   imageUrl={course.imageUrl || '/default-course.jpg'}
                   title={course.title}
                   instructor={course.instructor}
-                  price={course.price || 0}  // Ensure price has a default value
-                  rating={course.averageRating || 0}  // Ensure rating has a default value
-                  totalRatings={course.totalRatings || 0}  // Ensure totalRatings has a default value
-                  discountedPrice={course.price || 0}  // Ensure discountedPrice has a default value
+                  rating={course.averageRating || 0}
+                  totalRatings={course.totalRatings || 0}
                   isWishlisted={false}
                   onWishlistToggle={() => {}}
                   isPurchased={true}

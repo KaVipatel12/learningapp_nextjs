@@ -116,42 +116,6 @@ export default function CoursesPage() {
     setFilters(prev => ({ ...prev, ...newFilters, page: "1" }));
   }, []);
 
-  const renderPaginationButtons = () => {
-    const { currentPage, totalPages } = pagination;
-    const buttons = [];
-    
-    // Always show first page
-    if (totalPages > 1) {
-      buttons.push(1);
-    }
-    
-    // Add ellipsis and current page area if needed
-    if (currentPage > 3) {
-      buttons.push('...');
-    }
-    
-    // Add pages around current page
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-      if (!buttons.includes(i)) {
-        buttons.push(i);
-      }
-    }
-    
-    // Add ellipsis before last page if needed
-    if (currentPage < totalPages - 2) {
-      if (!buttons.includes('...')) {
-        buttons.push('...');
-      }
-    }
-    
-    // Always show last page if there are multiple pages
-    if (totalPages > 1 && !buttons.includes(totalPages)) {
-      buttons.push(totalPages);
-    }
-    
-    return buttons;
-  };
-
   return (
     <div className="min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -197,10 +161,8 @@ export default function CoursesPage() {
                     imageUrl={course.imageUrl || ""}
                     title={course.title}
                     instructor={course.instructor}
-                    price={course.price}
                     rating={course.rating || 0}
                     totalRatings={course.totalRatings || 0}
-                    discountedPrice={course.discountedPrice}
                     isWishlisted={isWishlisted(course.id)}
                     isPurchased={isPurchased(course.id)}
                     onWishlistToggle={() => {}}

@@ -391,10 +391,6 @@ export default function CombinedProfile() {
                     instructor={profileData.name}
                     rating={course.averageRating || 0}
                     totalRatings={course.totalRatings || 0}
-                    price={course.price || 0}
-                    discountedPrice={course.discount ? 
-                      (course.price || 0) - ((course.price || 0) * (course.discount || 0) / 100) : 
-                      (course.price || 0)}
                     isWishlisted={false}
                     onWishlistToggle={() => {}}
                     showWishlist={false}
@@ -439,10 +435,8 @@ export default function CombinedProfile() {
                   imageUrl={course.imageUrl || '/default-course.jpg'}
                   title={course.title}
                   instructor={course.instructor}
-                  price={course.price || 0}
                   rating={course.averageRating || 0}
                   totalRatings={course.totalRatings || 0}
-                  discountedPrice={course.price || 0}
                   isWishlisted={false}
                   onWishlistToggle={() => {}}
                   isPurchased={true}

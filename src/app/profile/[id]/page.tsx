@@ -187,8 +187,6 @@ export default function EducatorProfile() {
                   instructor={formattedEducator.name}
                   rating={4.5}
                   totalRatings={0}
-                  price={course.price}
-                  discountedPrice={course.price - (course.price * (course.discount || 0) / 100)}
                   isWishlisted={false}
                   onWishlistToggle={() => {}}
                   showWishlist={false}
