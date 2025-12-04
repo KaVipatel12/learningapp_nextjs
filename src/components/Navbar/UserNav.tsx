@@ -284,7 +284,7 @@ export default function AppNavbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center" onClick={closeMobileMenu}>
             <Book className="h-8 w-8 text-rose-600" />
-            <span className="ml-2 text-xl font-bold text-rose-900">EduPlatform</span>
+            <span className="ml-2 text-xl font-bold text-rose-900">Learnify</span>
           </Link>
 
           {/* Desktop Navigation */} 
